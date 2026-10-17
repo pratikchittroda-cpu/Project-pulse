@@ -1,17 +1,17 @@
 # Task Status Index
 
-Current state after T004 verification.
+Current state after T005 verification.
 
 ## Done
 
 - `T001` — Repository bootstrap
 - `T002` — Workspace layout and scripts
 - `T004` — Testing, linting, and typecheck
+- `T005` — Web app shell and routing
 
 ## Ready
 
 - `T003` — Docker and local development
-- `T005` — Web app shell and routing
 - `T007` — Shared domain types and API conventions
 - `T050` — VS Code extension scaffold
 
@@ -19,7 +19,7 @@ Current state after T004 verification.
 
 ### Foundation
 
-- `T003`, `T005`, `T006`, `T007`
+- `T003`, `T006`, `T007`
 
 ### Data and access
 

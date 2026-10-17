@@ -83,8 +83,9 @@ corepack pnpm --filter @projectpulse/web build
 corepack pnpm --filter @projectpulse/domain typecheck
 ```
 
-The current web development entry point is a dependency-free placeholder
-server on port `4173`; the React/Vite shell is introduced by T005.
+The web development entry point is the React/Vite shell on the Vite default
+port (`5173`). Use `corepack pnpm --filter @projectpulse/web preview` to serve
+the production build locally.
 
 ## Development and deployment
 
@@ -94,6 +95,7 @@ and deployment commands are introduced by the subsequent foundation tasks:
 - T002 — workspace package manifests and root workspace commands
 - T003 — Docker and local development
 - T004 — linting, typechecking, and the full quality pipeline
+- T005 — React/Vite web application shell and routing
 - T095 — production deployment runbook
 
 ## Runtime and package manager
