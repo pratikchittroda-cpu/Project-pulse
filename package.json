@@ -12,6 +12,11 @@
     "build": "corepack pnpm run workspace:check && corepack pnpm --recursive run build",
     "docker:build": "docker build --tag projectpulse:local .",
     "docker:run": "docker run --rm --publish ${PROJECTPULSE_PORT:-8080}:8080 projectpulse:local",
+    "supabase:start": "node ./scripts/supabase.mjs start",
+    "supabase:stop": "node ./scripts/supabase.mjs stop",
+    "supabase:status": "node ./scripts/supabase.mjs status",
+    "supabase:reset": "node ./scripts/supabase.mjs reset",
+    "supabase:seed": "node ./scripts/supabase.mjs seed",
     "test": "corepack pnpm run quality",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:workspaces": "corepack pnpm --recursive run test",
@@ -34,6 +39,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-router-dom": "7.6.2",
+    "supabase": "2.121.0",
     "typescript-eslint": "8.46.3",
     "vitest": "3.2.4"
   }

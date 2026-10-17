@@ -131,18 +131,32 @@ PROJECTPULSE_PORT=8080 docker compose up --build
 
 ### Local Supabase prerequisites
 
-Install the Supabase CLI using its official package for your operating system,
-then run the local stack from the repository root:
+The Supabase CLI is pinned in the root dev dependencies, so Corepack can run it
+without a global install. Docker Desktop (or a Docker-compatible daemon) is
+the only system prerequisite. From the repository root:
 
 ```sh
-supabase start
-supabase status
+corepack pnpm install --frozen-lockfile
+corepack pnpm run supabase:start
+corepack pnpm run supabase:status
 ```
 
-T010 adds the committed local Supabase configuration, database services, and
-migrations. Until then, the web shell runs with the placeholder project and
-does not make Supabase requests. Never commit `.env`; use `.env.example` as
-the variable inventory.
+Reset the local database and apply the deterministic seed with:
+
+```sh
+corepack pnpm run supabase:reset
+```
+
+Stop the local stack with `corepack pnpm run supabase:stop`. The local API is
+available at `http://127.0.0.1:54321`, Studio at `http://127.0.0.1:54323`,
+Postgres at `127.0.0.1:54322`, and the local email inbox at
+`http://127.0.0.1:54324`.
+
+The browser uses only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The
+service-role key and integration secrets stay server-side and are never placed
+in browser configuration. T011 adds the application migrations; until then,
+the seed creates only a deterministic local-environment marker. Never commit
+`.env`; use `.env.example` as the variable inventory.
 
 The runnable web workspace, development server, production build, container,
 and deployment commands are introduced by the foundation tasks:
