@@ -159,6 +159,15 @@ creates only a deterministic local-environment marker until later tasks add
 domain fixtures. Never commit `.env`; use `.env.example` as the variable
 inventory.
 
+### Authentication
+
+The web app uses Supabase Auth for magic links and optional GitHub OAuth. Set
+the two `VITE_SUPABASE_*` variables in an untracked `.env` file, using the
+publishable key printed by `corepack pnpm run supabase:status` for local work.
+The callback route is `/auth/callback`; sessions persist in browser storage,
+refresh automatically, and are cleared by sign-out. Service-role credentials
+are never exposed to the browser.
+
 The runnable web workspace, development server, production build, container,
 and deployment commands are introduced by the foundation tasks:
 

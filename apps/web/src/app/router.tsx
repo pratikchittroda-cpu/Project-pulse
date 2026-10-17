@@ -13,6 +13,7 @@ import { ProtectedRoute } from "./protected-route.js";
 import { type ProjectSummary } from "./project-context.js";
 import { RouteErrorPage } from "./route-error-page.js";
 import { ActivityPage } from "../pages/activity-page.js";
+import { AuthCallbackPage } from "../pages/auth-callback-page.js";
 import { DashboardPage } from "../pages/dashboard-page.js";
 import { LandingPage } from "../pages/landing-page.js";
 import { LoginPage } from "../pages/login-page.js";
@@ -48,6 +49,7 @@ export function createAppRoutes({
           element: <AuthLayout />,
           children: [
             { index: true, element: <Navigate replace to="login" /> },
+            { path: "callback", element: <AuthCallbackPage /> },
             { path: "login", element: <LoginPage /> },
           ],
         },
@@ -82,5 +84,11 @@ export function createTestRouter(
   initialEntries: string[],
   options: RouterOptions = {},
 ) {
-  return createMemoryRouter(createAppRoutes(options), { initialEntries });
+  return createMemoryRouter(
+    createAppRoutes({
+      ...options,
+      initialAuthStatus: options.initialAuthStatus ?? "authenticated",
+    }),
+    { initialEntries },
+  );
 }

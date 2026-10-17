@@ -15,7 +15,7 @@ interface AppProvidersProps {
 
 export function AppProviders({
   children,
-  initialAuthStatus = "authenticated",
+  initialAuthStatus,
   initialProject = DEFAULT_PROJECT,
 }: AppProvidersProps) {
   return (

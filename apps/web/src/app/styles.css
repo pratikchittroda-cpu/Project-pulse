@@ -313,6 +313,33 @@ input:focus-visible {
   width: 100%;
 }
 
+.auth-provider-button {
+  margin-top: 0.75rem;
+  width: 100%;
+}
+
+.auth-error,
+.auth-success {
+  border: 1px solid;
+  border-radius: 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.8rem;
+}
+
+.auth-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.auth-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
 .app-shell {
   background: #f5f7fb;
   display: grid;

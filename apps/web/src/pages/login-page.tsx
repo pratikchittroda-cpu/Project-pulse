@@ -1,23 +1,44 @@
-import { type FormEvent } from "react";
+import { type FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../app/auth-context.js";
 
 interface LoginLocationState {
+  error?: string;
   from?: string;
 }
 
 export function LoginPage() {
-  const { signIn } = useAuth();
+  const { error: authError, requestMagicLink, signInWithGithub } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LoginLocationState | null;
   const destination = state?.from ?? "/app";
+  const [email, setEmail] = useState("");
+  const [isPending, setIsPending] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    signIn();
-    navigate(destination, { replace: true });
+    setIsPending(true);
+    setMessage(null);
+    const result = await requestMagicLink(email);
+    setIsPending(false);
+
+    if (!result.error) {
+      setMessage("Check your email for a secure ProjectPulse sign-in link.");
+    }
+  }
+
+  async function handleGithubSignIn() {
+    setIsPending(true);
+    setMessage(null);
+    const result = await signInWithGithub();
+    setIsPending(false);
+
+    if (!result.error) {
+      navigate(destination, { replace: true });
+    }
   }
 
   return (
@@ -25,24 +46,48 @@ export function LoginPage() {
       <p className="eyebrow">Welcome back</p>
       <h1 id="login-title">Sign in to ProjectPulse</h1>
       <p className="muted">
-        Authentication is represented by this local flow until the Supabase auth
-        task is connected.
+        Use a magic link or your connected GitHub identity. Sessions are managed
+        by Supabase Auth and persist securely in this browser.
       </p>
+      {state?.error || authError ? (
+        <p className="auth-error" role="alert">
+          {state?.error ?? authError}
+        </p>
+      ) : null}
+      {message ? (
+        <p className="auth-success" role="status">
+          {message}
+        </p>
+      ) : null}
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="field">
           <label htmlFor="email">Work email</label>
           <input
             autoComplete="email"
-            defaultValue="you@example.com"
             id="email"
             name="email"
+            onChange={(event) => setEmail(event.target.value)}
+            required
             type="email"
+            value={email}
           />
         </div>
-        <button className="button button-primary" type="submit">
-          Continue to workspace
+        <button
+          className="button button-primary"
+          disabled={isPending}
+          type="submit"
+        >
+          {isPending ? "Sending secure link…" : "Send magic link"}
         </button>
       </form>
+      <button
+        className="button button-secondary auth-provider-button"
+        disabled={isPending}
+        onClick={handleGithubSignIn}
+        type="button"
+      >
+        Continue with GitHub
+      </button>
       <p className="muted">
         <Link to="/">Return to the public home page</Link>
       </p>

@@ -26,7 +26,8 @@ describe("web route groups", () => {
     const { markup } = renderRoute("/auth/login");
 
     expect(markup).toContain("Sign in to ProjectPulse");
-    expect(markup).toContain("Continue to workspace");
+    expect(markup).toContain("Send magic link");
+    expect(markup).toContain("Continue with GitHub");
     expect(markup).not.toContain("Engineering control plane");
   });
 

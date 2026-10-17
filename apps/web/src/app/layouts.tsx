@@ -78,7 +78,11 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <button className="sidebar-sign-out" type="button" onClick={signOut}>
+        <button
+          className="sidebar-sign-out"
+          type="button"
+          onClick={() => void signOut()}
+        >
           Sign out
         </button>
       </aside>

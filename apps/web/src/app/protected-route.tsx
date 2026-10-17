@@ -17,5 +17,18 @@ export function ProtectedRoute() {
     );
   }
 
+  if (status === "error") {
+    return (
+      <Navigate
+        to="/auth/login"
+        replace
+        state={{
+          from: location.pathname,
+          error: "Your session could not be restored.",
+        }}
+      />
+    );
+  }
+
   return <Outlet />;
 }
