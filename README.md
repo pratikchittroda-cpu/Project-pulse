@@ -87,6 +87,11 @@ The web development entry point is the React/Vite shell on the Vite default
 port (`5173`). Use `corepack pnpm --filter @projectpulse/web preview` to serve
 the production build locally.
 
+Shared interface primitives live in `@projectpulse/ui`. Import components such
+as `Button`, `Input`, `Card`, `Dialog`, `Tabs`, `StatusBadge`, `PriorityBadge`,
+`Menu`, `DataTable`, `Toast`, and `PageLayout` from that package. Its design
+tokens and responsive styles are available through `@projectpulse/ui/styles.css`.
+
 ## Development and deployment
 
 The runnable web workspace, development server, production build, container,

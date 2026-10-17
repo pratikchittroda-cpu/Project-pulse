@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T005 verification.
+Current state after T006 verification.
 
 ## Done
 
@@ -8,6 +8,7 @@ Current state after T005 verification.
 - `T002` — Workspace layout and scripts
 - `T004` — Testing, linting, and typecheck
 - `T005` — Web app shell and routing
+- `T006` — Design system and responsive layout
 
 ## Ready
 
@@ -19,7 +20,7 @@ Current state after T005 verification.
 
 ### Foundation
 
-- `T003`, `T006`, `T007`
+- `T003`, `T007`
 
 ### Data and access
 

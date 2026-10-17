@@ -4,13 +4,26 @@
   "private": true,
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "src/styles.css"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.10",
+    "react": "19.1.0",
+    "typescript": "5.8.3"
   },
   "scripts": {
     "dev": "node ../../scripts/workspace-dev.mjs @projectpulse/ui",
@@ -18,8 +31,5 @@
     "test": "node ../../scripts/check-workspace-package.mjs @projectpulse/ui",
     "lint": "node ../../scripts/check-workspace-package.mjs @projectpulse/ui lint",
     "typecheck": "tsc -b tsconfig.json"
-  },
-  "devDependencies": {
-    "typescript": "5.8.3"
   }
 }

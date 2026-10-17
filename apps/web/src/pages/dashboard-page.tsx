@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { StatusBadge } from "@projectpulse/ui";
 
 import { useProject } from "../app/project-context.js";
 
@@ -34,7 +35,14 @@ export function DashboardPage() {
           <article className="metric-card" key={label}>
             <span>{label}</span>
             <strong>{value}</strong>
-            <small>{detail}</small>
+            <small>
+              <StatusBadge
+                label={detail}
+                status={
+                  label === "Delivery health" ? "completed" : "in_progress"
+                }
+              />
+            </small>
           </article>
         ))}
       </section>

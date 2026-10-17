@@ -7,6 +7,9 @@ export default defineConfig({
       "@projectpulse/domain": fileURLToPath(
         new URL("./packages/domain/src/index.ts", import.meta.url),
       ),
+      "@projectpulse/ui": fileURLToPath(
+        new URL("./packages/ui/src/index.ts", import.meta.url),
+      ),
     },
   },
   test: {

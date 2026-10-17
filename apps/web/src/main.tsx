@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router-dom";
 
 import { AppErrorBoundary } from "./app/error-boundary.js";
 import { createAppRouter } from "./app/router.js";
+import "@projectpulse/ui/styles.css";
 import "./app/styles.css";
 
 const rootElement = document.querySelector<HTMLDivElement>("#root");
