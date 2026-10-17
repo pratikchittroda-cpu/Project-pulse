@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T003 verification.
+Current state after T050 verification.
 
 ## Done
 
@@ -11,10 +11,11 @@ Current state after T003 verification.
 - `T006` — Design system and responsive layout
 - `T007` — Shared domain types and API conventions
 - `T003` — Docker and local development
+- `T050` — VS Code extension scaffold
 
 ## Ready
 
-- `T050` — VS Code extension scaffold
+- `T010` — Supabase local setup
 
 ## Planned
 
@@ -40,7 +41,7 @@ Current state after T003 verification.
 
 ### IDE extension
 
-- `T050`, `T051`, `T052`, `T053`, `T054`, `T055`, `T056`
+- `T051`, `T052`, `T053`, `T054`, `T055`, `T056`
 
 ### Analytics and health
 

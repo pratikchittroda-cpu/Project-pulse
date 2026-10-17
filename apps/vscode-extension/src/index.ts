@@ -1,7 +1,9 @@
 import { type TaskStatus } from "@projectpulse/domain";
 
+export * from "./config.js";
+
 export const extensionWorkspace = {
-  name: "@projectpulse/vscode-extension",
+  name: "projectpulse-vscode-extension",
   hostCompatibility: ["vscode", "cursor"] as const,
 };
 

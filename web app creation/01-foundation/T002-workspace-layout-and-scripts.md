@@ -58,7 +58,7 @@ Completed verification:
 
 ## Handoff
 
-- Workspace names are `@projectpulse/web`, `@projectpulse/vscode-extension`,
+- Workspace names are `@projectpulse/web`, `projectpulse-vscode-extension`,
   `@projectpulse/domain`, `@projectpulse/integrations`, and `@projectpulse/ui`.
 - Every workspace exposes `build`, `test`, `lint`, and `typecheck`; the root
   exposes the same commands plus `dev`, all through `corepack pnpm`.

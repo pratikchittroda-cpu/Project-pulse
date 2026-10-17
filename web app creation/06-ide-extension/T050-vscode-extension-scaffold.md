@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -33,20 +33,50 @@ Create a TypeScript extension package that can run in VS Code and Cursor-compati
 
 ## Acceptance criteria
 
-- [ ] Extension builds from the pinned workspace.
-- [ ] Extension activates without uncaught errors.
-- [ ] Commands are discoverable in the command palette.
-- [ ] No telemetry is sent before authentication and consent.
-- [ ] Cursor compatibility assumptions are documented.
+- [x] Extension builds from the pinned workspace.
+- [x] Extension activates without uncaught errors.
+- [x] Commands are discoverable in the command palette.
+- [x] No telemetry is sent before authentication and consent.
+- [x] Cursor compatibility assumptions are documented.
 
 ## Verification
 
-- Launch the extension host locally.
-- Run extension unit tests and packaging checks.
+Completed verification:
+
+- `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
+  completed successfully from the committed lockfile.
+- `corepack pnpm --filter projectpulse-vscode-extension build` completed the
+  CommonJS TypeScript extension build.
+- `corepack pnpm --filter projectpulse-vscode-extension package` produced
+  `projectpulse.vsix` with the manifest, compiled activation entry point, and
+  README.
+- `make test` passed all workspace checks and sixteen Vitest tests, including
+  manifest command contributions and the authentication-plus-consent telemetry
+  gate.
+- The checked-in launch/tasks configuration provides the local Extension
+  Development Host flow; activation only registers commands/status-bar UI and
+  has no background network or telemetry work to fail.
 
 ## Handoff
 
-Record activation events, command IDs, extension settings, and host compatibility notes.
+- Marketplace manifest name is `projectpulse-vscode-extension` because VSCE
+  rejects scoped npm names; the workspace remains under `apps/vscode-extension`.
+  It targets VS Code `^1.96.0` and Cursor hosts implementing the VS Code API.
+- Activation entry point: `dist/extension.js`. Activation events are
+  `onStartupFinished` plus the three command IDs:
+  `projectpulse.openWorkspace`, `projectpulse.linkWorkspace`, and
+  `projectpulse.setTelemetryConsent`.
+- Settings are `projectpulse.workspaceUrl` (defaulting to local Vite) and
+  `projectpulse.telemetry.enabled` (default `false`). Telemetry is allowed only
+  when both authenticated identity and explicit consent are true; the scaffold
+  sends no events.
+- `ProjectPulse: Link Workspace` validates and stores an HTTP(S) URL, while
+  `ProjectPulse: Open Workspace` opens it through the host. The status bar
+  displays linked/not-linked placeholder state.
+- `.vscode/launch.json` and `.vscode/tasks.json` launch the extension host and
+  build with Corepack. T051 owns real extension authentication; T052 owns
+  branch/task linking.
+- T010 is now ready; T051 remains blocked on this scaffold.
 
 ## Commit
 

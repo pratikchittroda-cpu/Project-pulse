@@ -19,8 +19,11 @@ coverage/
 .DS_Store
 .idea/
 .vscode/
+!apps/vscode-extension/.vscode/
+!apps/vscode-extension/.vscode/**
 *.swp
 *.swo
+*.vsix
 
 # Temporary files
 tmp/

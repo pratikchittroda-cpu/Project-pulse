@@ -13,7 +13,7 @@ before starting a task.
 ```text
 apps/
   web/                  Web application workspace (@projectpulse/web)
-  vscode-extension/     VS Code/Cursor extension workspace (@projectpulse/vscode-extension)
+  vscode-extension/     VS Code/Cursor extension workspace (projectpulse-vscode-extension)
 packages/
   domain/               Shared domain types and contracts (@projectpulse/domain)
   integrations/         External provider adapters (@projectpulse/integrations)

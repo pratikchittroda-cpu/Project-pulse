@@ -6,7 +6,7 @@ const expectedWorkspaces = [
   { directory: "apps/web", name: "@projectpulse/web" },
   {
     directory: "apps/vscode-extension",
-    name: "@projectpulse/vscode-extension",
+    name: "projectpulse-vscode-extension",
   },
   { directory: "packages/domain", name: "@projectpulse/domain" },
   {
