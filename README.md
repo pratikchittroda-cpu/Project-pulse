@@ -92,6 +92,10 @@ as `Button`, `Input`, `Card`, `Dialog`, `Tabs`, `StatusBadge`, `PriorityBadge`,
 `Menu`, `DataTable`, `Toast`, and `PageLayout` from that package. Its design
 tokens and responsive styles are available through `@projectpulse/ui/styles.css`.
 
+Shared domain contracts live in `@projectpulse/domain`. Use its entity types,
+workflow unions, API envelopes, pagination types, ISO date helpers, and
+`parseEventEnvelope` validator at external event boundaries.
+
 ## Development and deployment
 
 The runnable web workspace, development server, production build, container,

@@ -13,6 +13,9 @@
     "lint": "node ../../scripts/check-workspace-package.mjs @projectpulse/vscode-extension lint",
     "typecheck": "tsc -b tsconfig.json"
   },
+  "dependencies": {
+    "@projectpulse/domain": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "5.8.3"
   }

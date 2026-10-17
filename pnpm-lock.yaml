@@ -46,6 +46,10 @@ importers:
         version: 3.2.4(jsdom@25.0.1)
 
   apps/vscode-extension:
+    dependencies:
+      '@projectpulse/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
     devDependencies:
       typescript:
         specifier: 5.8.3
