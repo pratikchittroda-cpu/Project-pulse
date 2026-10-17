@@ -1,0 +1,14 @@
+{
+  "name": "projectpulse",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=22.14.0 <23",
+    "pnpm": ">=10.12.1 <11"
+  },
+  "scripts": {
+    "bootstrap:test": "node ./scripts/check-bootstrap.mjs",
+    "workspace:check": "node ./scripts/check-workspaces.mjs"
+  }
+}
