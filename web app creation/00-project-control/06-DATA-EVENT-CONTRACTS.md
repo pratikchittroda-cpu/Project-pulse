@@ -5,6 +5,7 @@
 ```text
 project_key: PULSE
 task_number: 42
+display_key: PULSE-42
 ```
 
 The project key and task number are stored separately. The display key is derived and used by branches, commits, and pull requests.
