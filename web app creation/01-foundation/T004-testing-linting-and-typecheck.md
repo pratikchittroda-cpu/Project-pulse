@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -35,20 +35,42 @@ Create the single repeatable quality command required by the project.
 
 ## Acceptance criteria
 
-- [ ] `make test` works from a clean checkout.
-- [ ] Tests do not require a network connection.
-- [ ] Type errors fail the command.
-- [ ] Lint errors fail the command.
-- [ ] Test output identifies the failing workspace.
+- [x] `make test` works from a clean checkout.
+- [x] Tests do not require a network connection.
+- [x] Type errors fail the command.
+- [x] Lint errors fail the command.
+- [x] Test output identifies the failing workspace.
 
 ## Verification
 
-- Run `make test` with network access disabled if possible.
-- Run each underlying check individually.
+Completed verification:
+
+- `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
+  completed successfully from the committed lockfile.
+- `corepack pnpm run format:check`, `corepack pnpm run lint`,
+  `corepack pnpm run typecheck`, and `corepack pnpm run test:unit` passed.
+- `make test` passed the complete quality pipeline: workspace validation,
+  strict TypeScript checks, ESLint, Prettier, builds, Vitest, and workspace
+  smoke checks.
+- An intentional ESLint violation passed through stdin and returned a failure,
+  confirming lint errors produce a non-zero exit status.
 
 ## Handoff
 
-Record the exact quality pipeline and the commands feature sessions must run.
+- `make test` and `corepack pnpm run test` run the complete quality pipeline.
+  The pipeline is `workspace:check`, `typecheck`, `lint`, `format:check`,
+  `build`, `test:unit`, and `test:workspaces`, chained with fail-fast
+  non-zero exits.
+- Vitest is configured in `vitest.config.ts` for Node-based unit tests under
+  `tests/**/*.test.ts`, with the shared domain package aliased to source for
+  offline tests. `tests/quality-pipeline.test.ts` verifies the web-to-domain
+  workspace boundary.
+- ESLint uses the flat config in `eslint.config.mjs`; Prettier uses
+  `.prettierrc.json` and `.prettierignore`. Both are pinned in the root
+  package manifest and lockfile.
+- Recursive pnpm checks retain workspace names in their output so failures
+  identify the affected package.
+- T005 is now unblocked. T003, T007, and T050 remain ready for parallel work.
 
 ## Commit
 

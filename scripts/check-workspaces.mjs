@@ -63,7 +63,9 @@ for (const workspace of expectedWorkspaces) {
 if (missingDirectories.length > 0) {
   console.error("Workspace directories are missing:");
   for (const workspace of missingDirectories) {
-    console.error(`  - ${workspace} (create the workspace before running this command)`);
+    console.error(
+      `  - ${workspace} (create the workspace before running this command)`,
+    );
   }
 }
 
@@ -81,8 +83,14 @@ if (invalidManifests.length > 0) {
   }
 }
 
-if (missingDirectories.length > 0 || missingManifests.length > 0 || invalidManifests.length > 0) {
+if (
+  missingDirectories.length > 0 ||
+  missingManifests.length > 0 ||
+  invalidManifests.length > 0
+) {
   process.exitCode = 1;
 } else {
-  console.log(`Validated ${expectedWorkspaces.length} ProjectPulse workspaces and shared scripts.`);
+  console.log(
+    `Validated ${expectedWorkspaces.length} ProjectPulse workspaces and shared scripts.`,
+  );
 }

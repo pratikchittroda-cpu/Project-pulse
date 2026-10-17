@@ -50,6 +50,11 @@ Run the offline repository check with:
 make test
 ```
 
+`make test` runs the complete offline quality pipeline: workspace validation,
+strict typechecking, ESLint, Prettier validation, all workspace builds, the
+Vitest smoke suite, and workspace checks. A failure exits non-zero and the
+workspace name is included in recursive pnpm output.
+
 The workspace readiness check is also available:
 
 ```sh
@@ -68,6 +73,7 @@ corepack pnpm run build
 corepack pnpm run test
 corepack pnpm run lint
 corepack pnpm run typecheck
+corepack pnpm run format:check
 ```
 
 To target one workspace, use its package name with pnpm's filter syntax:

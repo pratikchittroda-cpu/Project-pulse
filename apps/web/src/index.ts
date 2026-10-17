@@ -1,7 +1,4 @@
-import {
-  PROJECT_NAME,
-  type WorkspacePackage,
-} from "@projectpulse/domain";
+import { PROJECT_NAME, type WorkspacePackage } from "@projectpulse/domain";
 
 export const webWorkspace: WorkspacePackage = {
   name: "@projectpulse/web",

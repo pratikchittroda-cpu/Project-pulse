@@ -22,5 +22,7 @@ const server = createServer((_request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(`ProjectPulse web workspace listening on http://localhost:${port}`);
+  console.log(
+    `ProjectPulse web workspace listening on http://localhost:${port}`,
+  );
 });

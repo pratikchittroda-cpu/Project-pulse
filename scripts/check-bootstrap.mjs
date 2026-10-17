@@ -57,11 +57,16 @@ if (failures.length === 0) {
         `package.json must pin pnpm@10.12.1, found: ${packageJson.packageManager ?? "missing"}`,
       );
     }
-    if (!workspaceConfig.includes('  - "apps/*"') || !workspaceConfig.includes('  - "packages/*"')) {
+    if (
+      !workspaceConfig.includes('  - "apps/*"') ||
+      !workspaceConfig.includes('  - "packages/*"')
+    ) {
       failures.push("pnpm-workspace.yaml must include apps/* and packages/*");
     }
     if (!readme.includes("corepack pnpm install --frozen-lockfile")) {
-      failures.push("README.md must document the frozen-lockfile setup command");
+      failures.push(
+        "README.md must document the frozen-lockfile setup command",
+      );
     }
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));

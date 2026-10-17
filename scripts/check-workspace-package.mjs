@@ -7,7 +7,9 @@ const manifestPath = resolve(workspaceRoot, "package.json");
 const sourcePath = resolve(workspaceRoot, "src/index.ts");
 
 if (!expectedName) {
-  console.error("Usage: node check-workspace-package.mjs <package-name> [check]");
+  console.error(
+    "Usage: node check-workspace-package.mjs <package-name> [check]",
+  );
   process.exit(1);
 }
 
