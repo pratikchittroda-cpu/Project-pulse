@@ -7,6 +7,7 @@ import { useProject } from "./project-context.js";
 const navigationItems = [
   { label: "Overview", to: "/app", end: true },
   { label: "Activity", to: "/app/activity", end: false },
+  { label: "Projects", to: "/app/projects", end: false },
   { label: "Organization", to: "/app/organization", end: false },
 ] as const;
 
@@ -51,7 +52,12 @@ export function AuthLayout() {
 }
 
 export function AppLayout() {
-  const { project } = useProject();
+  const {
+    isLoading: isLoadingProjects,
+    project,
+    projects,
+    selectProject,
+  } = useProject();
   const { signOut } = useAuth();
   const {
     isLoading: isLoadingOrganizations,
@@ -70,6 +76,25 @@ export function AppLayout() {
         <div className="project-switcher" aria-label="Current project">
           <span className="project-key">{project.key}</span>
           <strong>{project.name}</strong>
+          {projects.length > 0 ? (
+            <select
+              aria-label="Current project"
+              className="sidebar-select"
+              disabled={isLoadingProjects}
+              onChange={(event) => selectProject(event.target.value)}
+              value={project.id}
+            >
+              {projects.map((availableProject) => (
+                <option key={availableProject.id} value={availableProject.id}>
+                  {availableProject.key} · {availableProject.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Link className="context-link" to="/app/projects">
+              Create a project
+            </Link>
+          )}
         </div>
         <div className="organization-switcher">
           <span className="context-label">Organization context</span>

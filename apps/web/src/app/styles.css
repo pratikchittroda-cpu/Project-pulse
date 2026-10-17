@@ -740,6 +740,120 @@ input:focus-visible {
   margin: 0 0 0.75rem;
 }
 
+.project-page-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.6fr);
+}
+
+.project-page-grid > :nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+.project-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.project-form h4 {
+  color: #334155;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.project-description {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.project-list,
+.repository-list,
+.project-member-list {
+  display: grid;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.project-list-item {
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+}
+
+.project-list-item-active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.project-list-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #334155;
+  cursor: pointer;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  text-align: left;
+  width: 100%;
+}
+
+.project-list-button:hover {
+  color: #1d4ed8;
+}
+
+.project-list-button .project-key {
+  color: #2563eb;
+}
+
+.repository-list li,
+.project-member-list li {
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+}
+
+.repository-list li:last-child,
+.project-member-list li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.repository-list li > div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.repository-list a {
+  color: #2563eb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repository-list small {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
 .standalone-state {
   align-items: center;
   background: #f8fafc;
@@ -874,6 +988,18 @@ input:focus-visible {
   }
 
   .resource-assignment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-page-grid > :nth-child(n + 3) {
+    grid-column: auto;
+  }
+
+  .form-row {
     grid-template-columns: 1fr;
   }
 }

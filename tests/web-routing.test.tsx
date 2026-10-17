@@ -47,6 +47,14 @@ describe("web route groups", () => {
     expect(markup).toContain("Organization context");
   });
 
+  it("renders the protected project administration route", () => {
+    const { markup } = renderRoute("/app/projects");
+
+    expect(markup).toContain("Projects and repositories");
+    expect(markup).toContain("Create a project");
+    expect(markup).toContain("Select an organization first");
+  });
+
   it("renders the loading state while authentication is unresolved", () => {
     const { markup } = renderRoute("/app", "loading");
 

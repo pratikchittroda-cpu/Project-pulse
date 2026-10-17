@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T014 verification.
+Current state after T015 verification.
 
 ## Done
 
@@ -17,6 +17,7 @@ Current state after T014 verification.
 - `T012` — Authentication flows
 - `T013` — Row-level security and permission tests
 - `T014` — Organizations, teams, and memberships
+- `T015` — Projects and repository records
 
 ## Ready
 
@@ -30,7 +31,7 @@ Current state after T014 verification.
 
 ### Data and access
 
-- `T015`
+- All data and access tasks are complete.
 
 ### Agile planning
 

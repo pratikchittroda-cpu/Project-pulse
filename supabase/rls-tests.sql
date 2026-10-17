@@ -21,6 +21,8 @@ declare
   visible_count integer;
   invitation_token text;
   invitation_succeeded boolean;
+  operation_succeeded boolean;
+  affected_count integer;
 begin
   insert into auth.users (id, aud, role, email, email_confirmed_at, created_at, updated_at)
   values
@@ -84,6 +86,112 @@ begin
   exception when insufficient_privilege then
     null;
   end;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  select count(*) into visible_count
+  from public.projects visible_project
+  where visible_project.organization_id = rls_test.organization_id;
+  if visible_count <> 1 then
+    raise exception 'project member should read one project, found %', visible_count;
+  end if;
+
+  perform set_config('request.jwt.claim.sub', other_id::text, true);
+  select count(*) into visible_count
+  from public.projects visible_project
+  where visible_project.organization_id = rls_test.organization_id;
+  if visible_count <> 0 then
+    raise exception 'cross-organization member should read zero projects, found %', visible_count;
+  end if;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  operation_succeeded := false;
+  begin
+    insert into public.projects (organization_id, name, project_key)
+    values (organization_id, 'Invalid Key Project', 'bad-key');
+    operation_succeeded := true;
+  exception when check_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'invalid project key unexpectedly succeeded';
+  end if;
+
+  operation_succeeded := false;
+  begin
+    insert into public.projects (organization_id, name, project_key)
+    values (organization_id, 'Duplicate Project', 'RLST');
+    operation_succeeded := true;
+  exception when unique_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'duplicate project key unexpectedly succeeded';
+  end if;
+
+  update public.projects
+  set archived_at = timezone('utc', now())
+  where id = project_id;
+  update public.projects
+  set archived_at = null
+  where id = project_id;
+
+  perform set_config('request.jwt.claim.sub', viewer_id::text, true);
+  operation_succeeded := false;
+  begin
+    update public.projects
+    set name = 'Viewer Project Update'
+    where id = project_id;
+    get diagnostics affected_count = row_count;
+    operation_succeeded := affected_count > 0;
+  exception when insufficient_privilege then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'viewer project update unexpectedly succeeded';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  insert into public.repositories (
+    organization_id,
+    project_id,
+    provider,
+    name,
+    url,
+    default_branch
+  )
+  values (
+    organization_id,
+    project_id,
+    'github',
+    'RLS Repository',
+    'https://github.com/example/rls-repository',
+    'main'
+  );
+
+  perform set_config('request.jwt.claim.sub', viewer_id::text, true);
+  operation_succeeded := false;
+  begin
+    insert into public.repositories (
+      organization_id,
+      project_id,
+      provider,
+      name,
+      url
+    )
+    values (
+      organization_id,
+      project_id,
+      'github',
+      'Viewer Repository',
+      'https://github.com/example/viewer-repository'
+    );
+    operation_succeeded := true;
+  exception when insufficient_privilege then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'client repository write unexpectedly succeeded';
+  end if;
 
   perform set_config('request.jwt.claim.sub', owner_id::text, true);
   select result.invitation_token into invitation_token
