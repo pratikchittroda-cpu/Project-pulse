@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "corepack pnpm --filter @projectpulse/web dev",
     "build": "corepack pnpm run workspace:check && corepack pnpm --recursive run build",
+    "docker:build": "docker build --tag projectpulse:local .",
+    "docker:run": "docker run --rm --publish ${PROJECTPULSE_PORT:-8080}:8080 projectpulse:local",
     "test": "corepack pnpm run quality",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:workspaces": "corepack pnpm --recursive run test",

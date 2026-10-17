@@ -1,0 +1,15 @@
+.git
+.github
+.opencode
+.pnpm-store
+coverage
+dist
+node_modules
+*.log
+.env
+.env.*
+!.env.example
+Dockerfile*
+README.md
+tmp
+temp

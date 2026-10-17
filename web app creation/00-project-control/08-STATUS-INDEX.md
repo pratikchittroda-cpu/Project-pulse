@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T007 verification.
+Current state after T003 verification.
 
 ## Done
 
@@ -10,17 +10,17 @@ Current state after T007 verification.
 - `T005` — Web app shell and routing
 - `T006` — Design system and responsive layout
 - `T007` — Shared domain types and API conventions
+- `T003` — Docker and local development
 
 ## Ready
 
-- `T003` — Docker and local development
 - `T050` — VS Code extension scaffold
 
 ## Planned
 
 ### Foundation
 
-- `T003`
+- All foundation tasks are complete.
 
 ### Data and access
 

@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-http://127.0.0.1:54321}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-local-development-key}
+    healthcheck:
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    ports:
+      - "${PROJECTPULSE_PORT:-8080}:8080"

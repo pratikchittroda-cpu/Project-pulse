@@ -98,8 +98,54 @@ workflow unions, API envelopes, pagination types, ISO date helpers, and
 
 ## Development and deployment
 
+### Local web development
+
+Copy the documented placeholders before starting local services:
+
+```sh
+cp .env.example .env
+corepack pnpm --filter @projectpulse/web dev
+```
+
+The Vite server listens on `http://localhost:5173`. The browser configuration
+uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`; the local Supabase
+defaults point to `http://127.0.0.1:54321`.
+
+### Docker
+
+Build and run the production web container with no global project dependency:
+
+```sh
+docker build --tag projectpulse:local .
+docker run --rm --publish 8080:8080 projectpulse:local
+```
+
+Open `http://localhost:8080`. The container serves the Vite build through
+nginx, supports client-side route fallback, and exposes `GET /healthz` with an
+`ok` response. Docker Compose provides the same flow and allows the host port
+to be changed with `PROJECTPULSE_PORT`:
+
+```sh
+PROJECTPULSE_PORT=8080 docker compose up --build
+```
+
+### Local Supabase prerequisites
+
+Install the Supabase CLI using its official package for your operating system,
+then run the local stack from the repository root:
+
+```sh
+supabase start
+supabase status
+```
+
+T010 adds the committed local Supabase configuration, database services, and
+migrations. Until then, the web shell runs with the placeholder project and
+does not make Supabase requests. Never commit `.env`; use `.env.example` as
+the variable inventory.
+
 The runnable web workspace, development server, production build, container,
-and deployment commands are introduced by the subsequent foundation tasks:
+and deployment commands are introduced by the foundation tasks:
 
 - T002 — workspace package manifests and root workspace commands
 - T003 — Docker and local development
