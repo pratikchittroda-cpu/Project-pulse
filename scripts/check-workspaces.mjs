@@ -3,39 +3,60 @@ import { resolve } from "node:path";
 
 const workspaceRoot = resolve(process.cwd());
 const expectedWorkspaces = [
-  "apps/web",
-  "apps/vscode-extension",
-  "packages/domain",
-  "packages/integrations",
-  "packages/ui",
+  { directory: "apps/web", name: "@projectpulse/web" },
+  {
+    directory: "apps/vscode-extension",
+    name: "@projectpulse/vscode-extension",
+  },
+  { directory: "packages/domain", name: "@projectpulse/domain" },
+  {
+    directory: "packages/integrations",
+    name: "@projectpulse/integrations",
+  },
+  { directory: "packages/ui", name: "@projectpulse/ui" },
 ];
 
 const missingDirectories = [];
 const missingManifests = [];
 const invalidManifests = [];
+const requiredScripts = ["build", "test", "lint", "typecheck"];
 
 for (const workspace of expectedWorkspaces) {
-  const directory = resolve(workspaceRoot, workspace);
+  const directory = resolve(workspaceRoot, workspace.directory);
   const manifest = resolve(directory, "package.json");
 
   if (!existsSync(directory)) {
-    missingDirectories.push(workspace);
+    missingDirectories.push(workspace.directory);
     continue;
   }
 
   if (!existsSync(manifest)) {
-    missingManifests.push(`${workspace}/package.json`);
+    missingManifests.push(`${workspace.directory}/package.json`);
     continue;
   }
 
   try {
     const packageJson = JSON.parse(readFileSync(manifest, "utf8"));
-    if (typeof packageJson.name !== "string" || packageJson.name.length === 0) {
-      invalidManifests.push(`${workspace}/package.json (missing a package name)`);
+    if (packageJson.name !== workspace.name) {
+      invalidManifests.push(
+        `${workspace.directory}/package.json (expected name ${workspace.name})`,
+      );
+    }
+    if (packageJson.private !== true) {
+      invalidManifests.push(
+        `${workspace.directory}/package.json (workspace packages must be private)`,
+      );
+    }
+    for (const script of requiredScripts) {
+      if (typeof packageJson.scripts?.[script] !== "string") {
+        invalidManifests.push(
+          `${workspace.directory}/package.json (missing ${script} script)`,
+        );
+      }
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    invalidManifests.push(`${workspace}/package.json (${message})`);
+    invalidManifests.push(`${workspace.directory}/package.json (${message})`);
   }
 }
 
@@ -63,5 +84,5 @@ if (invalidManifests.length > 0) {
 if (missingDirectories.length > 0 || missingManifests.length > 0 || invalidManifests.length > 0) {
   process.exitCode = 1;
 } else {
-  console.log(`Validated ${expectedWorkspaces.length} ProjectPulse workspaces.`);
+  console.log(`Validated ${expectedWorkspaces.length} ProjectPulse workspaces and shared scripts.`);
 }

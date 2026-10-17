@@ -8,6 +8,11 @@
     "pnpm": ">=10.12.1 <11"
   },
   "scripts": {
+    "dev": "corepack pnpm --filter @projectpulse/web dev",
+    "build": "corepack pnpm run workspace:check && corepack pnpm --recursive run build",
+    "test": "corepack pnpm run workspace:check && corepack pnpm --recursive run test",
+    "lint": "corepack pnpm run workspace:check && corepack pnpm --recursive run lint",
+    "typecheck": "corepack pnpm run workspace:check && corepack pnpm --recursive run typecheck",
     "bootstrap:test": "node ./scripts/check-bootstrap.mjs",
     "workspace:check": "node ./scripts/check-workspaces.mjs"
   }

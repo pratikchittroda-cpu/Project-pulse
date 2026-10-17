@@ -12,18 +12,19 @@ before starting a task.
 
 ```text
 apps/
-  web/                  React web application (T002)
-  vscode-extension/     VS Code/Cursor extension (T002, T050)
+  web/                  Web application workspace (@projectpulse/web)
+  vscode-extension/     VS Code/Cursor extension workspace (@projectpulse/vscode-extension)
 packages/
-  domain/               Shared domain types and contracts (T002, T007)
-  integrations/         External provider adapters (T002)
-  ui/                   Shared UI primitives (T002, T006)
+  domain/               Shared domain types and contracts (@projectpulse/domain)
+  integrations/         External provider adapters (@projectpulse/integrations)
+  ui/                   Shared UI primitives (@projectpulse/ui)
 scripts/                Repository validation scripts
 web app creation/       Dependency-aware implementation backlog
 ```
 
-T001 creates the workspace directory skeleton. Each workspace's package
-manifest and workspace-specific commands are added by T002.
+Each workspace has a private package manifest, a strict TypeScript configuration,
+and build, test, lint, and typecheck scripts. The web workspace imports the
+shared `@projectpulse/domain` package through the pnpm workspace reference.
 
 ## Prerequisites
 
@@ -55,10 +56,29 @@ The workspace readiness check is also available:
 corepack pnpm run workspace:check
 ```
 
-Until T002 adds the workspace package manifests, `workspace:check` exits with
-an actionable list of the manifests that are still missing. That failure is
-intentional; `make test` validates the T001 bootstrap itself without requiring
-network access or a globally installed package.
+The check validates all five package names and their shared quality scripts.
+
+## Workspace commands
+
+Run the complete workspace commands from the repository root:
+
+```sh
+corepack pnpm run dev
+corepack pnpm run build
+corepack pnpm run test
+corepack pnpm run lint
+corepack pnpm run typecheck
+```
+
+To target one workspace, use its package name with pnpm's filter syntax:
+
+```sh
+corepack pnpm --filter @projectpulse/web build
+corepack pnpm --filter @projectpulse/domain typecheck
+```
+
+The current web development entry point is a dependency-free placeholder
+server on port `4173`; the React/Vite shell is introduced by T005.
 
 ## Development and deployment
 

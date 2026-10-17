@@ -7,3 +7,48 @@ settings:
 importers:
 
   .: {}
+
+  apps/vscode-extension:
+    devDependencies:
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  apps/web:
+    dependencies:
+      '@projectpulse/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+    devDependencies:
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  packages/domain:
+    devDependencies:
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  packages/integrations:
+    devDependencies:
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  packages/ui:
+    devDependencies:
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+packages:
+
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+snapshots:
+
+  typescript@5.8.3: {}

@@ -8,6 +8,7 @@ dist/
 build/
 coverage/
 .turbo/
+*.tsbuildinfo
 
 # Local environment files
 .env
