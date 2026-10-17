@@ -39,6 +39,14 @@ describe("web route groups", () => {
     expect(markup).toContain("Activity");
   });
 
+  it("renders the protected organization administration route", () => {
+    const { markup } = renderRoute("/app/organization");
+
+    expect(markup).toContain("Organizations and teams");
+    expect(markup).toContain("Create your first organization");
+    expect(markup).toContain("Organization context");
+  });
+
   it("renders the loading state while authentication is unresolved", () => {
     const { markup } = renderRoute("/app", "loading");
 

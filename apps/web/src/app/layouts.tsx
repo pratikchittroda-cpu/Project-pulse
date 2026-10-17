@@ -1,11 +1,13 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "./auth-context.js";
+import { useOrganization } from "./organization-context.js";
 import { useProject } from "./project-context.js";
 
 const navigationItems = [
   { label: "Overview", to: "/app", end: true },
   { label: "Activity", to: "/app/activity", end: false },
+  { label: "Organization", to: "/app/organization", end: false },
 ] as const;
 
 function Brand() {
@@ -51,6 +53,13 @@ export function AuthLayout() {
 export function AppLayout() {
   const { project } = useProject();
   const { signOut } = useAuth();
+  const {
+    isLoading: isLoadingOrganizations,
+    organizations,
+    selectOrganization,
+    selectedOrganization,
+    selectedOrganizationId,
+  } = useOrganization();
 
   return (
     <div className="app-shell">
@@ -61,6 +70,31 @@ export function AppLayout() {
         <div className="project-switcher" aria-label="Current project">
           <span className="project-key">{project.key}</span>
           <strong>{project.name}</strong>
+        </div>
+        <div className="organization-switcher">
+          <span className="context-label">Organization context</span>
+          {organizations.length > 0 ? (
+            <select
+              aria-label="Current organization"
+              className="sidebar-select"
+              disabled={isLoadingOrganizations}
+              onChange={(event) => selectOrganization(event.target.value)}
+              value={selectedOrganizationId}
+            >
+              {organizations.map((organization) => (
+                <option key={organization.id} value={organization.id}>
+                  {organization.name} · {organization.role}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Link className="context-link" to="/app/organization">
+              Set up an organization
+            </Link>
+          )}
+          {selectedOrganization ? (
+            <small>{selectedOrganization.slug} · teams and members</small>
+          ) : null}
         </div>
         <nav className="sidebar-nav" aria-label="Primary navigation">
           <p className="nav-heading">Workspace</p>

@@ -5,24 +5,30 @@
 begin;
 
 do $$
+<<rls_test>>
 declare
   owner_id uuid := '00000000-0000-0000-0000-000000000001';
   member_id uuid := '00000000-0000-0000-0000-000000000002';
   viewer_id uuid := '00000000-0000-0000-0000-000000000003';
   other_id uuid := '00000000-0000-0000-0000-000000000004';
+  invitee_id uuid := '00000000-0000-0000-0000-000000000005';
   organization_id uuid := '10000000-0000-0000-0000-000000000001';
   other_organization_id uuid := '10000000-0000-0000-0000-000000000002';
   project_id uuid := '20000000-0000-0000-0000-000000000001';
   other_project_id uuid := '20000000-0000-0000-0000-000000000002';
   task_id uuid := '30000000-0000-0000-0000-000000000001';
+  assigned_team_id uuid := '40000000-0000-0000-0000-000000000001';
   visible_count integer;
+  invitation_token text;
+  invitation_succeeded boolean;
 begin
   insert into auth.users (id, aud, role, email, email_confirmed_at, created_at, updated_at)
   values
     (owner_id, 'authenticated', 'authenticated', 'owner@example.test', now(), now(), now()),
     (member_id, 'authenticated', 'authenticated', 'member@example.test', now(), now(), now()),
     (viewer_id, 'authenticated', 'authenticated', 'viewer@example.test', now(), now(), now()),
-    (other_id, 'authenticated', 'authenticated', 'other@example.test', now(), now(), now());
+    (other_id, 'authenticated', 'authenticated', 'other@example.test', now(), now(), now()),
+    (invitee_id, 'authenticated', 'authenticated', 'invitee@example.test', now(), now(), now());
 
   insert into public.organizations (id, name, slug)
   values
@@ -45,6 +51,8 @@ begin
     (organization_id, project_id, viewer_id, 'viewer');
   insert into public.tasks (id, organization_id, project_id, task_number, title)
   values (task_id, organization_id, project_id, 1, 'RLS task');
+  insert into public.teams (id, organization_id, name, team_key)
+  values (assigned_team_id, organization_id, 'RLS Team', 'RLST');
 
   set local role authenticated;
   perform set_config('request.jwt.claim.sub', member_id::text, true);
@@ -76,6 +84,80 @@ begin
   exception when insufficient_privilege then
     null;
   end;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  select result.invitation_token into invitation_token
+  from public.invite_organization_member(organization_id, 'invitee@example.test', 'viewer')
+    as result;
+  if invitation_token is null then
+    raise exception 'owner invitation did not return a token';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  invitation_succeeded := false;
+  begin
+    perform public.invite_organization_member(organization_id, 'blocked@example.test', 'member');
+    invitation_succeeded := true;
+  exception when others then
+    null;
+  end;
+  if invitation_succeeded then
+    raise exception 'member invitation unexpectedly succeeded';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', invitee_id::text, true);
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', invitee_id::text, 'email', 'invitee@example.test')::text,
+    true
+  );
+  perform public.accept_organization_invitation(invitation_token);
+  if not exists (
+    select 1
+    from public.organization_memberships membership
+    where membership.organization_id = rls_test.organization_id
+      and membership.user_id = invitee_id
+      and membership.role = 'viewer'
+  ) then
+    raise exception 'invitee membership was not created';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  insert into public.team_memberships (organization_id, team_id, user_id)
+  values (organization_id, assigned_team_id, member_id);
+  update public.projects project
+  set team_id = assigned_team_id
+  where project.id = project_id;
+  update public.tasks task
+  set team_id = assigned_team_id
+  where task.id = task_id;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  select count(*) into visible_count
+  from public.projects project
+  where project.id = project_id and project.team_id = assigned_team_id;
+  if visible_count <> 1 then
+    raise exception 'team assignment was not visible to project member';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  delete from public.organization_memberships membership
+  where membership.organization_id = rls_test.organization_id
+    and membership.user_id = member_id;
+
+  select count(*) into visible_count
+  from public.team_memberships team_membership
+  where team_membership.organization_id = rls_test.organization_id
+    and team_membership.user_id = member_id;
+  if visible_count <> 0 then
+    raise exception 'removed member team memberships were not cascaded';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  select count(*) into visible_count from public.tasks;
+  if visible_count <> 0 then
+    raise exception 'removed member should read zero tasks, found %', visible_count;
+  end if;
 end;
 $$;
 

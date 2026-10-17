@@ -18,6 +18,7 @@ import { DashboardPage } from "../pages/dashboard-page.js";
 import { LandingPage } from "../pages/landing-page.js";
 import { LoginPage } from "../pages/login-page.js";
 import { NotFoundPage } from "../pages/not-found-page.js";
+import { OrganizationPage } from "../pages/organization-page.js";
 
 interface RouterOptions {
   initialAuthStatus?: AuthStatus;
@@ -64,6 +65,7 @@ export function createAppRoutes({
                   children: [
                     { index: true, element: <DashboardPage /> },
                     { path: "activity", element: <ActivityPage /> },
+                    { path: "organization", element: <OrganizationPage /> },
                   ],
                 },
               ],

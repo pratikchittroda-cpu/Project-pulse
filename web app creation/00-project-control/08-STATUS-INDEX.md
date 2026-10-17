@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T013 verification.
+Current state after T014 verification.
 
 ## Done
 
@@ -16,10 +16,11 @@ Current state after T013 verification.
 - `T011` — Initial database schema and migrations
 - `T012` — Authentication flows
 - `T013` — Row-level security and permission tests
+- `T014` — Organizations, teams, and memberships
 
 ## Ready
 
-- `T014` — Organizations, teams, and memberships
+- None
 
 ## Planned
 
@@ -29,7 +30,7 @@ Current state after T013 verification.
 
 ### Data and access
 
-- `T014`, `T015`
+- `T015`
 
 ### Agile planning
 

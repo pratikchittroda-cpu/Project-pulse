@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AuthProvider, type AuthStatus } from "./auth-context.js";
+import { OrganizationProvider } from "./organization-context.js";
 import {
   DEFAULT_PROJECT,
   ProjectProvider,
@@ -20,9 +21,11 @@ export function AppProviders({
 }: AppProvidersProps) {
   return (
     <AuthProvider initialStatus={initialAuthStatus}>
-      <ProjectProvider initialProject={initialProject}>
-        {children}
-      </ProjectProvider>
+      <OrganizationProvider>
+        <ProjectProvider initialProject={initialProject}>
+          {children}
+        </ProjectProvider>
+      </OrganizationProvider>
     </AuthProvider>
   );
 }
