@@ -20,6 +20,7 @@ import { LoginPage } from "../pages/login-page.js";
 import { NotFoundPage } from "../pages/not-found-page.js";
 import { OrganizationPage } from "../pages/organization-page.js";
 import { ProjectsPage } from "../pages/projects-page.js";
+import { TasksPage } from "../pages/tasks-page.js";
 
 interface RouterOptions {
   initialAuthStatus?: AuthStatus;
@@ -27,7 +28,7 @@ interface RouterOptions {
 }
 
 export function createAppRoutes({
-  initialAuthStatus = "authenticated",
+  initialAuthStatus,
   initialProject,
 }: RouterOptions = {}): RouteObject[] {
   return [
@@ -68,6 +69,7 @@ export function createAppRoutes({
                     { path: "activity", element: <ActivityPage /> },
                     { path: "organization", element: <OrganizationPage /> },
                     { path: "projects", element: <ProjectsPage /> },
+                    { path: "tasks", element: <TasksPage /> },
                   ],
                 },
               ],

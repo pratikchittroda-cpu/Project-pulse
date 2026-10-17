@@ -55,6 +55,13 @@ describe("web route groups", () => {
     expect(markup).toContain("Select an organization first");
   });
 
+  it("renders the protected tasks route", () => {
+    const { markup } = renderRoute("/app/tasks");
+
+    expect(markup).toContain("Tasks");
+    expect(markup).toContain("Select an organization and project");
+  });
+
   it("renders the loading state while authentication is unresolved", () => {
     const { markup } = renderRoute("/app", "loading");
 

@@ -9,6 +9,10 @@ const organizationManagementMigration = readFileSync(
   "supabase/migrations/20261017020000_organization_management.sql",
   "utf8",
 );
+const taskCrudMigration = readFileSync(
+  "supabase/migrations/20261018000000_task_crud_validation.sql",
+  "utf8",
+);
 const tests = readFileSync("supabase/rls-tests.sql", "utf8");
 
 describe("RLS policy contract", () => {
@@ -57,5 +61,21 @@ describe("RLS policy contract", () => {
     expect(organizationManagementMigration).toContain("role <> 'owner'");
     expect(tests).toContain("removed member should read zero tasks");
     expect(tests).toContain("member invitation unexpectedly succeeded");
+  });
+
+  it("keeps task mutations constrained to valid project members", () => {
+    expect(taskCrudMigration).toContain("tasks_labels_check");
+    expect(taskCrudMigration).toContain("tasks_assignee_project_access");
+    expect(taskCrudMigration).toContain("tasks_finite_estimate_check");
+    expect(taskCrudMigration).toContain("Archived projects are read-only");
+    expect(taskCrudMigration).toContain("created_by set default auth.uid()");
+    expect(tests).toContain("member task edit did not persist");
+    expect(tests).toContain("viewer task update unexpectedly succeeded");
+    expect(tests).toContain(
+      "cross-organization assignee unexpectedly succeeded",
+    );
+    expect(tests).toContain(
+      "archived project task write unexpectedly succeeded",
+    );
   });
 });

@@ -96,6 +96,15 @@ Shared domain contracts live in `@projectpulse/domain`. Use its entity types,
 workflow unions, API envelopes, pagination types, ISO date helpers, and
 `parseEventEnvelope` validator at external event boundaries.
 
+## Task planning
+
+After selecting an organization and project in the web app, open `/app/tasks` to
+create and manage project tasks. Task numbers are assigned by PostgreSQL and are
+displayed with the stable project key, such as `PULSE-42`. The page supports
+status, priority, assignee, labels, estimate, due date, edit, archive, and
+restore flows. Active views hide archived tasks by default; viewer roles and
+archived projects remain read-only at both the UI and database boundaries.
+
 ## Development and deployment
 
 ### Local web development

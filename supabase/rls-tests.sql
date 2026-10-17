@@ -64,6 +64,55 @@ begin
     raise exception 'member should read one project task, found %', visible_count;
   end if;
 
+  update public.tasks
+  set title = 'RLS task edited',
+      priority = 'high',
+      estimate = 3.5,
+      due_date = date '2026-12-31',
+      labels = array['security', 'planning'],
+      assignee_id = member_id
+  where id = task_id;
+  if not exists (
+    select 1
+    from public.tasks edited_task
+    where edited_task.id = task_id
+      and edited_task.title = 'RLS task edited'
+      and edited_task.priority = 'high'
+      and edited_task.estimate = 3.5
+      and edited_task.assignee_id = member_id
+      and edited_task.labels = array['security', 'planning']
+  ) then
+    raise exception 'member task edit did not persist';
+  end if;
+
+  update public.tasks
+  set archived_at = timezone('utc', now())
+  where id = task_id;
+  select count(*) into visible_count
+  from public.tasks active_task
+  where active_task.id = task_id
+    and active_task.archived_at is null;
+  if visible_count <> 0 then
+    raise exception 'archived task remained in the active query';
+  end if;
+  update public.tasks
+  set archived_at = null
+  where id = task_id;
+
+  operation_succeeded := false;
+  begin
+    update public.tasks
+    set assignee_id = other_id
+    where id = task_id;
+    get diagnostics affected_count = row_count;
+    operation_succeeded := affected_count > 0;
+  exception when check_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'cross-organization assignee unexpectedly succeeded';
+  end if;
+
   perform set_config('request.jwt.claim.sub', other_id::text, true);
   select count(*) into visible_count from public.tasks;
   if visible_count <> 0 then
@@ -162,6 +211,18 @@ begin
     raise exception 'negative task estimate unexpectedly succeeded';
   end if;
 
+  operation_succeeded := false;
+  begin
+    insert into public.tasks (organization_id, project_id, labels, title)
+    values (organization_id, project_id, array['duplicate', 'duplicate'], 'Duplicate labels task');
+    operation_succeeded := true;
+  exception when check_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'duplicate task labels unexpectedly succeeded';
+  end if;
+
   perform set_config('request.jwt.claim.sub', owner_id::text, true);
   operation_succeeded := false;
   begin
@@ -189,6 +250,21 @@ begin
   end;
   if operation_succeeded then
     raise exception 'project key changed after tasks were created';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', viewer_id::text, true);
+  operation_succeeded := false;
+  begin
+    update public.tasks
+    set title = 'Viewer task update'
+    where id = task_id;
+    get diagnostics affected_count = row_count;
+    operation_succeeded := affected_count > 0;
+  exception when insufficient_privilege then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'viewer task update unexpectedly succeeded';
   end if;
 
   perform set_config('request.jwt.claim.sub', member_id::text, true);
@@ -235,6 +311,17 @@ begin
   update public.projects
   set archived_at = timezone('utc', now())
   where id = project_id;
+  operation_succeeded := false;
+  begin
+    insert into public.tasks (organization_id, project_id, title)
+    values (organization_id, project_id, 'Archived project task');
+    operation_succeeded := true;
+  exception when sqlstate '55000' then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'archived project task write unexpectedly succeeded';
+  end if;
   update public.projects
   set archived_at = null
   where id = project_id;

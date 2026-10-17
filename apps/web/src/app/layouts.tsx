@@ -7,6 +7,7 @@ import { useProject } from "./project-context.js";
 const navigationItems = [
   { label: "Overview", to: "/app", end: true },
   { label: "Activity", to: "/app/activity", end: false },
+  { label: "Tasks", to: "/app/tasks", end: false },
   { label: "Projects", to: "/app/projects", end: false },
   { label: "Organization", to: "/app/organization", end: false },
 ] as const;
