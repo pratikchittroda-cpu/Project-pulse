@@ -154,9 +154,10 @@ Postgres at `127.0.0.1:54322`, and the local email inbox at
 
 The browser uses only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The
 service-role key and integration secrets stay server-side and are never placed
-in browser configuration. T011 adds the application migrations; until then,
-the seed creates only a deterministic local-environment marker. Never commit
-`.env`; use `.env.example` as the variable inventory.
+in browser configuration. T011 adds the application migrations; the seed
+creates only a deterministic local-environment marker until later tasks add
+domain fixtures. Never commit `.env`; use `.env.example` as the variable
+inventory.
 
 The runnable web workspace, development server, production build, container,
 and deployment commands are introduced by the foundation tasks:

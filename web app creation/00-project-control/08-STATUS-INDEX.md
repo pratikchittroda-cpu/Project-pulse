@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T010 verification.
+Current state after T011 verification.
 
 ## Done
 
@@ -13,10 +13,11 @@ Current state after T010 verification.
 - `T003` — Docker and local development
 - `T050` — VS Code extension scaffold
 - `T010` — Supabase local setup
+- `T011` — Initial database schema and migrations
 
 ## Ready
 
-- `T011` — Initial database schema and migrations
+- `T012` — Authentication flows
 
 ## Planned
 
@@ -26,7 +27,7 @@ Current state after T010 verification.
 
 ### Data and access
 
-- `T011`, `T012`, `T013`, `T014`, `T015`
+- `T012`, `T013`, `T014`, `T015`
 
 ### Agile planning
 
