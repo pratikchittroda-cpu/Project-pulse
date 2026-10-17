@@ -1,10 +1,14 @@
 # Task Status Index
 
-Initial state after backlog creation.
+Current state after T001 verification.
+
+## Done
+
+- `T001` — Repository bootstrap
 
 ## Ready
 
-- `T001` — Repository bootstrap
+- `T002` — Workspace layout and scripts
 
 ## Planned
 
