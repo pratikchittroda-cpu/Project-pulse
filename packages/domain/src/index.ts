@@ -5,18 +5,38 @@ export interface WorkspacePackage {
   responsibility: string;
 }
 
-export type TaskStatus =
-  | "backlog"
-  | "blocked"
-  | "canceled"
-  | "changes_requested"
-  | "completed"
-  | "in_progress"
-  | "in_review"
-  | "planned"
-  | "ready_to_merge";
+export const DEFAULT_TASK_STATUSES = [
+  "backlog",
+  "planned",
+  "in_progress",
+  "blocked",
+  "in_review",
+  "changes_requested",
+  "ready_to_merge",
+  "completed",
+  "canceled",
+] as const;
+
+export type DefaultTaskStatus = (typeof DEFAULT_TASK_STATUSES)[number];
+/** Project workflow configuration may add status keys without changing task identity. */
+export type TaskStatus = DefaultTaskStatus | (string & {});
 
 export type TaskPriority = "urgent" | "high" | "medium" | "low";
+
+export const DEFAULT_TASK_PRIORITIES = [
+  "urgent",
+  "high",
+  "medium",
+  "low",
+] as const satisfies readonly TaskPriority[];
+
+export interface TaskWorkflowStatus {
+  isTerminal: boolean;
+  label: string;
+  position: number;
+  projectId: string;
+  status: string;
+}
 
 export type IsoDateTime = string & { readonly __isoDateTime: unique symbol };
 
@@ -74,6 +94,7 @@ export interface Task {
   createdAt: IsoDateTime;
   description: string | null;
   id: string;
+  key: string;
   number: number;
   priority: TaskPriority;
   projectId: string;
@@ -190,6 +211,34 @@ export type ValidationResult<T> =
 
 const EVENT_NAME_PATTERN = /^[a-z0-9]+(?:[._][a-z0-9]+)+$/;
 const ISO_DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const PROJECT_KEY_PATTERN = /^[A-Z][A-Z0-9]{1,9}$/;
+const TASK_NUMBER_PATTERN = /^[1-9]\d*$/;
+const TASK_KEY_PATTERN = /^[A-Z][A-Z0-9]{1,9}-[1-9]\d*$/;
+
+export function isProjectKey(value: unknown): value is string {
+  return typeof value === "string" && PROJECT_KEY_PATTERN.test(value);
+}
+
+export function isTaskKey(value: unknown): value is string {
+  return typeof value === "string" && TASK_KEY_PATTERN.test(value);
+}
+
+export function formatTaskKey(
+  projectKey: string,
+  taskNumber: bigint | number | string,
+): string {
+  const normalizedProjectKey = projectKey.trim().toUpperCase();
+  const normalizedTaskNumber = String(taskNumber);
+
+  if (!isProjectKey(normalizedProjectKey)) {
+    throw new RangeError("Expected a valid uppercase project key");
+  }
+  if (!TASK_NUMBER_PATTERN.test(normalizedTaskNumber)) {
+    throw new RangeError("Expected a positive task number");
+  }
+
+  return `${normalizedProjectKey}-${normalizedTaskNumber}`;
+}
 
 export function isEventName(value: unknown): value is EventName {
   return typeof value === "string" && EVENT_NAME_PATTERN.test(value);

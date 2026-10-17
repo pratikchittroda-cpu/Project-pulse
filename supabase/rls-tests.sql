@@ -23,6 +23,7 @@ declare
   invitation_succeeded boolean;
   operation_succeeded boolean;
   affected_count integer;
+  generated_task_number bigint;
 begin
   insert into auth.users (id, aud, role, email, email_confirmed_at, created_at, updated_at)
   values
@@ -86,6 +87,109 @@ begin
   exception when insufficient_privilege then
     null;
   end;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  insert into public.tasks (organization_id, project_id, title)
+  values (organization_id, project_id, 'Generated task two')
+  returning task_number into generated_task_number;
+  if generated_task_number <> 2 then
+    raise exception 'first generated task number should be 2, found %', generated_task_number;
+  end if;
+
+  insert into public.tasks (organization_id, project_id, title)
+  values (organization_id, project_id, 'Generated task three')
+  returning task_number into generated_task_number;
+  if generated_task_number <> 3 then
+    raise exception 'second generated task number should be 3, found %', generated_task_number;
+  end if;
+
+  insert into public.tasks (organization_id, project_id, task_number, title)
+  values (organization_id, project_id, 10, 'Explicit task ten');
+  insert into public.tasks (organization_id, project_id, title)
+  values (organization_id, project_id, 'Generated task eleven')
+  returning task_number into generated_task_number;
+  if generated_task_number <> 11 then
+    raise exception 'generated task number should advance after explicit number, found %', generated_task_number;
+  end if;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  insert into public.project_workflow_statuses (
+    organization_id,
+    project_id,
+    status,
+    label,
+    position
+  )
+  values (organization_id, project_id, 'qa_ready', 'QA ready', 9);
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  insert into public.tasks (organization_id, project_id, status, title)
+  values (organization_id, project_id, 'qa_ready', 'Custom workflow task');
+
+  operation_succeeded := false;
+  begin
+    insert into public.tasks (organization_id, project_id, status, title)
+    values (organization_id, project_id, 'not_defined', 'Invalid status task');
+    operation_succeeded := true;
+  exception when foreign_key_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'invalid task status unexpectedly succeeded';
+  end if;
+
+  operation_succeeded := false;
+  begin
+    insert into public.tasks (organization_id, project_id, priority, title)
+    values (organization_id, project_id, 'invalid', 'Invalid priority task');
+    operation_succeeded := true;
+  exception when check_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'invalid task priority unexpectedly succeeded';
+  end if;
+
+  operation_succeeded := false;
+  begin
+    insert into public.tasks (organization_id, project_id, estimate, title)
+    values (organization_id, project_id, -1, 'Invalid estimate task');
+    operation_succeeded := true;
+  exception when check_violation then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'negative task estimate unexpectedly succeeded';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
+  operation_succeeded := false;
+  begin
+    update public.tasks
+    set task_number = 99
+    where id = task_id;
+    get diagnostics affected_count = row_count;
+    operation_succeeded := affected_count > 0;
+  exception when others then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'task identity update unexpectedly succeeded';
+  end if;
+
+  operation_succeeded := false;
+  begin
+    update public.projects
+    set project_key = 'NEWK'
+    where id = project_id;
+    get diagnostics affected_count = row_count;
+    operation_succeeded := affected_count > 0;
+  exception when others then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'project key changed after tasks were created';
+  end if;
 
   perform set_config('request.jwt.claim.sub', member_id::text, true);
   select count(*) into visible_count

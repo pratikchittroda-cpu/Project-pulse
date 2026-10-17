@@ -21,11 +21,15 @@ export const designTokens = {
 } as const;
 
 export const statusTokens = {
+  backlog: { label: "Backlog", tone: "neutral" },
   blocked: { label: "Blocked", tone: "danger" },
+  canceled: { label: "Canceled", tone: "neutral" },
+  changes_requested: { label: "Changes requested", tone: "warning" },
   completed: { label: "Completed", tone: "success" },
   in_progress: { label: "In progress", tone: "accent" },
   in_review: { label: "In review", tone: "warning" },
   planned: { label: "Planned", tone: "neutral" },
+  ready_to_merge: { label: "Ready to merge", tone: "success" },
 } as const satisfies Record<string, { label: string; tone: StatusTone }>;
 
 export type TaskStatus = keyof typeof statusTokens;

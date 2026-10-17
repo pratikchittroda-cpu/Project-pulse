@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T015 verification.
+Current state after T020 verification.
 
 ## Done
 
@@ -18,6 +18,7 @@ Current state after T015 verification.
 - `T013` — Row-level security and permission tests
 - `T014` — Organizations, teams, and memberships
 - `T015` — Projects and repository records
+- `T020` — Task domain and project keys
 
 ## Ready
 
@@ -35,7 +36,7 @@ Current state after T015 verification.
 
 ### Agile planning
 
-- `T020`, `T021`, `T022`, `T023`, `T024`, `T025`, `T026`, `T027`, `T028`
+- `T021`, `T022`, `T023`, `T024`, `T025`, `T026`, `T027`, `T028`
 
 ### Realtime
 
