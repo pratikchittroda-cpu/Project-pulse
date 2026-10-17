@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T012 verification.
+Current state after T013 verification.
 
 ## Done
 
@@ -15,10 +15,11 @@ Current state after T012 verification.
 - `T010` — Supabase local setup
 - `T011` — Initial database schema and migrations
 - `T012` — Authentication flows
+- `T013` — Row-level security and permission tests
 
 ## Ready
 
-- `T013` — Row-level security and permission tests
+- `T014` — Organizations, teams, and memberships
 
 ## Planned
 
@@ -28,7 +29,7 @@ Current state after T012 verification.
 
 ### Data and access
 
-- `T013`, `T014`, `T015`
+- `T014`, `T015`
 
 ### Agile planning
 
