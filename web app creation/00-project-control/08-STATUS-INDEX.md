@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T026 verification.
+Current state after T028 verification.
 
 ## Done
 
@@ -26,6 +26,8 @@ Current state after T026 verification.
 - `T024` — Backlog, sprints, and estimation
 - `T025` — Initiatives, epics, and roadmap
 - `T026` — Task dependencies and blockers
+- `T027` — Search, filters, and saved views
+- `T028` — Comments, attachments, and checklists
 
 ## Ready
 
@@ -43,7 +45,7 @@ Current state after T026 verification.
 
 ### Agile planning
 
-- `T027`, `T028`
+- None
 
 ### Realtime
 

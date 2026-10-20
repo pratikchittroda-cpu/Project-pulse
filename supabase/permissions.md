@@ -130,6 +130,31 @@ task-scoped dependency event for both endpoints in the same transaction. Viewer
 and archived-project UI flows remain read-only, while project writers can create
 and remove dependencies through the task detail editor.
 
+## Search, filters, and saved views
+
+T027 keeps task search and filtering client-side over the existing RLS-scoped
+task reads, so URL filters cannot expand the visible project or organization
+scope. `task_saved_views` rows are visible only to their owning authenticated
+user and an accessible project. Viewers may create, edit, apply, and delete
+their own personal views; another user's view is not readable or writable.
+
+## Comments, attachments, and checklists
+
+T028 keeps comment, mention, checklist, and attachment reads inside the existing
+project boundary. Project writers mutate comments and checklist items through
+authenticated security-definer RPCs; comment edits/deletes are restricted to the
+author, while viewers can read safe tombstones and metadata without mutation
+controls. Mention IDs must belong to project memberships and are recorded with a
+notification-hook event payload.
+
+Attachment metadata writes are registered only after an authenticated project
+write check, and direct table writes are revoked. The private storage bucket
+allows only the documented MIME types and 10 MiB limit; object paths encode the
+organization, project, and task IDs, and select access requires both a metadata
+row and project read access. Signed URLs are short-lived. Archived projects and
+viewers can read visible metadata but cannot upload, edit, delete, or toggle
+collaboration content.
+
 Initial and closing snapshots preserve string task numbers, keys, titles,
 estimates, and workflow status. Completed/canceled cycle rows stay immutable.
 Tasks cannot enter a closed cycle or change estimate/status/archive state while

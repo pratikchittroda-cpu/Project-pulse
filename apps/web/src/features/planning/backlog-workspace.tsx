@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   Badge,
@@ -13,6 +13,15 @@ import {
   PriorityBadge,
 } from "@projectpulse/ui";
 import { taskDetailPath } from "../tasks/task-detail-repository.js";
+import {
+  buildTaskFilterOptions,
+  filterTaskRecords,
+} from "../tasks/task-filters.js";
+import { TaskFilterPanel } from "../tasks/task-filter-panel.js";
+import {
+  savedTaskViewRepository,
+  type SavedTaskViewRepository,
+} from "../tasks/saved-view-repository.js";
 import type {
   TaskRecord,
   TaskRepository,
@@ -26,11 +35,13 @@ import type {
   CycleTaskSnapshot,
 } from "./cycle-repository.js";
 import { usePlanning } from "./use-planning.js";
+import { useTaskFilters } from "../tasks/use-task-filters.js";
 
 interface BacklogProps {
   archivedProject?: boolean;
   cycleStore?: CycleRepository;
   scope: TaskScope;
+  savedViewRepository?: SavedTaskViewRepository;
   taskStore?: TaskRepository;
 }
 const isClosed = (cycle: CycleRecord) =>
@@ -54,24 +65,44 @@ export function BacklogWorkspace(props: BacklogProps) {
 function BacklogContent({
   archivedProject = false,
   cycleStore,
+  savedViewRepository,
   scope,
   taskStore,
 }: BacklogProps) {
   const planning = usePlanning(scope, cycleStore, taskStore);
   const { cycles, tasks, options, isLoading, isSaving, error, reload } =
     planning;
+  const { clearFilters, filters, setFilters } = useTaskFilters();
   const [message, setMessage] = useState<string | null>(null);
   const [editing, setEditing] = useState<CycleRecord | null>(null);
-  const [filter, setFilter] = useState("all");
   const canWrite = Boolean(options?.canWrite) && !archivedProject && !isLoading;
   const openCycles = cycles.filter((cycle) => !isClosed(cycle));
   const openIds = new Set(openCycles.map(({ id }) => id));
-  const backlogTasks = tasks.filter(({ cycleId }) => cycleId === null);
-  const plannedTasks = tasks.filter(
-    ({ cycleId }) =>
-      cycleId &&
-      openIds.has(cycleId) &&
-      (filter === "all" || filter === cycleId),
+  const filterOptions = useMemo(
+    () =>
+      buildTaskFilterOptions(
+        tasks,
+        options ?? { assignees: [], canWrite: false, statuses: [] },
+        {
+          sprints: cycles.map((cycle) => ({
+            id: cycle.id,
+            label: cycle.name,
+            status: cycle.status,
+          })),
+        },
+      ),
+    [cycles, options, tasks],
+  );
+  const filteredTasks = useMemo(
+    () => filterTaskRecords(tasks, filters),
+    [filters, tasks],
+  );
+  const backlogTasks = filterTaskRecords(tasks, {
+    ...filters,
+    sprintId: "all",
+  }).filter(({ cycleId }) => cycleId === null);
+  const plannedTasks = filteredTasks.filter(
+    ({ cycleId }) => cycleId && openIds.has(cycleId),
   );
   const active = cycles.find(({ status }) => status === "active");
 
@@ -152,6 +183,15 @@ function BacklogContent({
                 : "You have read-only access to planning."}
             </p>
           ) : null}
+          <TaskFilterPanel
+            disabled={isSaving}
+            filters={filters}
+            onChange={(next) => setFilters(next)}
+            onClear={clearFilters}
+            options={filterOptions}
+            savedViewRepository={savedViewRepository ?? savedTaskViewRepository}
+            scope={scope}
+          />
           <div className="planning-overview-grid">
             <Card aria-label="Current sprint">
               <CardHeader>
@@ -388,21 +428,6 @@ function BacklogContent({
               <CardTitle>Planned work</CardTitle>
             </CardHeader>
             <CardContent>
-              <label className="field">
-                <span className="pp-field-label">Filter by sprint</span>
-                <select
-                  className="pp-input"
-                  value={filter}
-                  onChange={(event) => setFilter(event.target.value)}
-                >
-                  <option value="all">All open sprints</option>
-                  {openCycles.map((cycle) => (
-                    <option key={cycle.id} value={cycle.id}>
-                      {cycle.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <div className="backlog-task-list">
                 {plannedTasks.length ? (
                   plannedTasks.map(taskRow)

@@ -46,6 +46,19 @@ and records private request receipts. Dependency changes emit task-scoped
 summaries expose blocker counts, blocking counts, and active urgent/high-priority
 blocker signals for boards and later health analytics.
 
+T027 adds `task_saved_views`, scoped by organization, project, and authenticated
+user. A saved view stores only normalized filter state as JSON; its RLS policy
+lets a user manage their own views only inside a project they can access.
+
+T028 extends `comments` with edit/delete metadata and adds project-scoped
+`comment_mentions` and `task_checklist_items`. Comment and checklist mutations
+use authenticated RPCs so author ownership, project-member mentions, archived
+projects, and task history are checked atomically. `attachments` keeps protected
+metadata for task files and enforces the PDF/ZIP/image/Markdown/text allowlist,
+10 MiB size limit, and organization/project/task storage path. The private
+`projectpulse-attachments` bucket uses signed URLs and storage policies derived
+from the metadata row's project access.
+
 ## Delivery and audit model
 
 - `repositories` stores provider-neutral repository metadata.

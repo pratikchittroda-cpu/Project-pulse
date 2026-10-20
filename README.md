@@ -124,6 +124,20 @@ archived-task links, and cross-project links. Urgent and high-priority tasks wit
 active blockers show a critical warning; viewers and archived projects retain
 read-only dependency visibility.
 
+Task list, Board, and Backlog share URL-backed **Search and filters** for task
+keys, titles, descriptions, labels, statuses, priorities, assignees, sprints,
+teams, and archived visibility. A filter URL is safe to share because it carries
+only filter state; the destination still requires authenticated project access.
+Save named views per project and account, then apply, rename, or delete them
+without changing another user's views. Provider-backed branch and pull-request
+metadata is included automatically when those fields are available.
+
+Task details also include **Comments**, project-member mentions, protected
+attachments, and checklists. Comment edits and deletes are author-controlled and
+leave safe activity history. Attachments use a private storage bucket with an
+allowlist and 10 MiB limit. Checklist completion is independent from task status,
+and viewers or archived projects remain read-only.
+
 Use **Board** in the workspace navigation or open `/app/board` for the
 configured Kanban workflow. Cards are grouped by project status and include
 priority, estimate, assignee, labels, a compact detail disclosure, and a link
@@ -195,7 +209,8 @@ corepack pnpm run test:api
 ```
 
 `test:db` checks RLS, history atomicity, rollback, dependency graph validation,
-dependency replay, stale writes, and concurrent request deduplication. Roadmap assertions cover hierarchy links, task-history
+saved-view ownership, collaboration permissions, dependency replay, stale writes,
+and concurrent request deduplication. Roadmap assertions cover hierarchy links, task-history
 capture, finite dates, member/viewer permissions, and cross-project/organization
 denial. Sprint assertions cover lifecycle replay, immutable
 snapshots, paused scope changes, carryover, audit-failure rollback, concurrent
@@ -203,7 +218,9 @@ starts/assignments, and completion isolation. `test:api` exercises the actual
 application repositories through local Supabase Auth/PostgREST, including bigint
 task keys, multi-page task/sprint/timeline reads, sprint lifecycle and carryover,
 roadmap create/readback and task linking, dependency create/readback/summary/
-deletion, viewer denial, and project/organization isolation. Both use
+deletion, saved-view readback, comments, member-scoped mentions, protected
+attachments, checklist behavior, viewer denial, and project/organization isolation.
+Both use
 isolated fixtures and clean up after themselves; neither resets existing data.
 The API suite keeps temporary credentials in memory and is excluded from the
 offline command. `SUPABASE_DB_CONTAINER` can override the default database

@@ -20,6 +20,14 @@ const eventLabels: Record<string, string> = {
   "task.status_changed": "Status changed",
   "task.archived": "Task archived",
   "task.restored": "Task restored",
+  "task.comment_created": "Comment added",
+  "task.comment_edited": "Comment edited",
+  "task.comment_deleted": "Comment deleted",
+  "task.comment_mentioned": "Mention notification queued",
+  "task.attachment_added": "Attachment added",
+  "task.checklist_item_created": "Checklist item added",
+  "task.checklist_item_toggled": "Checklist item updated",
+  "task.checklist_item_deleted": "Checklist item deleted",
 };
 const fieldLabels: Record<string, string> = {
   title: "Title",
@@ -68,6 +76,10 @@ export function TimelineEntry({
         ? "Manual"
         : "Provider";
   const reason = typeof payload.reason === "string" ? payload.reason : null;
+  const redacted =
+    payload.contentState === "redacted" ||
+    event.eventType === "task.comment_deleted" ||
+    event.eventType === "task.checklist_item_deleted";
   const actor =
     event.actorId === currentUserId
       ? "You"
@@ -90,7 +102,9 @@ export function TimelineEntry({
       ) : mode !== "Manual" ? (
         <p className="muted">No reason was supplied for this event.</p>
       ) : null}
-      {fieldChanges.length ? (
+      {redacted ? (
+        <p className="muted">Original content is not shown in history.</p>
+      ) : fieldChanges.length ? (
         <dl className="task-event-changes">
           {fieldChanges.map(([field, change]) =>
             record(change) ? (

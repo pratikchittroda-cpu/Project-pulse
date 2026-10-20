@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -25,28 +25,40 @@ Make project work discoverable as task and event volume grows.
 
 ## Implementation steps
 
-1. Search task keys, titles, descriptions, labels, branches, and PRs.
-2. Add status, priority, assignee, sprint, team, and label filters.
+1. Search task keys, titles, descriptions, labels, and optional branch/PR metadata.
+2. Add status, priority, assignee, sprint, team, label, and archived filters.
 3. Persist filter state in URLs.
 4. Save named views per user and project.
-5. Add accessible filter controls and clear-all behavior.
+5. Add accessible filter controls and clear-all behavior across task list, board,
+   and backlog.
 
 ## Acceptance criteria
 
-- [ ] Search returns only authorized records.
-- [ ] Filters can be combined.
-- [ ] Saved views can be created, edited, and deleted.
-- [ ] A view can be shared through a URL without leaking data.
-- [ ] Search remains usable on mobile.
+- [x] Search returns only authorized records.
+- [x] Filters can be combined.
+- [x] Saved views can be created, edited, and deleted.
+- [x] A view can be shared through a URL without leaking data.
+- [x] Search remains usable on mobile.
 
 ## Verification
 
-- Test filter combinations and permission boundaries.
-- Test URL reload and saved-view behavior.
+- Test filter combinations, URL reload, accessible clear-all behavior, and
+  permission boundaries.
+- Test saved-view create/readback/update/delete and owner isolation.
 
 ## Handoff
 
-Record query indexes, filter serialization, and search limitations.
+- Filter state serializes as `q`, `status`, `priority`, `assignee`, `sprint`,
+  `team`, `label`, and `archived` query parameters. Routes remain authenticated
+  and project-scoped; URL state never supplies authorization.
+- Task list reads are paginated in the repository before client-side filtering.
+  Search covers task keys, titles, descriptions, labels, and optional branch or
+  pull-request fields when provider-backed task records populate them. The base
+  schema does not yet persist those provider fields.
+- `task_saved_views` is user/project scoped with a unique name per owner and
+  project. View filters are normalized before storage and RLS prevents cross-user
+  or inaccessible-project access.
+- The shared filter panel is responsive and reused by Tasks, Board, and Backlog.
 
 ## Commit
 

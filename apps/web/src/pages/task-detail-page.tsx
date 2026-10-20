@@ -2,7 +2,9 @@ import { Link, useParams } from "react-router-dom";
 import { PageLayout } from "@projectpulse/ui";
 import { useAuth } from "../app/auth-context.js";
 import { TaskDetailWorkspace } from "../features/tasks/task-detail-workspace.js";
+import { taskCollaborationRepository } from "../features/tasks/task-collaboration-repository.js";
 import "../features/tasks/task-detail.css";
+import "../features/tasks/task-collaboration.css";
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -29,6 +31,7 @@ export function TaskDetailPage() {
     <TaskDetailWorkspace
       key={`${organizationId}:${projectId}:${taskId}:${session.user.id}`}
       address={{ organizationId, projectId, taskId, userId: session.user.id }}
+      collaborationRepository={taskCollaborationRepository}
     />
   );
 }

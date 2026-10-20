@@ -5,15 +5,22 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  Input,
   PageLayout,
   PriorityBadge,
 } from "@projectpulse/ui";
 import type { TaskPriority } from "@projectpulse/domain";
 
 import { taskDetailPath } from "../tasks/task-detail-repository.js";
+import {
+  buildTaskFilterOptions,
+  filterTaskRecords,
+  type TaskFilters,
+} from "../tasks/task-filters.js";
+import { TaskFilterPanel } from "../tasks/task-filter-panel.js";
+import {
+  savedTaskViewRepository,
+  type SavedTaskViewRepository,
+} from "../tasks/saved-view-repository.js";
 import type {
   TaskOptions,
   TaskRecord,
@@ -25,12 +32,17 @@ import {
   type TaskRelationRepository,
   type TaskDependencySummary,
 } from "../tasks/task-relations-repository.js";
+import { useTaskFilters } from "../tasks/use-task-filters.js";
 import { useKanbanBoard } from "./use-kanban-board.js";
 
 export interface BoardFilters {
   assigneeId: string;
   priority: TaskPriority | "all";
   query: string;
+  sprintId?: string;
+  status?: string;
+  teamId?: string;
+  label?: string;
 }
 
 export interface KanbanColumnModel {
@@ -39,12 +51,6 @@ export interface KanbanColumnModel {
   status: string;
   tasks: TaskRecord[];
 }
-
-const initialFilters: BoardFilters = {
-  assigneeId: "all",
-  priority: "all",
-  query: "",
-};
 
 function statusLabel(status: string) {
   return status
@@ -77,23 +83,7 @@ export function filterKanbanTasks(
   tasks: TaskRecord[],
   filters: BoardFilters,
 ): TaskRecord[] {
-  const query = filters.query.trim().toLocaleLowerCase();
-  return tasks.filter((task) => {
-    if (filters.priority !== "all" && task.priority !== filters.priority) {
-      return false;
-    }
-    if (
-      filters.assigneeId !== "all" &&
-      task.assigneeId !== filters.assigneeId
-    ) {
-      return false;
-    }
-    if (!query) return true;
-    return [task.key, task.title, task.description ?? "", ...task.labels]
-      .join(" ")
-      .toLocaleLowerCase()
-      .includes(query);
-  });
+  return filterTaskRecords(tasks, filters as Partial<TaskFilters>);
 }
 
 function statusTone(status: string) {
@@ -213,15 +203,16 @@ export function KanbanBoard({
   archivedProject = false,
   dependencyRepository,
   repository,
+  savedViewRepository,
   scope,
 }: {
   archivedProject?: boolean;
   dependencyRepository?: TaskRelationRepository;
   repository?: TaskRepository;
+  savedViewRepository?: SavedTaskViewRepository;
   scope: TaskScope;
 }) {
-  const [includeArchived, setIncludeArchived] = useState(false);
-  const [filters, setFilters] = useState(initialFilters);
+  const { clearFilters, filters, setFilters } = useTaskFilters();
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -237,11 +228,15 @@ export function KanbanBoard({
     dependencySummary,
   } = useKanbanBoard(
     scope,
-    includeArchived,
+    filters.includeArchived,
     repository,
     dependencyRepository ?? (repository ? null : taskDependencyRepository),
   );
   const canWrite = options.canWrite && !archivedProject && !isLoading;
+  const filterOptions = useMemo(
+    () => buildTaskFilterOptions(tasks, options),
+    [options, tasks],
+  );
   const filteredTasks = useMemo(
     () => filterKanbanTasks(tasks, filters),
     [filters, tasks],
@@ -280,7 +275,7 @@ export function KanbanBoard({
   }
 
   function resetFilters() {
-    setFilters(initialFilters);
+    clearFilters();
   }
 
   return (
@@ -319,91 +314,15 @@ export function KanbanBoard({
             : "You have read-only access to this board."}
         </p>
       ) : null}
-      <Card className="kanban-filter-card">
-        <CardHeader>
-          <div className="task-card-heading">
-            <div>
-              <CardTitle>Board filters</CardTitle>
-              <p className="kanban-filter-help">
-                Search the current project without changing its saved task
-                state.
-              </p>
-            </div>
-            <Button
-              disabled={isLoading || isMoving}
-              onClick={resetFilters}
-              size="sm"
-              variant="ghost"
-            >
-              Clear filters
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="kanban-filters" aria-label="Board filters">
-            <Input
-              label="Find tasks"
-              onChange={(event) =>
-                setFilters((current) => ({
-                  ...current,
-                  query: event.target.value,
-                }))
-              }
-              placeholder="Key, title, description, label"
-              value={filters.query}
-            />
-            <label className="field">
-              <span className="pp-field-label">Priority</span>
-              <select
-                className="pp-input"
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    priority: event.target.value as BoardFilters["priority"],
-                  }))
-                }
-                value={filters.priority}
-              >
-                <option value="all">All priorities</option>
-                {["urgent", "high", "medium", "low"].map((priority) => (
-                  <option key={priority} value={priority}>
-                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              <span className="pp-field-label">Assignee</span>
-              <select
-                className="pp-input"
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    assigneeId: event.target.value,
-                  }))
-                }
-                value={filters.assigneeId}
-              >
-                <option value="all">All assignees</option>
-                {options.assignees.map(({ id }) => (
-                  <option key={id} value={id}>
-                    {id}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="kanban-archive-toggle">
-              <input
-                checked={includeArchived}
-                disabled={isMoving}
-                onChange={(event) => setIncludeArchived(event.target.checked)}
-                type="checkbox"
-              />{" "}
-              Show archived
-            </label>
-          </div>
-        </CardContent>
-      </Card>
+      <TaskFilterPanel
+        disabled={isLoading || isMoving}
+        filters={filters}
+        onChange={(next) => setFilters(next)}
+        onClear={resetFilters}
+        options={filterOptions}
+        savedViewRepository={savedViewRepository ?? savedTaskViewRepository}
+        scope={scope}
+      />
       <div className="kanban-summary" aria-live="polite">
         <strong>{filteredTasks.length}</strong> of {tasks.length} tasks shown{" "}
         <span>·</span>{" "}

@@ -16,6 +16,7 @@ export interface TaskScope {
 
 export interface TaskRecord {
   archivedAt: string | null;
+  branchName?: string | null;
   cycleId: string | null;
   epicId: string | null;
   milestoneId: string | null;
@@ -28,7 +29,11 @@ export interface TaskRecord {
   labels: string[];
   number: string;
   priority: TaskPriority;
+  pullRequestNumber?: number | string | null;
+  pullRequestTitle?: string | null;
+  pullRequestUrl?: string | null;
   status: string;
+  teamId?: string | null;
   title: string;
   updatedAt: string;
 }
@@ -47,7 +52,9 @@ export interface TaskDraft {
 export interface TaskOptions {
   assignees: { id: string }[];
   canWrite: boolean;
+  sprints?: { id: string; label: string; status: string }[];
   statuses: { isTerminal?: boolean; label: string; status: string }[];
+  teams?: { id: string; label: string }[];
 }
 
 export type TaskFieldErrors = Partial<Record<keyof TaskDraft, string>>;
@@ -67,6 +74,7 @@ export class TaskValidationError extends Error {
 
 interface TaskRow {
   archived_at: string | null;
+  branch_name?: string | null;
   cycle_id: string | null;
   epic_id: string | null;
   milestone_id: string | null;
@@ -78,14 +86,18 @@ interface TaskRow {
   labels: string[];
   number: string;
   priority: TaskPriority;
+  pull_request_number?: number | string | null;
+  pull_request_title?: string | null;
+  pull_request_url?: string | null;
   status: string;
+  team_id?: string | null;
   title: string;
   updated_at: string;
 }
 
 // Cast bigint on the server, before JSON decoding, so task identities never lose precision.
 const taskColumns =
-  "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, cycle_id, epic_id, milestone_id, archived_at, updated_at";
+  "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, cycle_id, epic_id, milestone_id, team_id, archived_at, updated_at";
 
 export const emptyTaskDraft: TaskDraft = {
   assigneeId: "",
@@ -167,6 +179,7 @@ export function taskPayload(draft: TaskDraft) {
 function toTask(row: TaskRow, projectKey: string): TaskRecord {
   return {
     archivedAt: row.archived_at,
+    branchName: row.branch_name ?? null,
     cycleId: row.cycle_id,
     epicId: row.epic_id,
     milestoneId: row.milestone_id,
@@ -179,7 +192,11 @@ function toTask(row: TaskRow, projectKey: string): TaskRecord {
     labels: row.labels,
     number: row.number,
     priority: row.priority,
+    pullRequestNumber: row.pull_request_number ?? null,
+    pullRequestTitle: row.pull_request_title ?? null,
+    pullRequestUrl: row.pull_request_url ?? null,
     status: row.status,
+    teamId: row.team_id ?? null,
     title: row.title,
     updatedAt: row.updated_at,
   };
@@ -320,39 +337,58 @@ export function createTaskRepository(
       }
     },
     async options(scope) {
-      const [workflow, organizationMembers, projectMembers, permission] =
-        await Promise.all([
-          client
-            .from("project_workflow_statuses")
-            .select("label, status, is_terminal")
-            .eq("organization_id", scope.organizationId)
-            .eq("project_id", scope.projectId)
-            .order("position")
-            .order("status")
-            .returns<
-              { is_terminal: boolean; label: string; status: string }[]
-            >(),
-          client
-            .from("organization_memberships")
-            .select("user_id, role")
-            .eq("organization_id", scope.organizationId)
-            .returns<{ user_id: string; role: string }[]>(),
-          client
-            .from("project_memberships")
-            .select("user_id")
-            .eq("organization_id", scope.organizationId)
-            .eq("project_id", scope.projectId)
-            .returns<{ user_id: string }[]>(),
-          client.rpc("can_write_project", {
-            target_organization_id: scope.organizationId,
-            target_project_id: scope.projectId,
-          }),
-        ]);
+      const [
+        workflow,
+        organizationMembers,
+        projectMembers,
+        permission,
+        teams,
+        sprints,
+      ] = await Promise.all([
+        client
+          .from("project_workflow_statuses")
+          .select("label, status, is_terminal")
+          .eq("organization_id", scope.organizationId)
+          .eq("project_id", scope.projectId)
+          .order("position")
+          .order("status")
+          .returns<{ is_terminal: boolean; label: string; status: string }[]>(),
+        client
+          .from("organization_memberships")
+          .select("user_id, role")
+          .eq("organization_id", scope.organizationId)
+          .returns<{ user_id: string; role: string }[]>(),
+        client
+          .from("project_memberships")
+          .select("user_id")
+          .eq("organization_id", scope.organizationId)
+          .eq("project_id", scope.projectId)
+          .returns<{ user_id: string }[]>(),
+        client.rpc("can_write_project", {
+          target_organization_id: scope.organizationId,
+          target_project_id: scope.projectId,
+        }),
+        client
+          .from("teams")
+          .select("id, name, team_key")
+          .eq("organization_id", scope.organizationId)
+          .order("name")
+          .returns<{ id: string; name: string; team_key: string }[]>(),
+        client
+          .from("cycles")
+          .select("id, name, status")
+          .eq("organization_id", scope.organizationId)
+          .eq("project_id", scope.projectId)
+          .order("created_at", { ascending: false })
+          .returns<{ id: string; name: string; status: string }[]>(),
+      ]);
       const error =
         workflow.error ??
         organizationMembers.error ??
         projectMembers.error ??
-        permission.error;
+        permission.error ??
+        teams.error ??
+        sprints.error;
       if (error) throw databaseError(error);
       const projectUserIds = new Set(
         (projectMembers.data ?? []).map(({ user_id }) => user_id),
@@ -367,6 +403,11 @@ export function createTaskRepository(
           )
           .map(({ user_id }) => ({ id: user_id })),
         canWrite: permission.data === true,
+        sprints: (sprints.data ?? []).map(({ id, name, status }) => ({
+          id,
+          label: name,
+          status,
+        })),
         statuses: (workflow.data ?? []).map(
           ({ is_terminal, label, status }) => ({
             isTerminal: is_terminal,
@@ -374,6 +415,10 @@ export function createTaskRepository(
             status,
           }),
         ),
+        teams: (teams.data ?? []).map(({ id, name, team_key }) => ({
+          id,
+          label: `${team_key} · ${name}`,
+        })),
       };
     },
     async save(scope, draft, previous) {

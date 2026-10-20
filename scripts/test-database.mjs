@@ -68,8 +68,20 @@ sql(
     "utf8",
   ),
 );
+sql(
+  readFileSync(
+    new URL("../supabase/saved-view-tests.sql", import.meta.url),
+    "utf8",
+  ),
+);
+sql(
+  readFileSync(
+    new URL("../supabase/t028-collaboration-tests.sql", import.meta.url),
+    "utf8",
+  ),
+);
 console.log(
-  "Database RLS, history, cycle lifecycle, roadmap hierarchy, dependency graph, replay, and rollback assertions passed.",
+  "Database RLS, history, cycle lifecycle, roadmap hierarchy, dependency graph, saved-view ownership, collaboration, replay, and rollback assertions passed.",
 );
 
 const user = randomUUID();

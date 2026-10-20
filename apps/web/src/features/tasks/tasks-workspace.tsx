@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Badge,
@@ -14,12 +14,23 @@ import {
 
 import { TaskForm } from "./task-form.js";
 import {
+  buildTaskFilterOptions,
+  filterTaskRecords,
+  hasActiveTaskFilters,
+} from "./task-filters.js";
+import { TaskFilterPanel } from "./task-filter-panel.js";
+import {
+  savedTaskViewRepository,
+  type SavedTaskViewRepository,
+} from "./saved-view-repository.js";
+import {
   emptyTaskDraft,
   taskToDraft,
   type TaskRecord,
   type TaskRepository,
   type TaskScope,
 } from "./task-repository.js";
+import { useTaskFilters } from "./use-task-filters.js";
 import { useTasks } from "./use-tasks.js";
 import { taskDetailPath } from "./task-detail-repository.js";
 
@@ -27,12 +38,14 @@ export function TasksWorkspace({
   scope,
   archivedProject = false,
   repository,
+  savedViewRepository,
 }: {
   scope: TaskScope;
   archivedProject?: boolean;
   repository?: TaskRepository;
+  savedViewRepository?: SavedTaskViewRepository;
 }) {
-  const [includeArchived, setIncludeArchived] = useState(false);
+  const { clearFilters, filters, setFilters } = useTaskFilters();
   const {
     tasks,
     options,
@@ -42,11 +55,19 @@ export function TasksWorkspace({
     reload,
     save,
     setArchived,
-  } = useTasks(scope, includeArchived, repository);
+  } = useTasks(scope, filters.includeArchived, repository);
   const [editor, setEditor] = useState<{ task?: TaskRecord } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const canWrite = options.canWrite && !archivedProject && !isLoading;
+  const filterOptions = useMemo(
+    () => buildTaskFilterOptions(tasks, options),
+    [options, tasks],
+  );
+  const filteredTasks = useMemo(
+    () => filterTaskRecords(tasks, filters),
+    [filters, tasks],
+  );
 
   async function archive(task: TaskRecord) {
     setMutationError(null);
@@ -100,19 +121,22 @@ export function TasksWorkspace({
             : "You have read-only access to tasks in this project."}
         </p>
       ) : null}
+      <TaskFilterPanel
+        disabled={isSaving}
+        filters={filters}
+        onChange={(next) => {
+          setEditor(null);
+          setFilters(next);
+        }}
+        onClear={() => {
+          setEditor(null);
+          clearFilters();
+        }}
+        options={filterOptions}
+        savedViewRepository={savedViewRepository ?? savedTaskViewRepository}
+        scope={scope}
+      />
       <div className="task-toolbar">
-        <label className="task-archive-toggle">
-          <input
-            checked={includeArchived}
-            disabled={isSaving}
-            onChange={(event) => {
-              setIncludeArchived(event.target.checked);
-              setEditor(null);
-            }}
-            type="checkbox"
-          />
-          Show archived tasks
-        </label>
         <Button
           disabled={isSaving || isLoading}
           onClick={() => {
@@ -168,25 +192,36 @@ export function TasksWorkspace({
           Loading tasks…
         </p>
       ) : null}
-      {!isLoading && !error && tasks.length === 0 ? (
+      {!isLoading && !error && filteredTasks.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>
-              {includeArchived ? "No tasks yet" : "No active tasks"}
+              {hasActiveTaskFilters(filters)
+                ? "No matching tasks"
+                : filters.includeArchived
+                  ? "No tasks yet"
+                  : "No active tasks"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="muted">
-              {canWrite
-                ? "Create a task to start planning work for this project."
-                : "Tasks will appear here when a project contributor adds them."}
+              {hasActiveTaskFilters(filters)
+                ? "Try clearing a filter or broadening your search."
+                : canWrite
+                  ? "Create a task to start planning work for this project."
+                  : "Tasks will appear here when a project contributor adds them."}
             </p>
           </CardContent>
         </Card>
       ) : null}
       {!isLoading ? (
+        <div className="task-filter-summary" aria-live="polite">
+          <strong>{filteredTasks.length}</strong> of {tasks.length} tasks shown
+        </div>
+      ) : null}
+      {!isLoading ? (
         <ul aria-label="Project tasks" className="task-list">
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <li key={task.id}>
               <Card>
                 <CardHeader>

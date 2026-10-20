@@ -19,6 +19,8 @@ import {
 } from "@projectpulse/ui";
 import { TaskTimeline } from "../events/task-timeline.js";
 import type { TaskEventRepository } from "../events/task-events-repository.js";
+import { TaskCollaborationPanel } from "./task-collaboration-panel.js";
+import type { TaskCollaborationRepository } from "./task-collaboration-repository.js";
 import { TaskForm } from "./task-form.js";
 import { taskToDraft, type TaskScope } from "./task-repository.js";
 import type {
@@ -38,6 +40,7 @@ interface TaskDetailWorkspaceProps {
   address: TaskDetailAddress;
   repository?: TaskDetailRepository;
   eventsRepository?: TaskEventRepository;
+  collaborationRepository?: TaskCollaborationRepository;
 }
 
 export function TaskDetailWorkspace(props: TaskDetailWorkspaceProps) {
@@ -54,6 +57,7 @@ function TaskDetailContent({
   address,
   repository = taskDetailRepository,
   eventsRepository,
+  collaborationRepository,
 }: TaskDetailWorkspaceProps) {
   const [detail, setDetail] = useState<TaskDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,6 +66,7 @@ function TaskDetailContent({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const [collaborationVersion, setCollaborationVersion] = useState(0);
   const generation = useRef(0);
   const mounted = useRef(false);
   const busy = useRef(false);
@@ -381,11 +386,21 @@ function TaskDetailContent({
         </Card>
       ) : null}
       <TaskTimeline
-        key={`${task.id}:${task.updatedAt}`}
+        key={`${task.id}:${task.updatedAt}:${collaborationVersion}`}
         scope={{ organizationId, projectId, taskId }}
         currentUserId={userId}
         repository={eventsRepository}
       />
+      {collaborationRepository ? (
+        <TaskCollaborationPanel
+          canWrite={canWrite}
+          onChanged={() => setCollaborationVersion((version) => version + 1)}
+          projectArchived={detail.projectArchived}
+          repository={collaborationRepository}
+          scope={scope}
+          taskId={task.id}
+        />
+      ) : null}
     </PageLayout>
   );
 }
