@@ -51,71 +51,103 @@ export function LandingPage() {
             account needed for the preview.
           </p>
         </div>
-        <aside
-          className="hero-card hero-dashboard-card"
-          aria-label="ProjectPulse workspace preview"
-        >
-          <div className="hero-card-topline">
-            <span className="preview-window-dots" aria-hidden="true">
+        <div className="hero-visual-stage">
+          <div className="signal-field" aria-hidden="true">
+            <span className="signal-field-grid" />
+            <span className="signal-ring signal-ring-outer" />
+            <span className="signal-ring signal-ring-middle" />
+            <span className="signal-ring signal-ring-inner" />
+            <span className="signal-arc signal-arc-one" />
+            <span className="signal-arc signal-arc-two" />
+            <span className="signal-orbit-dot signal-orbit-dot-one" />
+            <span className="signal-orbit-dot signal-orbit-dot-two" />
+            <span className="signal-orbit-dot signal-orbit-dot-three" />
+            <span className="signal-node signal-node-planning">
               <i />
-              <i />
-              <i />
+              <b>Planning</b>
             </span>
-            <span className="preview-window-label">PULSE / OVERVIEW</span>
-            <span className="preview-live-label">
-              <span className="signal-dot" aria-hidden="true" /> Live
+            <span className="signal-node signal-node-activity">
+              <i />
+              <b>Activity</b>
+            </span>
+            <span className="signal-node signal-node-delivery">
+              <i />
+              <b>Delivery</b>
+            </span>
+            <span className="signal-core">
+              <span>LIVE PULSE</span>
+              <strong>92</strong>
+              <small>delivery health</small>
             </span>
           </div>
-          <div className="preview-heading">
-            <div>
-              <span className="preview-eyebrow">Tuesday, October 20</span>
-              <strong>Good morning, team.</strong>
+          <aside
+            className="hero-card hero-dashboard-card"
+            aria-label="ProjectPulse workspace preview"
+          >
+            <div className="hero-card-topline">
+              <span className="preview-window-dots" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+              <span className="preview-window-label">PULSE / OVERVIEW</span>
+              <span className="preview-live-label">
+                <span className="signal-dot" aria-hidden="true" /> Live
+              </span>
             </div>
-            <span className="preview-avatar" aria-hidden="true">
-              PP
-            </span>
-          </div>
-          <div className="preview-metrics">
-            <div>
-              <span>Active tasks</span>
-              <strong>24</strong>
-              <small>+8% this week</small>
-            </div>
-            <div>
-              <span>In review</span>
-              <strong>07</strong>
-              <small>2 ready to merge</small>
-            </div>
-            <div className="preview-health">
-              <span>Delivery health</span>
-              <strong>92%</strong>
-              <small>
-                <i aria-hidden="true" /> Healthy signal
-              </small>
-            </div>
-          </div>
-          <div className="preview-activity">
-            <div className="preview-section-heading">
-              <strong>Recent activity</strong>
-              <span>View all</span>
-            </div>
-            {signals.map(([title, detail], index) => (
-              <div className="preview-activity-row" key={title}>
-                <span
-                  className={`preview-activity-icon preview-activity-icon-${index + 1}`}
-                  aria-hidden="true"
-                >
-                  {index === 0 ? "↗" : index === 1 ? "⌁" : "✓"}
-                </span>
-                <div>
-                  <strong>{title}</strong>
-                  <span>{detail}</span>
-                </div>
-                <small>{index === 0 ? "8m" : index === 1 ? "32m" : "1h"}</small>
+            <div className="preview-heading">
+              <div>
+                <span className="preview-eyebrow">Tuesday, October 20</span>
+                <strong>Good morning, team.</strong>
               </div>
-            ))}
-          </div>
-        </aside>
+              <span className="preview-avatar" aria-hidden="true">
+                PP
+              </span>
+            </div>
+            <div className="preview-metrics">
+              <div>
+                <span>Active tasks</span>
+                <strong>24</strong>
+                <small>+8% this week</small>
+              </div>
+              <div>
+                <span>In review</span>
+                <strong>07</strong>
+                <small>2 ready to merge</small>
+              </div>
+              <div className="preview-health">
+                <span>Delivery health</span>
+                <strong>92%</strong>
+                <small>
+                  <i aria-hidden="true" /> Healthy signal
+                </small>
+              </div>
+            </div>
+            <div className="preview-activity">
+              <div className="preview-section-heading">
+                <strong>Recent activity</strong>
+                <span>View all</span>
+              </div>
+              {signals.map(([title, detail], index) => (
+                <div className="preview-activity-row" key={title}>
+                  <span
+                    className={`preview-activity-icon preview-activity-icon-${index + 1}`}
+                    aria-hidden="true"
+                  >
+                    {index === 0 ? "↗" : index === 1 ? "⌁" : "✓"}
+                  </span>
+                  <div>
+                    <strong>{title}</strong>
+                    <span>{detail}</span>
+                  </div>
+                  <small>
+                    {index === 0 ? "8m" : index === 1 ? "32m" : "1h"}
+                  </small>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
       </section>
       <section className="landing-proof" aria-label="ProjectPulse capabilities">
         <div className="landing-proof-heading">

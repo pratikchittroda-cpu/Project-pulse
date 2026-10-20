@@ -62,6 +62,74 @@ export function DashboardPage() {
           </article>
         ))}
       </section>
+      <section
+        className="dashboard-signal-band"
+        aria-labelledby="pulse-score-title"
+      >
+        <div className="signal-band-copy">
+          <p className="panel-kicker">Pulse score</p>
+          <h3 id="pulse-score-title">Delivery health is trending up.</h3>
+          <p>
+            Your team is moving through review faster this week, with fewer
+            blocked handoffs across the active project stream.
+          </p>
+          <div className="signal-band-meta">
+            <span className="signal-band-change">↗ 12.4%</span>
+            <span>compared with last week</span>
+          </div>
+        </div>
+        <div
+          className="signal-score-ring"
+          aria-label="Delivery health score: 92 out of 100"
+        >
+          <div>
+            <strong>92</strong>
+            <span>/ 100</span>
+            <small>healthy</small>
+          </div>
+        </div>
+        <div
+          className="signal-band-chart"
+          aria-label="Delivery health trend over the last seven days"
+          role="img"
+        >
+          <svg
+            viewBox="0 0 420 150"
+            aria-hidden="true"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="pulse-area" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#8d80ff" stopOpacity="0.42" />
+                <stop offset="100%" stopColor="#8d80ff" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              className="pulse-chart-area"
+              d="M0 122 C35 114 42 92 72 98 S118 116 145 83 S188 69 214 78 S258 84 282 54 S328 65 348 42 S388 35 420 14 V150 H0 Z"
+              fill="url(#pulse-area)"
+            />
+            <path
+              className="pulse-chart-line"
+              d="M0 122 C35 114 42 92 72 98 S118 116 145 83 S188 69 214 78 S258 84 282 54 S328 65 348 42 S388 35 420 14"
+              fill="none"
+              pathLength="1"
+              stroke="#8d80ff"
+              strokeLinecap="round"
+              strokeWidth="3"
+            />
+            <circle className="pulse-chart-point" cx="420" cy="14" r="5" />
+          </svg>
+          <div className="signal-band-axis" aria-hidden="true">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Today</span>
+          </div>
+        </div>
+      </section>
       <div className="dashboard-grid">
         <section
           className="activity-panel"
