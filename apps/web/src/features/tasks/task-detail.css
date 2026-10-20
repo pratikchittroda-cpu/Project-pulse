@@ -1,0 +1,80 @@
+.task-detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 2fr) minmax(15rem, 1fr);
+}
+
+.task-detail-metadata {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.task-detail-metadata dt,
+.task-timeline-meta,
+.task-event-correlation {
+  color: var(--ink-soft, #687080);
+  font-size: 0.8rem;
+}
+
+.task-detail-metadata dd {
+  margin: 0.3rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.task-timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task-timeline-entry {
+  border-left: 2px solid var(--royal-gold, #c49a57);
+  padding: 0.25rem 0 1.75rem 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.task-timeline-entry:last-child {
+  padding-bottom: 0;
+}
+
+.task-timeline-heading,
+.task-timeline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.task-event-reason {
+  background: var(--paper, #f8f3ea);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.task-event-changes {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+
+.task-event-changes dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.task-event-changes dd {
+  font-size: 0.875rem;
+  margin: 0.2rem 0 0;
+  white-space: pre-wrap;
+}
+
+.task-event-changes dd strong {
+  font-weight: 500;
+}
+
+@media (max-width: 800px) {
+  .task-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

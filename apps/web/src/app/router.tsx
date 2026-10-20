@@ -21,6 +21,7 @@ import { NotFoundPage } from "../pages/not-found-page.js";
 import { OrganizationPage } from "../pages/organization-page.js";
 import { ProjectsPage } from "../pages/projects-page.js";
 import { TasksPage } from "../pages/tasks-page.js";
+import { TaskDetailPage } from "../pages/task-detail-page.js";
 
 interface RouterOptions {
   initialAuthStatus?: AuthStatus;
@@ -70,6 +71,10 @@ export function createAppRoutes({
                     { path: "organization", element: <OrganizationPage /> },
                     { path: "projects", element: <ProjectsPage /> },
                     { path: "tasks", element: <TasksPage /> },
+                    {
+                      path: "organizations/:organizationId/projects/:projectId/tasks/:taskId",
+                      element: <TaskDetailPage />,
+                    },
                   ],
                 },
               ],

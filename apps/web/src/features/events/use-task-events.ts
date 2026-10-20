@@ -17,47 +17,64 @@ export function useTaskEvents(
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mounted = useRef(false);
+  const generation = useRef(0);
+  const scopeVersion = useRef(0);
+  const { organizationId, projectId, taskId } = scope;
 
   const reload = useCallback(async () => {
+    const request = ++generation.current;
     setIsLoading(true);
+    setEvents([]);
     setError(null);
     try {
-      const nextEvents = await repository.list(scope);
-      if (mounted.current) setEvents(nextEvents);
+      const nextEvents = await repository.list({
+        organizationId,
+        projectId,
+        taskId,
+      });
+      if (mounted.current && request === generation.current)
+        setEvents(nextEvents);
     } catch (cause) {
-      if (mounted.current)
+      if (mounted.current && request === generation.current)
         setError(
           cause instanceof Error
             ? cause.message
             : "Could not load task events.",
         );
     } finally {
-      if (mounted.current) setIsLoading(false);
+      if (mounted.current && request === generation.current)
+        setIsLoading(false);
     }
-  }, [repository, scope]);
+  }, [repository, organizationId, projectId, taskId]);
 
   useEffect(() => {
     mounted.current = true;
+    setIsRecording(false);
     void reload();
     return () => {
       mounted.current = false;
+      generation.current += 1;
+      scopeVersion.current += 1;
     };
   }, [reload]);
 
   async function record(draft: TaskEventDraft) {
+    const version = scopeVersion.current;
     setIsRecording(true);
     setError(null);
     try {
       const saved = await repository.record(scope, draft);
-      if (mounted.current) await reload();
+      if (mounted.current && version === scopeVersion.current) await reload();
       return saved;
     } catch (cause) {
       const message =
         cause instanceof Error ? cause.message : "Could not record task event.";
-      if (mounted.current) setError(message);
+      if (mounted.current && version === scopeVersion.current)
+        setError(message);
       throw cause;
     } finally {
-      if (mounted.current) setIsRecording(false);
+      if (mounted.current && version === scopeVersion.current)
+        setIsRecording(false);
     }
   }
 

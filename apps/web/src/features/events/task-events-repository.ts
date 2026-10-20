@@ -152,17 +152,24 @@ export function createTaskEventRepository(
 ): TaskEventRepository {
   return {
     async list(scope) {
-      const { data, error } = await client
-        .from("task_events")
-        .select(taskEventColumns)
-        .eq("organization_id", scope.organizationId)
-        .eq("project_id", scope.projectId)
-        .eq("task_id", scope.taskId)
-        .order("occurred_at", { ascending: true })
-        .order("created_at", { ascending: true })
-        .returns<TaskEventRow[]>();
-      if (error) throw databaseError(error);
-      return (data ?? []).map(toTaskEvent);
+      const events = new Map<string, TaskEventRecord>();
+      const pageSize = 100;
+      for (let offset = 0; ; offset += pageSize) {
+        const { data, error } = await client
+          .from("task_events")
+          .select(taskEventColumns)
+          .eq("organization_id", scope.organizationId)
+          .eq("project_id", scope.projectId)
+          .eq("task_id", scope.taskId)
+          .order("occurred_at", { ascending: true })
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(offset, offset + pageSize - 1)
+          .returns<TaskEventRow[]>();
+        if (error) throw databaseError(error);
+        for (const row of data ?? []) events.set(row.id, toTaskEvent(row));
+        if (!data || data.length < pageSize) return [...events.values()];
+      }
     },
     async record(scope, draft) {
       const envelope = validateTaskEventDraft(scope, draft);

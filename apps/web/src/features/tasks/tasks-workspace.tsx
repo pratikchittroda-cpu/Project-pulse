@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Badge,
   Button,
@@ -20,6 +21,7 @@ import {
   type TaskScope,
 } from "./task-repository.js";
 import { useTasks } from "./use-tasks.js";
+import { taskDetailPath } from "./task-detail-repository.js";
 
 export function TasksWorkspace({
   scope,
@@ -191,7 +193,11 @@ export function TasksWorkspace({
                   <div className="task-card-heading">
                     <div>
                       <p className="task-display-key">{task.key}</p>
-                      <CardTitle>{task.title}</CardTitle>
+                      <CardTitle>
+                        <Link to={taskDetailPath(scope, task.id)}>
+                          {task.title}
+                        </Link>
+                      </CardTitle>
                     </div>
                     <div className="project-actions">
                       <Badge
