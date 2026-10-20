@@ -84,6 +84,8 @@ describe("atomic task mutations", () => {
       estimate: null,
       due_date: null,
       cycle_id: null,
+      epic_id: null,
+      milestone_id: null,
       archived_at: null,
       updated_at: "2026-10-20T00:00:00.000Z",
     };

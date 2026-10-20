@@ -17,6 +17,8 @@ export interface TaskScope {
 export interface TaskRecord {
   archivedAt: string | null;
   cycleId: string | null;
+  epicId: string | null;
+  milestoneId: string | null;
   assigneeId: string | null;
   description: string | null;
   dueDate: string | null;
@@ -53,6 +55,8 @@ export type TaskFieldErrors = Partial<Record<keyof TaskDraft, string>>;
 export interface TaskPlanningPatch {
   cycleId: string | null;
   estimate: number | null;
+  epicId?: string | null;
+  milestoneId?: string | null;
 }
 
 export class TaskValidationError extends Error {
@@ -64,6 +68,8 @@ export class TaskValidationError extends Error {
 interface TaskRow {
   archived_at: string | null;
   cycle_id: string | null;
+  epic_id: string | null;
+  milestone_id: string | null;
   assignee_id: string | null;
   description: string | null;
   due_date: string | null;
@@ -79,7 +85,7 @@ interface TaskRow {
 
 // Cast bigint on the server, before JSON decoding, so task identities never lose precision.
 const taskColumns =
-  "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, cycle_id, archived_at, updated_at";
+  "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, cycle_id, epic_id, milestone_id, archived_at, updated_at";
 
 export const emptyTaskDraft: TaskDraft = {
   assigneeId: "",
@@ -162,6 +168,8 @@ function toTask(row: TaskRow, projectKey: string): TaskRecord {
   return {
     archivedAt: row.archived_at,
     cycleId: row.cycle_id,
+    epicId: row.epic_id,
+    milestoneId: row.milestone_id,
     assigneeId: row.assignee_id,
     description: row.description,
     dueDate: row.due_date,
@@ -395,7 +403,16 @@ export function createTaskRepository(
       return mutate(
         scope,
         "update",
-        { cycle_id: patch.cycleId, estimate: patch.estimate },
+        {
+          cycle_id: patch.cycleId,
+          estimate: patch.estimate,
+          ...(Object.prototype.hasOwnProperty.call(patch, "epicId")
+            ? { epic_id: patch.epicId }
+            : {}),
+          ...(Object.prototype.hasOwnProperty.call(patch, "milestoneId")
+            ? { milestone_id: patch.milestoneId }
+            : {}),
+        },
         task,
       );
     },

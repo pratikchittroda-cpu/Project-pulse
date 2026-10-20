@@ -31,6 +31,8 @@ export function taskDetailFixture(): TaskDetail {
       priority: "high",
       assigneeId: "user-1",
       cycleId: "cycle-1",
+      epicId: null,
+      milestoneId: null,
       estimate: 3.5,
       labels: ["planning"],
       dueDate: "2026-10-31",

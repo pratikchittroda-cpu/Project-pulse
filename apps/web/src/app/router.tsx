@@ -22,6 +22,7 @@ import { LoginPage } from "../pages/login-page.js";
 import { NotFoundPage } from "../pages/not-found-page.js";
 import { OrganizationPage } from "../pages/organization-page.js";
 import { ProjectsPage } from "../pages/projects-page.js";
+import { RoadmapPage } from "../pages/roadmap-page.js";
 import { TasksPage } from "../pages/tasks-page.js";
 import { TaskDetailPage } from "../pages/task-detail-page.js";
 
@@ -72,6 +73,7 @@ export function createAppRoutes({
                     { path: "activity", element: <ActivityPage /> },
                     { path: "board", element: <BoardPage /> },
                     { path: "backlog", element: <BacklogPage /> },
+                    { path: "roadmap", element: <RoadmapPage /> },
                     { path: "organization", element: <OrganizationPage /> },
                     { path: "projects", element: <ProjectsPage /> },
                     { path: "tasks", element: <TasksPage /> },

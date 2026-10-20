@@ -90,6 +90,28 @@ membership/estimate/status events in the same transaction. Failure to record
 either task or sprint history rolls the mutation and receipt back. Lifecycle
 changes likewise commit their snapshot, audit record, and receipt together.
 
+## Roadmap hierarchy
+
+Initiatives are organization-scoped: authenticated organization members can read
+them, while only organization owners/admins can create, update, or delete them.
+Epics and milestones are project-scoped: assigned project readers can read them,
+and project owners/admins/members can write them. Viewers retain read access but
+cannot mutate roadmap items. Composite organization/project foreign keys prevent
+an epic or milestone from crossing a tenant or project boundary.
+
+Tasks link to `epic_id` and `milestone_id` through the existing atomic
+`mutate_task` RPC. The T025 append-only migration keeps request receipts,
+expected-version checks, and task history while allowing those two hierarchy
+fields. A link to an epic or milestone from another project fails at the database
+foreign-key boundary. Roadmap list queries remain scoped by the authenticated
+organization/project and are paginated for bounded reads.
+
+Milestone target dates are finite optional `date` values. The roadmap marks a
+milestone overdue only when its target date is before the current date and its
+status is neither completed nor canceled. Progress is a client-readable rollup
+of RLS-visible tasks: canceled tasks are excluded, terminal non-canceled statuses
+count as complete, and unestimated tasks contribute zero points.
+
 Initial and closing snapshots preserve string task numbers, keys, titles,
 estimates, and workflow status. Completed/canceled cycle rows stay immutable.
 Tasks cannot enter a closed cycle or change estimate/status/archive state while

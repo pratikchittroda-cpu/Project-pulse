@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T024 verification.
+Current state after T025 verification.
 
 ## Done
 
@@ -24,6 +24,7 @@ Current state after T024 verification.
 - `T022` — Task detail and activity timeline
 - `T023` — Kanban board and drag-and-drop
 - `T024` — Backlog, sprints, and estimation
+- `T025` — Initiatives, epics, and roadmap
 
 ## Ready
 
@@ -41,7 +42,7 @@ Current state after T024 verification.
 
 ### Agile planning
 
-- `T025`, `T026`, `T027`, `T028`
+- `T026`, `T027`, `T028`
 
 ### Realtime
 

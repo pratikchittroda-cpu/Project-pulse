@@ -150,6 +150,22 @@ archived projects are read-only. Use **Reload planning** after a stale-version
 error or to see other users' changes; realtime subscriptions remain a later task.
 Legacy closed sprints without recorded snapshots display that absence explicitly.
 
+Use **Roadmap** or `/app/roadmap` for the planning hierarchy above tasks. Create
+organization-level initiatives, project epics, and project milestones with
+planned/active/completed/canceled status. Epics may belong to an initiative;
+tasks can link independently to an epic and a milestone. Owners/admins manage
+initiatives, project writers manage epics, milestones, and task links, and
+viewers can read assigned project roadmap data without mutation controls.
+
+Roadmap progress is explainable from the visible child tasks. Canceled tasks are
+excluded from the active denominator; terminal non-canceled workflow statuses
+count as completed. The view reports completed/active task counts and estimated
+points, with unestimated tasks counted as tasks and contributing zero points.
+Milestones show an **Overdue** badge when their finite target date is before the
+current date and their status is not completed or canceled. Status and initiative
+filters are local to the loaded project scope. Reads are paginated in 100-row
+pages and task hierarchy writes use the atomic task mutation/history contract.
+
 Task writes use `mutate_task`: PostgreSQL commits the task, its history, and a
 request receipt atomically. Identical retries within the same repository instance
 reuse the request ID; stale versions are rejected. Reload the task after a
@@ -171,12 +187,15 @@ corepack pnpm run test:api
 ```
 
 `test:db` checks RLS, history atomicity, rollback, stale writes, and concurrent
-request deduplication. Sprint assertions cover lifecycle replay, immutable
+request deduplication. Roadmap assertions cover hierarchy links, task-history
+capture, finite dates, member/viewer permissions, and cross-project/organization
+denial. Sprint assertions cover lifecycle replay, immutable
 snapshots, paused scope changes, carryover, audit-failure rollback, concurrent
 starts/assignments, and completion isolation. `test:api` exercises the actual
 application repositories through local Supabase Auth/PostgREST, including bigint
 task keys, multi-page task/sprint/timeline reads, sprint lifecycle and carryover,
-viewer denial, and project/organization isolation. Both use
+roadmap create/readback and task linking, viewer denial, and project/organization
+isolation. Both use
 isolated fixtures and clean up after themselves; neither resets existing data.
 The API suite keeps temporary credentials in memory and is excluded from the
 offline command. `SUPABASE_DB_CONTAINER` can override the default database

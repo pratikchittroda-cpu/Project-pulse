@@ -11,6 +11,7 @@ const navigationItems = [
   { icon: "✓", label: "Tasks", to: "/app/tasks", end: false },
   { icon: "▤", label: "Board", to: "/app/board", end: false },
   { icon: "◫", label: "Backlog", to: "/app/backlog", end: false },
+  { icon: "⌗", label: "Roadmap", to: "/app/roadmap", end: false },
   { icon: "▦", label: "Projects", to: "/app/projects", end: false },
   { icon: "◎", label: "Organization", to: "/app/organization", end: false },
 ] as const;

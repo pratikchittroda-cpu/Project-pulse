@@ -321,6 +321,100 @@ it("loads planning tasks and sprints across repository page boundaries", async (
   expect(await cycles.list(scope)).toHaveLength(beforeCycles + 105);
 });
 
+it("reads roadmap hierarchy, links tasks, and enforces project permissions through PostgREST", async () => {
+  if (!client) throw new Error("Local API fixture was not initialized.");
+  const login = await client.auth.signInWithPassword({
+    email: users[0].email,
+    password,
+  });
+  if (login.error) throw new Error("Could not sign in fixture owner.");
+  sql(`insert into public.project_memberships (organization_id, project_id, user_id, role)
+    values ('${organizationId}', '${planningProjectId}', '${users[1].id}', 'viewer')
+    on conflict do nothing;`);
+  const { createRoadmapRepository } = await import(
+    "../apps/web/src/features/roadmap/roadmap-repository.js"
+  );
+  const { createTaskRepository, emptyTaskDraft } = await import(
+    "../apps/web/src/features/tasks/task-repository.js"
+  );
+  const roadmap = createRoadmapRepository(client);
+  const tasks = createTaskRepository(client);
+  const scope = {
+    organizationId,
+    projectId: planningProjectId,
+    projectKey: "PLAN",
+    userId: users[0].id,
+  };
+  const initiative = await roadmap.createInitiative(scope, {
+    name: "API roadmap initiative",
+    description: "Hierarchy readback",
+    status: "active",
+  });
+  const epic = await roadmap.createEpic(scope, {
+    title: "API roadmap epic",
+    description: "Task links",
+    initiativeId: initiative.id,
+    status: "active",
+  });
+  const milestone = await roadmap.createMilestone(scope, {
+    name: "API roadmap milestone",
+    targetDate: "2026-11-30",
+    status: "planned",
+  });
+  let task = await tasks.save(scope, {
+    ...emptyTaskDraft,
+    title: "API roadmap task",
+  });
+  task = await tasks.updatePlanning(scope, task, {
+    cycleId: null,
+    estimate: 2.5,
+    epicId: epic.id,
+    milestoneId: milestone.id,
+  });
+  const data = await roadmap.list(scope);
+  expect(data.initiatives).toEqual(
+    expect.arrayContaining([expect.objectContaining({ id: initiative.id })]),
+  );
+  expect(data.epics).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ id: epic.id, initiativeId: initiative.id }),
+    ]),
+  );
+  expect(data.milestones).toEqual(
+    expect.arrayContaining([expect.objectContaining({ id: milestone.id })]),
+  );
+  expect(await tasks.get(scope, task.id)).toMatchObject({
+    epicId: epic.id,
+    milestoneId: milestone.id,
+    estimate: 2.5,
+  });
+
+  const viewerLogin = await client.auth.signInWithPassword({
+    email: users[1].email,
+    password,
+  });
+  if (viewerLogin.error) throw new Error("Could not sign in fixture viewer.");
+  const viewerScope = { ...scope, userId: users[1].id };
+  expect((await roadmap.list(viewerScope)).epics).toEqual(
+    expect.arrayContaining([expect.objectContaining({ id: epic.id })]),
+  );
+  await expect(
+    roadmap.createMilestone(viewerScope, {
+      name: "Viewer cannot create",
+      targetDate: "",
+      status: "planned",
+    }),
+  ).rejects.toThrow(/permission/);
+  await expect(
+    tasks.updatePlanning(viewerScope, task, {
+      cycleId: null,
+      estimate: 3,
+      epicId: epic.id,
+      milestoneId: milestone.id,
+    }),
+  ).rejects.toThrow(/permission/);
+});
+
 afterAll(async () => {
   try {
     await client?.auth.signOut();

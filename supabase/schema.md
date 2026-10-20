@@ -21,6 +21,20 @@ support the first planning-to-delivery lifecycle. Project and organization
 columns are repeated on child records so composite foreign keys prevent rows
 from crossing tenant boundaries accidentally.
 
+`initiatives` are organization-level goals. `epics` belong to a project and may
+reference an initiative in the same organization. `milestones` belong to a
+project and carry a finite optional `target_date`; both epics and milestones use
+the shared planned/active/completed/canceled status vocabulary. Tasks may link to
+one epic and one milestone independently, with composite foreign keys enforcing
+the same project and organization. T025 adds indexed hierarchy reads and extends
+the atomic task mutation RPC so hierarchy changes are included in task history.
+
+Roadmap progress is calculated from active, unarchived child tasks: canceled
+tasks are excluded from the denominator; configured terminal non-canceled
+statuses count as completed; null estimates count as tasks and contribute zero
+points. The UI loads the hierarchy and tasks in bounded pages, then explains each
+initiative, epic, and milestone rollup from its child task links.
+
 ## Delivery and audit model
 
 - `repositories` stores provider-neutral repository metadata.
