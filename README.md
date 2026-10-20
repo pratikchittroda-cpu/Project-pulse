@@ -117,6 +117,17 @@ and chronological activity. Timeline entries include actor, source, time,
 changed values, and an automation reason when provided. Branch, commit, pull
 request, CI, and deployment areas are reserved for later integrations.
 
+Use **Board** in the workspace navigation or open `/app/board` for the
+configured Kanban workflow. Cards are grouped by project status and include
+priority, estimate, assignee, labels, a compact detail disclosure, and a link
+back to the task detail page. Authorized users can drag cards between columns or
+choose a destination in the keyboard-friendly **Move** control. Moves update
+optimistically and restore the original column if the server rejects the write.
+Board filters cover task text/keys/descriptions/labels, priority, assignee, and
+archived visibility. Each column reports its current WIP count; the current
+schema has no persisted WIP limit, so the board labels that state honestly as
+`no limit`. Viewer roles and archived projects remain read-only.
+
 Task writes use `mutate_task`: PostgreSQL commits the task, its history, and a
 request receipt atomically. Identical retries within the same repository instance
 reuse the request ID; stale versions are rejected. Reload the task after a

@@ -45,7 +45,7 @@ export interface TaskDraft {
 export interface TaskOptions {
   assignees: { id: string }[];
   canWrite: boolean;
-  statuses: { label: string; status: string }[];
+  statuses: { isTerminal?: boolean; label: string; status: string }[];
 }
 
 export type TaskFieldErrors = Partial<Record<keyof TaskDraft, string>>;
@@ -300,12 +300,14 @@ export function createTaskRepository(
         await Promise.all([
           client
             .from("project_workflow_statuses")
-            .select("label, status")
+            .select("label, status, is_terminal")
             .eq("organization_id", scope.organizationId)
             .eq("project_id", scope.projectId)
             .order("position")
             .order("status")
-            .returns<TaskOptions["statuses"]>(),
+            .returns<
+              { is_terminal: boolean; label: string; status: string }[]
+            >(),
           client
             .from("organization_memberships")
             .select("user_id, role")
@@ -341,7 +343,13 @@ export function createTaskRepository(
           )
           .map(({ user_id }) => ({ id: user_id })),
         canWrite: permission.data === true,
-        statuses: workflow.data ?? [],
+        statuses: (workflow.data ?? []).map(
+          ({ is_terminal, label, status }) => ({
+            isTerminal: is_terminal,
+            label,
+            status,
+          }),
+        ),
       };
     },
     async save(scope, draft, previous) {
