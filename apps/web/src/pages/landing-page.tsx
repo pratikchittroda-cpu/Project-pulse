@@ -9,7 +9,7 @@ const signals = [
 const features = [
   [
     "Connect the plan",
-    "Keep the work queue and delivery context in one place.",
+    "Keep roadmap intent and delivery context in one place.",
   ],
   [
     "See the signal",
@@ -24,46 +24,114 @@ const features = [
 export function LandingPage() {
   return (
     <>
-      <section className="hero" aria-labelledby="hero-title">
-        <div>
-          <p className="eyebrow">Engineering control plane</p>
+      <section className="hero landing-hero" aria-labelledby="hero-title">
+        <div className="hero-copy-column">
+          <div className="hero-kicker">
+            <span className="hero-kicker-dot" aria-hidden="true" />
+            Engineering control plane
+          </div>
           <h1 id="hero-title">Make delivery feel visible.</h1>
           <p className="hero-copy">
-            ProjectPulse connects planned work with developer activity,
-            source-control events, CI/CD results, and delivery analytics.
+            ProjectPulse turns scattered engineering signals into one clear
+            picture of what is moving, what is stuck, and what needs attention.
           </p>
           <div className="hero-actions">
-            <Link className="button button-primary" to="/auth/login">
-              Open the workspace
+            <Link
+              className="button button-primary button-arrow"
+              to="/auth/login"
+            >
+              Open the workspace <span aria-hidden="true">↗</span>
             </Link>
-            <Link className="button button-secondary" to="/app">
+            <Link className="button button-secondary" to="/auth/login">
               View demo dashboard
             </Link>
           </div>
+          <p className="hero-note">
+            <span aria-hidden="true">✦</span> Start with a local demo. No
+            account needed for the preview.
+          </p>
         </div>
-        <aside className="hero-card" aria-label="ProjectPulse signals">
-          <p className="eyebrow">One connected view</p>
-          <div className="signal-list">
-            {signals.map(([title, detail]) => (
-              <div className="signal-item" key={title}>
-                <span className="signal-dot" aria-hidden="true" />
+        <aside
+          className="hero-card hero-dashboard-card"
+          aria-label="ProjectPulse workspace preview"
+        >
+          <div className="hero-card-topline">
+            <span className="preview-window-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <span className="preview-window-label">PULSE / OVERVIEW</span>
+            <span className="preview-live-label">
+              <span className="signal-dot" aria-hidden="true" /> Live
+            </span>
+          </div>
+          <div className="preview-heading">
+            <div>
+              <span className="preview-eyebrow">Tuesday, October 20</span>
+              <strong>Good morning, team.</strong>
+            </div>
+            <span className="preview-avatar" aria-hidden="true">
+              PP
+            </span>
+          </div>
+          <div className="preview-metrics">
+            <div>
+              <span>Active tasks</span>
+              <strong>24</strong>
+              <small>+8% this week</small>
+            </div>
+            <div>
+              <span>In review</span>
+              <strong>07</strong>
+              <small>2 ready to merge</small>
+            </div>
+            <div className="preview-health">
+              <span>Delivery health</span>
+              <strong>92%</strong>
+              <small>
+                <i aria-hidden="true" /> Healthy signal
+              </small>
+            </div>
+          </div>
+          <div className="preview-activity">
+            <div className="preview-section-heading">
+              <strong>Recent activity</strong>
+              <span>View all</span>
+            </div>
+            {signals.map(([title, detail], index) => (
+              <div className="preview-activity-row" key={title}>
+                <span
+                  className={`preview-activity-icon preview-activity-icon-${index + 1}`}
+                  aria-hidden="true"
+                >
+                  {index === 0 ? "↗" : index === 1 ? "⌁" : "✓"}
+                </span>
                 <div>
                   <strong>{title}</strong>
                   <span>{detail}</span>
                 </div>
+                <small>{index === 0 ? "8m" : index === 1 ? "32m" : "1h"}</small>
               </div>
             ))}
           </div>
         </aside>
       </section>
-      <section className="feature-grid" aria-label="ProjectPulse capabilities">
-        {features.map(([title, detail]) => (
-          <article className="feature-card" key={title}>
-            <span className="signal-dot" aria-hidden="true" />
-            <h2>{title}</h2>
-            <p>{detail}</p>
-          </article>
-        ))}
+      <section className="landing-proof" aria-label="ProjectPulse capabilities">
+        <div className="landing-proof-heading">
+          <span className="eyebrow">A clearer operating rhythm</span>
+          <p>Everything your team needs to turn movement into momentum.</p>
+        </div>
+        <div className="feature-grid">
+          {features.map(([title, detail], index) => (
+            <article className="feature-card" key={title}>
+              <span className="feature-index">0{index + 1}</span>
+              <span className="signal-dot" aria-hidden="true" />
+              <h2>{title}</h2>
+              <p>{detail}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </>
   );

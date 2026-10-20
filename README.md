@@ -177,6 +177,11 @@ The callback route is `/auth/callback`; sessions persist in browser storage,
 refresh automatically, and are cleared by sign-out. Service-role credentials
 are never exposed to the browser.
 
+When running the Vite development server, the sign-in screen also exposes
+`Continue in demo mode`. It opens the workspace with local preview data without
+creating a Supabase session, and the choice is remembered in that browser. The
+demo entry point is development-only; production builds keep the real auth flow.
+
 The runnable web workspace, development server, production build, container,
 and deployment commands are introduced by the foundation tasks:
 
