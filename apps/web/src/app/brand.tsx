@@ -24,9 +24,9 @@ export function ProjectPulseMark({ size = 38 }: ProjectPulseMarkProps) {
           y2="43"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#8e83ff" />
-          <stop offset="0.55" stopColor="#6557f5" />
-          <stop offset="1" stopColor="#ff9c83" />
+          <stop stopColor="#b092d7" />
+          <stop offset="0.55" stopColor="#7047a8" />
+          <stop offset="1" stopColor="#d4aa65" />
         </linearGradient>
       </defs>
       <rect
@@ -46,7 +46,7 @@ export function ProjectPulseMark({ size = 38 }: ProjectPulseMarkProps) {
         strokeWidth="3.5"
       />
       <circle cx="11" cy="28.2" fill="white" r="2.1" />
-      <circle cx="41" cy="26.2" fill="#c9f3db" r="2.1" />
+      <circle cx="41" cy="26.2" fill="#e3c98f" r="2.1" />
       <path
         d="M15.5 12.2A15.6 15.6 0 0 1 36.7 12"
         fill="none"

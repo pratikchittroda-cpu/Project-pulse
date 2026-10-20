@@ -3844,3 +3844,327 @@ strong,
     display: none;
   }
 }
+
+/* Royal editorial direction */
+:root {
+  --ink: #271a31;
+  --ink-soft: #786a80;
+  --paper: #f8f3ea;
+  --paper-strong: #fffdf8;
+  --line: #e8ddcf;
+  --violet: #7047a8;
+  --violet-dark: #4b286d;
+  --violet-soft: #f0e7f7;
+  --mint: #dfead8;
+  --coral: #d4aa65;
+  --navy: #23152f;
+  --navy-soft: #39204b;
+  --royal-gold: #c49a57;
+  --font-display:
+    "Iowan Old Style", "Baskerville", "Palatino Linotype", "Book Antiqua",
+    Georgia, serif;
+  --font-body: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+.brand-name,
+.preview-heading strong,
+.signal-core strong,
+.metric-card strong,
+.signal-score-ring strong,
+.app-header-title h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.hero h1,
+.auth-card-intro h1,
+.page-heading h2,
+.focus-panel h3,
+.signal-band-copy h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.07em;
+}
+
+.hero-kicker,
+.eyebrow,
+.panel-kicker,
+.auth-form-kicker,
+.demo-access-label,
+.context-label,
+.sidebar-workspace-label,
+.nav-heading,
+.preview-window-label,
+.preview-eyebrow {
+  font-family: var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+.eyebrow,
+.hero-kicker,
+.panel-kicker,
+.auth-form-kicker,
+.demo-access-label {
+  color: var(--royal-gold);
+}
+
+.public-layout {
+  background:
+    radial-gradient(
+      circle at 92% 8%,
+      rgb(223 234 216 / 62%) 0,
+      transparent 20rem
+    ),
+    radial-gradient(
+      circle at 9% 88%,
+      rgb(240 231 247 / 95%) 0,
+      transparent 26rem
+    ),
+    var(--paper);
+}
+
+.public-layout::before {
+  background-image:
+    linear-gradient(rgb(75 40 109 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(75 40 109 / 4%) 1px, transparent 1px);
+}
+
+.public-header,
+.auth-header {
+  border-bottom-color: rgb(75 40 109 / 10%);
+}
+
+.public-header::after,
+.auth-header::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(196 154 87 / 55%),
+    transparent
+  );
+}
+
+.brand-name {
+  background: linear-gradient(
+    110deg,
+    var(--ink) 10%,
+    var(--violet-dark) 58%,
+    var(--royal-gold) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.brand-tagline {
+  color: #a38b68;
+}
+
+.hero-kicker-dot {
+  background: var(--royal-gold);
+  box-shadow: 0 0 0 0.3rem rgb(196 154 87 / 16%);
+}
+
+.hero-note span {
+  color: var(--royal-gold);
+}
+
+.button-primary {
+  background: var(--violet-dark);
+  box-shadow: 0 0.8rem 1.5rem rgb(75 40 109 / 22%);
+}
+
+.button-primary:hover {
+  background: var(--violet);
+}
+
+.button-secondary {
+  background: rgb(255 253 248 / 80%);
+  border-color: rgb(196 154 87 / 36%);
+}
+
+.button-secondary:hover {
+  border-color: var(--royal-gold);
+}
+
+.hero-dashboard-card {
+  background:
+    radial-gradient(
+      circle at 92% 0,
+      rgb(112 71 168 / 36%) 0,
+      transparent 15rem
+    ),
+    var(--navy);
+}
+
+.signal-core {
+  background: radial-gradient(
+    circle at 35% 28%,
+    #b092d7,
+    var(--violet-dark) 62%,
+    #2b173d
+  );
+  box-shadow:
+    0 0 0 0.7rem rgb(112 71 168 / 8%),
+    0 0 0 1.3rem rgb(196 154 87 / 6%),
+    0 1.5rem 3rem rgb(75 40 109 / 34%);
+}
+
+.signal-ring-inner::before,
+.signal-ring-inner::after {
+  background: var(--royal-gold);
+  box-shadow:
+    0 0 0 0.35rem rgb(196 154 87 / 14%),
+    0 0 1.2rem var(--royal-gold);
+}
+
+.signal-ring-inner::after {
+  background: var(--mint);
+}
+
+.signal-node {
+  border-color: rgb(196 154 87 / 28%);
+}
+
+.signal-node i {
+  background: var(--royal-gold);
+  box-shadow: 0 0 0 0.25rem rgb(196 154 87 / 14%);
+}
+
+.signal-node-activity i {
+  background: var(--violet);
+  box-shadow: 0 0 0 0.25rem var(--violet-soft);
+}
+
+.app-sidebar {
+  background:
+    radial-gradient(circle at 0 0, rgb(112 71 168 / 21%) 0, transparent 17rem),
+    var(--navy);
+}
+
+.app-sidebar .brand-name {
+  background: linear-gradient(110deg, #fffdf8 10%, #d8c2ed 62%, #e3c98f 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.app-sidebar .brand-tagline {
+  color: #a99775;
+}
+
+.app-sidebar .projectpulse-mark {
+  box-shadow:
+    0 0.55rem 1.15rem rgb(75 40 109 / 32%),
+    0 0 0 1px rgb(227 201 143 / 32%) inset;
+}
+
+.project-switcher-mark,
+.preview-avatar,
+.header-avatar,
+.account-avatar,
+.focus-panel-orb {
+  background: var(--royal-gold);
+}
+
+.nav-link-active {
+  background: rgb(112 71 168 / 22%);
+  box-shadow: inset 0.15rem 0 0 var(--royal-gold);
+}
+
+.nav-link-active .nav-link-icon,
+.nav-link:hover .nav-link-icon {
+  color: var(--royal-gold);
+}
+
+.app-main::before {
+  background: linear-gradient(
+    90deg,
+    var(--violet),
+    var(--royal-gold),
+    var(--mint)
+  );
+}
+
+.metric-card-1 {
+  background: linear-gradient(145deg, var(--paper-strong), #f0e7f7);
+}
+
+.metric-card-2 {
+  background: linear-gradient(145deg, var(--paper-strong), #f8efdf);
+}
+
+.metric-card-3 {
+  background: linear-gradient(145deg, var(--paper-strong), #edf2e8);
+}
+
+.metric-card-icon {
+  color: var(--violet-dark);
+}
+
+.dashboard-signal-band {
+  background:
+    radial-gradient(
+      circle at 80% 16%,
+      rgb(176 146 215 / 23%),
+      transparent 13rem
+    ),
+    linear-gradient(130deg, #241631, #342046 62%, #45304f);
+  border-color: rgb(196 154 87 / 38%);
+}
+
+.signal-score-ring {
+  background: conic-gradient(
+    var(--royal-gold) 0 92%,
+    rgb(255 255 255 / 10%) 92% 100%
+  );
+}
+
+.signal-score-ring small,
+.signal-band-change {
+  color: #e3c98f;
+}
+
+.focus-panel {
+  background:
+    radial-gradient(
+      circle at 92% 4%,
+      rgb(223 234 216 / 75%) 0,
+      transparent 11rem
+    ),
+    linear-gradient(145deg, #f0e7f7, var(--paper-strong) 78%);
+}
+
+.focus-panel-orb {
+  color: var(--ink);
+}
+
+.pp-button-primary {
+  background: var(--violet-dark);
+}
+
+.pp-button-primary:hover:not(:disabled) {
+  background: var(--violet);
+}
+
+.pp-eyebrow {
+  color: var(--royal-gold);
+  font-family: var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+.pp-card,
+.metric-card,
+.activity-panel,
+.focus-panel,
+.feature-card,
+.auth-card-wide {
+  border-color: var(--line);
+}
