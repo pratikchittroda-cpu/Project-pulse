@@ -17,10 +17,17 @@ import { supabase, supabaseAuthConfig } from "./auth-client.js";
 
 export type AuthStatus = "authenticated" | "error" | "loading" | "signed_out";
 
+const DEMO_AUTH_STORAGE_KEY = "projectpulse.demo-auth";
+
+export const demoModeEnabled = import.meta.env.DEV;
+
 interface AuthContextValue {
   clearError: () => void;
+  demoModeEnabled: boolean;
   error: string | null;
+  enterDemoMode: () => void;
   isConfigured: boolean;
+  isDemoMode: boolean;
   requestMagicLink: (email: string) => Promise<{ error: string | null }>;
   session: Session | null;
   signInWithGithub: () => Promise<{ error: string | null }>;
@@ -60,6 +67,34 @@ function nextStatus(
   return "authenticated";
 }
 
+function hasStoredDemoMode() {
+  if (!demoModeEnabled || typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    return window.localStorage.getItem(DEMO_AUTH_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function storeDemoMode(enabled: boolean) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    if (enabled) {
+      window.localStorage.setItem(DEMO_AUTH_STORAGE_KEY, "true");
+    } else {
+      window.localStorage.removeItem(DEMO_AUTH_STORAGE_KEY);
+    }
+  } catch {
+    // Demo mode is a convenience for local development. Ignore storage errors.
+  }
+}
+
 export function AuthProvider({
   children,
   client = supabase,
@@ -67,12 +102,17 @@ export function AuthProvider({
   initialStatus,
 }: AuthProviderProps) {
   const isControlled = initialStatus !== undefined;
+  const [isDemoMode, setIsDemoMode] = useState(
+    () => !isControlled && hasStoredDemoMode(),
+  );
   const [session, setSession] = useState<Session | null>(initialSession);
-  const [status, setStatus] = useState<AuthStatus>(initialStatus ?? "loading");
+  const [status, setStatus] = useState<AuthStatus>(
+    initialStatus ?? (isDemoMode ? "authenticated" : "loading"),
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isControlled) {
+    if (isControlled || isDemoMode) {
       return undefined;
     }
 
@@ -110,7 +150,19 @@ export function AuthProvider({
       active = false;
       subscription.unsubscribe();
     };
-  }, [client, isControlled]);
+  }, [client, isControlled, isDemoMode]);
+
+  const enterDemoMode = useCallback(() => {
+    if (!demoModeEnabled) {
+      return;
+    }
+
+    storeDemoMode(true);
+    setError(null);
+    setIsDemoMode(true);
+    setSession(null);
+    setStatus("authenticated");
+  }, []);
 
   const requestMagicLink = useCallback(
     async (email: string) => {
@@ -166,7 +218,9 @@ export function AuthProvider({
   const signOut = useCallback(async () => {
     setError(null);
 
-    if (isControlled) {
+    if (isControlled || isDemoMode) {
+      storeDemoMode(false);
+      setIsDemoMode(false);
       setSession(null);
       setStatus("signed_out");
       return { error: null };
@@ -183,14 +237,17 @@ export function AuthProvider({
     setSession(null);
     setStatus("signed_out");
     return { error: null };
-  }, [client, isControlled]);
+  }, [client, isControlled, isDemoMode]);
 
   const clearError = useCallback(() => setError(null), []);
   const value = useMemo(
     () => ({
       clearError,
+      demoModeEnabled,
       error,
+      enterDemoMode,
       isConfigured: supabaseAuthConfig.isConfigured,
+      isDemoMode,
       requestMagicLink,
       session,
       signInWithGithub,
@@ -199,7 +256,9 @@ export function AuthProvider({
     }),
     [
       clearError,
+      enterDemoMode,
       error,
+      isDemoMode,
       requestMagicLink,
       session,
       signInWithGithub,

@@ -21,6 +21,21 @@ function AuthProbe() {
   );
 }
 
+function DemoModeProbe() {
+  const { demoModeEnabled, enterDemoMode, isDemoMode, status } = useAuth();
+
+  return (
+    <div>
+      <span data-testid="demo-enabled">{String(demoModeEnabled)}</span>
+      <span data-testid="demo-active">{String(isDemoMode)}</span>
+      <span data-testid="demo-status">{status}</span>
+      <button onClick={enterDemoMode} type="button">
+        Enter demo mode
+      </button>
+    </div>
+  );
+}
+
 describe("authentication flow boundaries", () => {
   afterEach(() => cleanup());
 
@@ -45,6 +60,20 @@ describe("authentication flow boundaries", () => {
     );
 
     expect(screen.getByTestId("status").textContent).toBe("loading");
+  });
+
+  it("can enter local demo mode without a Supabase session", () => {
+    render(
+      <AuthProvider initialStatus="signed_out">
+        <DemoModeProbe />
+      </AuthProvider>,
+    );
+
+    expect(screen.getByTestId("demo-enabled").textContent).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Enter demo mode" }));
+
+    expect(screen.getByTestId("demo-active").textContent).toBe("true");
+    expect(screen.getByTestId("demo-status").textContent).toBe("authenticated");
   });
 
   it("does not treat placeholder browser credentials as configured auth", () => {
