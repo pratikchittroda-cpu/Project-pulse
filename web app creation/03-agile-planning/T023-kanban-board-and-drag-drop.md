@@ -43,8 +43,9 @@ Build the interactive board that combines manual planning state with live task s
 
 ## Verification
 
-- `make test` passed workspace validation, typechecking, lint, formatting, build,
-  all 68 offline Vitest tests, and workspace checks.
+- `corepack pnpm test` passed workspace validation, typechecking, lint, formatting,
+  build, all 68 offline Vitest tests, and workspace checks. The repository's
+  `make test` target delegates to this exact command.
 - `tests/kanban-board.test.tsx` covers configured/unknown workflow columns,
   query/priority/assignee filters, compact/expanded cards, keyboard movement,
   optimistic status changes, rollback on failed writes, native drag/drop, WIP
