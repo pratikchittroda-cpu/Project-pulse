@@ -62,5 +62,42 @@ inaccessible tasks share a non-disclosing UI state. `test:db` checks these
 boundaries in PostgreSQL; `test:api` additionally verifies them through local
 Auth/PostgREST, including same-organization private projects and removed members.
 
+## Sprint planning and historical snapshots
+
+Migrations `20261021000000_backlog_sprints.sql` and
+`20261021010000_cycle_snapshots_and_carryover.sql` add sprint lifecycle,
+membership accounting, snapshots, and a scoped `cycle_events` ledger. Apply both
+with `corepack pnpm exec supabase migration up --local`; neither migration
+requires resetting existing data.
+
+Authenticated project writers use `manage_cycle` for create/edit/start/pause/
+complete/cancel. Every call requires a request ID; updates also require the last
+observed cycle `updated_at`. Permission and archived-project checks precede
+receipt replay. Private `cycle_mutation_receipts` bind the actor, project, and
+request content. Stale versions fail with `40001`; invalid closed-history edits
+fail with `55000`. A unique index enforces one active cycle per project.
+
+Direct cycle insert/update/delete privileges are revoked from `anon`,
+`authenticated`, and `service_role`. The lifecycle RPC is authenticated-only;
+service-role RLS bypass does not bypass these SQL privileges. Clients cannot
+write the cycle ledger or access cycle receipts. Authorized project readers can
+read cycles and `cycle_events`; viewer roles retain read access but cannot plan.
+Removing organization membership also removes access to its sprint history.
+
+Task membership and estimates use the existing `mutate_task` RPC and task
+version checks. Triggers lock affected cycles, update open totals, and record
+membership/estimate/status events in the same transaction. Failure to record
+either task or sprint history rolls the mutation and receipt back. Lifecycle
+changes likewise commit their snapshot, audit record, and receipt together.
+
+Initial and closing snapshots preserve string task numbers, keys, titles,
+estimates, and workflow status. Completed/canceled cycle rows stay immutable.
+Tasks cannot enter a closed cycle or change estimate/status/archive state while
+remaining in it. Moving membership out is allowed without changing those fields
+in the same operation; the UI offers this for unfinished work. The historical
+snapshot and unfinished-at-close metrics remain fixed after carryover. Direct
+task deletion cannot erase closed history; normal organization/project cascade
+cleanup remains available to authorized administrators.
+
 Add policy changes as new append-only migrations. Do not weaken the organization
 or project helper functions in feature-specific SQL.

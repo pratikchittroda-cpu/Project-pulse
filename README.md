@@ -128,6 +128,28 @@ archived visibility. Each column reports its current WIP count; the current
 schema has no persisted WIP limit, so the board labels that state honestly as
 `no limit`. Viewer roles and archived projects remain read-only.
 
+Use **Backlog** or `/app/backlog` to create sprints, set optional calendar dates,
+and assign unarchived tasks with story-point estimates. Estimates may be blank
+(unestimated) or non-negative numbers with up to two decimal places. A project
+has at most one active sprint. **Pause** releases the active slot; **Resume**
+preserves the original commitment. Active or paused sprints can be completed;
+pause an active sprint before canceling it.
+
+The first start captures task details and initial commitment. Current scope,
+completed work, and added/removed points and task counts update transactionally,
+including scope changes while paused. Unestimated tasks count as work but add
+zero points. Estimate adjustments count their net point difference. Configured
+terminal statuses count as completed except `canceled`.
+
+Completion or cancellation freezes historical task details and totals. Expand
+**Closed sprint history**, choose a destination, and **Carry over** unfinished
+work to the backlog or another open sprint. Carryover preserves the old snapshot;
+change the task's estimate or status afterward. **Unfinished at close** stays
+fixed even after tasks move. There is no automatic bulk carryover. Viewers and
+archived projects are read-only. Use **Reload planning** after a stale-version
+error or to see other users' changes; realtime subscriptions remain a later task.
+Legacy closed sprints without recorded snapshots display that absence explicitly.
+
 Task writes use `mutate_task`: PostgreSQL commits the task, its history, and a
 request receipt atomically. Identical retries within the same repository instance
 reuse the request ID; stale versions are rejected. Reload the task after a
@@ -149,9 +171,12 @@ corepack pnpm run test:api
 ```
 
 `test:db` checks RLS, history atomicity, rollback, stale writes, and concurrent
-request deduplication. `test:api` exercises the actual application repositories
-through local Supabase Auth/PostgREST, including bigint task keys, multi-page
-timeline ordering, viewer denial, and project/organization isolation. Both use
+request deduplication. Sprint assertions cover lifecycle replay, immutable
+snapshots, paused scope changes, carryover, audit-failure rollback, concurrent
+starts/assignments, and completion isolation. `test:api` exercises the actual
+application repositories through local Supabase Auth/PostgREST, including bigint
+task keys, multi-page task/sprint/timeline reads, sprint lifecycle and carryover,
+viewer denial, and project/organization isolation. Both use
 isolated fixtures and clean up after themselves; neither resets existing data.
 The API suite keeps temporary credentials in memory and is excluded from the
 offline command. `SUPABASE_DB_CONTAINER` can override the default database
