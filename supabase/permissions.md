@@ -33,5 +33,11 @@ use direct PostgreSQL role and JWT-claim simulation to prove positive member
 reads, cross-organization denial, viewer write denial, and client webhook write
 denial.
 
+Task events use the same project boundary. Authenticated event writes require
+the current actor and project write access; the `record_task_event` RPC accepts
+only internal or extension sources from clients. Provider-originated sources
+remain service-role ingestion paths, and organization/idempotency uniqueness
+prevents duplicate history entries.
+
 Add policy changes as new append-only migrations. Do not weaken the organization
 or project helper functions in feature-specific SQL.

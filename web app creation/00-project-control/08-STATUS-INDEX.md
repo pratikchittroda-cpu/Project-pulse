@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T021 verification.
+Current state after T030 verification.
 
 ## Done
 
@@ -20,6 +20,7 @@ Current state after T021 verification.
 - `T015` — Projects and repository records
 - `T020` — Task domain and project keys
 - `T021` — Task CRUD and data hooks
+- `T030` — Event envelope and task events
 
 ## Ready
 
@@ -41,7 +42,7 @@ Current state after T021 verification.
 
 ### Realtime
 
-- `T030`, `T031`, `T032`, `T033`
+- `T031`, `T032`, `T033`
 
 ### GitHub and CI/CD
 

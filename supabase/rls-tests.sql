@@ -24,6 +24,9 @@ declare
   operation_succeeded boolean;
   affected_count integer;
   generated_task_number bigint;
+  event_id uuid;
+  duplicate_event_id uuid;
+  event_count integer;
 begin
   insert into auth.users (id, aud, role, email, email_confirmed_at, created_at, updated_at)
   values
@@ -127,6 +130,128 @@ begin
   exception when insufficient_privilege then
     null;
   end;
+
+  perform set_config('request.jwt.claim.sub', member_id::text, true);
+  select id into event_id
+  from public.record_task_event(
+    organization_id,
+    project_id,
+    task_id,
+    'task.status_changed',
+    'internal',
+    'rls-task-status-1',
+    '{"from":"backlog","to":"in_progress"}'::jsonb,
+    '2026-10-20T12:00:00.000Z'::timestamptz,
+    'rls-run-1'
+  );
+  select id into duplicate_event_id
+  from public.record_task_event(
+    organization_id,
+    project_id,
+    task_id,
+    'task.status_changed',
+    'internal',
+    'rls-task-status-1',
+    '{"from":"backlog","to":"in_progress"}'::jsonb,
+    '2026-10-20T12:00:00.000Z'::timestamptz,
+    'rls-run-1'
+  );
+  if event_id <> duplicate_event_id then
+    raise exception 'duplicate task event returned a different history row';
+  end if;
+  select count(*) into event_count
+  from public.task_events event_row
+  where event_row.organization_id = rls_test.organization_id
+    and event_row.idempotency_key = 'rls-task-status-1';
+  if event_count <> 1 then
+    raise exception 'duplicate task event created a second history row';
+  end if;
+
+  select id into duplicate_event_id
+  from public.record_task_event(
+    organization_id,
+    project_id,
+    task_id,
+    'task.updated',
+    'internal',
+    'rls-task-update-1',
+    '{"field":"priority"}'::jsonb,
+    '2026-10-20T12:01:00.000Z'::timestamptz,
+    'rls-run-1'
+  );
+  select count(*) into event_count
+  from public.task_events event_row
+  where event_row.task_id = rls_test.task_id
+    and event_row.occurred_at >= '2026-10-20T12:00:00.000Z'::timestamptz;
+  if event_count <> 2 then
+    raise exception 'task event ordering fixture did not persist two events';
+  end if;
+
+  operation_succeeded := false;
+  begin
+    perform public.record_task_event(
+      organization_id,
+      project_id,
+      task_id,
+      'TASK STATUS',
+      'internal',
+      'rls-invalid-event-1',
+      '{}'::jsonb
+    );
+    operation_succeeded := true;
+  exception when sqlstate '22023' then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'malformed task event unexpectedly succeeded';
+  end if;
+
+  operation_succeeded := false;
+  begin
+    perform public.record_task_event(
+      organization_id,
+      project_id,
+      task_id,
+      'github.pull_request.opened',
+      'github',
+      'rls-provider-spoof-1',
+      '{}'::jsonb
+    );
+    operation_succeeded := true;
+  exception when insufficient_privilege then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'provider source spoof unexpectedly succeeded';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', viewer_id::text, true);
+  operation_succeeded := false;
+  begin
+    perform public.record_task_event(
+      organization_id,
+      project_id,
+      task_id,
+      'task.updated',
+      'internal',
+      'rls-viewer-event-1',
+      '{}'::jsonb
+    );
+    operation_succeeded := true;
+  exception when insufficient_privilege then
+    null;
+  end;
+  if operation_succeeded then
+    raise exception 'viewer task event unexpectedly succeeded';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', other_id::text, true);
+  select count(*) into event_count
+  from public.task_events event_row
+  where event_row.organization_id = rls_test.organization_id;
+  if event_count <> 0 then
+    raise exception 'cross-organization member read task events';
+  end if;
 
   perform set_config('request.jwt.claim.sub', member_id::text, true);
   begin

@@ -13,6 +13,10 @@ const taskCrudMigration = readFileSync(
   "supabase/migrations/20261018000000_task_crud_validation.sql",
   "utf8",
 );
+const taskEventsMigration = readFileSync(
+  "supabase/migrations/20261018010000_event_envelope_and_task_events.sql",
+  "utf8",
+);
 const tests = readFileSync("supabase/rls-tests.sql", "utf8");
 
 describe("RLS policy contract", () => {
@@ -77,5 +81,18 @@ describe("RLS policy contract", () => {
     expect(tests).toContain(
       "archived project task write unexpectedly succeeded",
     );
+  });
+
+  it("keeps task event history idempotent and provider-neutral", () => {
+    expect(taskEventsMigration).toContain(
+      "task_events_organization_idempotency_key_unique",
+    );
+    expect(taskEventsMigration).toContain("create policy task_events_insert");
+    expect(taskEventsMigration).toContain("record_task_event");
+    expect(tests).toContain(
+      "duplicate task event created a second history row",
+    );
+    expect(tests).toContain("viewer task event unexpectedly succeeded");
+    expect(tests).toContain("provider source spoof unexpectedly succeeded");
   });
 });

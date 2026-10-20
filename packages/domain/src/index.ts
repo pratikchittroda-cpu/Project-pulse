@@ -117,7 +117,10 @@ export interface Integration {
 export type CoreEventName =
   | "github.pull_request.opened"
   | "presence.updated"
+  | "task.archived"
   | "task.created"
+  | "task.status_changed"
+  | "task.updated"
   | "telemetry.session_started";
 
 export type EventName = CoreEventName | (string & {});
