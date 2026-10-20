@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
+import { ProjectPulseMark } from "./brand.js";
 import { useAuth } from "./auth-context.js";
 import { useOrganization } from "./organization-context.js";
 import { useProject } from "./project-context.js";
@@ -15,10 +16,11 @@ const navigationItems = [
 function Brand() {
   return (
     <Link className="brand" to="/">
-      <span className="brand-mark" aria-hidden="true">
-        P
+      <ProjectPulseMark size={36} />
+      <span className="brand-copy">
+        <span className="brand-name">ProjectPulse</span>
+        <span className="brand-tagline">Engineering intelligence</span>
       </span>
-      <span>ProjectPulse</span>
     </Link>
   );
 }

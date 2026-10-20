@@ -3735,3 +3735,112 @@ strong,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Brand system */
+.brand {
+  align-items: center;
+  gap: 0.7rem;
+  position: relative;
+}
+
+.projectpulse-mark {
+  border-radius: 0.88rem;
+  box-shadow:
+    0 0.55rem 1rem rgb(101 87 245 / 17%),
+    0 0 0 1px rgb(255 255 255 / 40%) inset;
+  display: block;
+  flex: 0 0 auto;
+  transition:
+    filter 220ms ease,
+    transform 220ms ease;
+}
+
+.brand-copy {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.brand-name {
+  background: linear-gradient(110deg, var(--ink) 12%, var(--violet-dark) 88%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 820;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.brand-tagline {
+  color: #9ba1aa;
+  font-family: var(--font-mono);
+  font-size: 0.49rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.brand:hover .projectpulse-mark {
+  filter: saturate(1.18) brightness(1.04);
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.app-sidebar .brand-name {
+  background: linear-gradient(110deg, #ffffff 12%, #c7c1ff 88%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.app-sidebar .brand-tagline {
+  color: #858ca2;
+}
+
+.app-sidebar .projectpulse-mark {
+  box-shadow:
+    0 0.55rem 1.15rem rgb(101 87 245 / 28%),
+    0 0 0 1px rgb(255 255 255 / 20%) inset;
+}
+
+.public-header,
+.auth-header {
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgb(31 36 48 / 6%);
+}
+
+.public-header::after,
+.auth-header::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(101 87 245 / 22%),
+    transparent
+  );
+  bottom: -1px;
+  content: "";
+  height: 1px;
+  left: 25%;
+  position: absolute;
+  right: 25%;
+}
+
+.app-sidebar .brand {
+  min-width: 0;
+}
+
+.app-sidebar .brand-copy {
+  min-width: 0;
+}
+
+.app-sidebar .brand-name,
+.app-sidebar .brand-tagline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .brand-tagline {
+    display: none;
+  }
+}
