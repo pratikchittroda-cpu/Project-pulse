@@ -182,7 +182,7 @@ begin
   select count(*) into event_count
   from public.task_events event_row
   where event_row.task_id = rls_test.task_id
-    and event_row.occurred_at >= '2026-10-20T12:00:00.000Z'::timestamptz;
+    and event_row.idempotency_key in ('rls-task-status-1', 'rls-task-update-1');
   if event_count <> 2 then
     raise exception 'task event ordering fixture did not persist two events';
   end if;

@@ -16,6 +16,7 @@ export interface TaskScope {
 
 export interface TaskRecord {
   archivedAt: string | null;
+  cycleId: string | null;
   assigneeId: string | null;
   description: string | null;
   dueDate: string | null;
@@ -57,6 +58,7 @@ export class TaskValidationError extends Error {
 
 interface TaskRow {
   archived_at: string | null;
+  cycle_id: string | null;
   assignee_id: string | null;
   description: string | null;
   due_date: string | null;
@@ -72,7 +74,7 @@ interface TaskRow {
 
 // Cast bigint on the server, before JSON decoding, so task identities never lose precision.
 const taskColumns =
-  "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, archived_at, updated_at";
+  "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, cycle_id, archived_at, updated_at";
 
 export const emptyTaskDraft: TaskDraft = {
   assigneeId: "",
@@ -154,6 +156,7 @@ export function taskPayload(draft: TaskDraft) {
 function toTask(row: TaskRow, projectKey: string): TaskRecord {
   return {
     archivedAt: row.archived_at,
+    cycleId: row.cycle_id,
     assigneeId: row.assignee_id,
     description: row.description,
     dueDate: row.due_date,
@@ -175,7 +178,7 @@ function databaseError(error: { code?: string; message: string }) {
       "You no longer have permission to change tasks in this project. Reload to check your access.",
     );
   }
-  if (error.code === "PGRST116") {
+  if (error.code === "PGRST116" || error.code === "40001") {
     return new Error(
       "This task changed or is no longer available. Reload tasks before trying again.",
     );
@@ -200,6 +203,8 @@ function databaseError(error: { code?: string; message: string }) {
 }
 
 export interface TaskRepository {
+  get(scope: TaskScope, taskId: string): Promise<TaskRecord | null>;
+  cycleName(scope: TaskScope, cycleId: string): Promise<string | null>;
   list(scope: TaskScope, includeArchived: boolean): Promise<TaskRecord[]>;
   options(scope: TaskScope): Promise<TaskOptions>;
   save(
@@ -217,7 +222,65 @@ export interface TaskRepository {
 export function createTaskRepository(
   client: SupabaseClient = supabase,
 ): TaskRepository {
+  // Retain IDs for failed/uncertain responses so an explicit retry of the same
+  // operation uses the server's receipt. No automatic retry of a mutation.
+  const pendingRequests = new Map<string, string>();
+  async function mutate(
+    scope: TaskScope,
+    action: string,
+    values: ReturnType<typeof taskPayload> | Record<string, never>,
+    previous?: TaskRecord,
+  ) {
+    const key = JSON.stringify([
+      scope.organizationId,
+      scope.projectId,
+      scope.userId,
+      action,
+      previous?.id,
+      previous?.updatedAt,
+      values,
+    ]);
+    const requestId = pendingRequests.get(key) ?? crypto.randomUUID();
+    pendingRequests.set(key, requestId);
+    const { data, error } = await client
+      .rpc("mutate_task", {
+        target_organization_id: scope.organizationId,
+        target_project_id: scope.projectId,
+        request_id: requestId,
+        action,
+        target_task_id: previous?.id ?? null,
+        task_values: values,
+        expected_updated_at: previous?.updatedAt ?? null,
+      })
+      .select(taskColumns)
+      .single<TaskRow>();
+    if (error) throw databaseError(error);
+    pendingRequests.delete(key);
+    return toTask(data, scope.projectKey);
+  }
   return {
+    async get(scope, taskId) {
+      const { data, error } = await client
+        .from("tasks")
+        .select(taskColumns)
+        .eq("organization_id", scope.organizationId)
+        .eq("project_id", scope.projectId)
+        .eq("id", taskId)
+        .maybeSingle<TaskRow>();
+      if (error) throw databaseError(error);
+      return data ? toTask(data, scope.projectKey) : null;
+    },
+    async cycleName(scope, cycleId) {
+      const { data, error } = await client
+        .from("cycles")
+        .select("name")
+        .eq("organization_id", scope.organizationId)
+        .eq("project_id", scope.projectId)
+        .eq("id", cycleId)
+        .maybeSingle<{ name: string }>();
+      if (error) throw databaseError(error);
+      return data?.name ?? null;
+    },
     async list(scope, includeArchived) {
       let query = client
         .from("tasks")
@@ -282,37 +345,15 @@ export function createTaskRepository(
       };
     },
     async save(scope, draft, previous) {
-      const payload = taskPayload(draft);
-      const query = previous
-        ? client
-            .from("tasks")
-            .update(payload)
-            .eq("organization_id", scope.organizationId)
-            .eq("project_id", scope.projectId)
-            .eq("id", previous.id)
-            .eq("updated_at", previous.updatedAt)
-        : client.from("tasks").insert({
-            ...payload,
-            created_by: scope.userId,
-            organization_id: scope.organizationId,
-            project_id: scope.projectId,
-          });
-      const { data, error } = await query.select(taskColumns).single<TaskRow>();
-      if (error) throw databaseError(error);
-      return toTask(data, scope.projectKey);
+      return mutate(
+        scope,
+        previous ? "update" : "create",
+        taskPayload(draft),
+        previous,
+      );
     },
     async setArchived(scope, task, archived) {
-      const { data, error } = await client
-        .from("tasks")
-        .update({ archived_at: archived ? new Date().toISOString() : null })
-        .eq("organization_id", scope.organizationId)
-        .eq("project_id", scope.projectId)
-        .eq("id", task.id)
-        .eq("updated_at", task.updatedAt)
-        .select(taskColumns)
-        .single<TaskRow>();
-      if (error) throw databaseError(error);
-      return toTask(data, scope.projectKey);
+      return mutate(scope, archived ? "archive" : "restore", {}, task);
     },
   };
 }

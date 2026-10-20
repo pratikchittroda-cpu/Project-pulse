@@ -13,6 +13,10 @@ export default defineConfig({
     },
   },
   test: {
+    env: {
+      VITE_SUPABASE_URL: "http://127.0.0.1:54321",
+      VITE_SUPABASE_ANON_KEY: "replace-with-test-anon-key",
+    },
     environment: "node",
     include: ["tests/**/*.{test,spec}.{ts,tsx}"],
     reporters: ["verbose"],
