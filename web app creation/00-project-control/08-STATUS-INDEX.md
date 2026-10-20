@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T030 verification.
+Current state after T022 verification.
 
 ## Done
 
@@ -21,6 +21,7 @@ Current state after T030 verification.
 - `T020` — Task domain and project keys
 - `T021` — Task CRUD and data hooks
 - `T030` — Event envelope and task events
+- `T022` — Task detail and activity timeline
 
 ## Ready
 
@@ -38,7 +39,7 @@ Current state after T030 verification.
 
 ### Agile planning
 
-- `T022`, `T023`, `T024`, `T025`, `T026`, `T027`, `T028`
+- `T023`, `T024`, `T025`, `T026`, `T027`, `T028`
 
 ### Realtime
 

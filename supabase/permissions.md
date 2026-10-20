@@ -39,5 +39,28 @@ only internal or extension sources from clients. Provider-originated sources
 remain service-role ingestion paths, and organization/idempotency uniqueness
 prevents duplicate history entries.
 
+Migration `20261020000000_atomic_task_history.sql` adds transactional task
+history. The `mutate_task` RPC checks current project write access before either
+performing a change or returning a matching request receipt. Updates require
+the last observed `updated_at`; stale changes fail with `40001`. Receipts are
+private, keyed by organization/request ID, and bind the project, actor, and
+request content. Changing any of those on replay fails rather than returning
+another actor's or project's data.
+
+An AFTER trigger records create/update/status/archive/restore events in the
+same transaction as the task. Direct client writes to `task_events` are revoked;
+explicit non-lifecycle events go through `record_task_event`, whose replay checks
+also compare project, task, actor, source, type, payload, and correlation. The
+`task-change:` idempotency prefix is reserved for trigger-owned history.
+Clients use the authenticated actor and `internal` mutation source; trusted
+service-role automation must supply a source and non-empty reason.
+
+The scoped detail route queries project, task, sprint, and history using their
+organization/project IDs with the authenticated browser client. Viewer roles
+can read assigned tasks and history but cannot mutate them. Missing and
+inaccessible tasks share a non-disclosing UI state. `test:db` checks these
+boundaries in PostgreSQL; `test:api` additionally verifies them through local
+Auth/PostgREST, including same-organization private projects and removed members.
+
 Add policy changes as new append-only migrations. Do not weaken the organization
 or project helper functions in feature-specific SQL.

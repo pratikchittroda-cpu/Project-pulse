@@ -40,7 +40,12 @@ From the repository root, install exactly from the committed lockfile:
 
 ```sh
 corepack pnpm install --frozen-lockfile
+corepack pnpm run build
 ```
+
+The first build compiles the shared packages used by the web development server.
+Use `corepack pnpm` for every command; a separate global `pnpm` or `nvm` install
+is not required when the pinned Node runtime and Corepack are available.
 
 ## Bootstrap validation
 
@@ -105,15 +110,58 @@ status, priority, assignee, labels, estimate, due date, edit, archive, and
 restore flows. Active views hide archived tasks by default; viewer roles and
 archived projects remain read-only at both the UI and database boundaries.
 
+Click a task title to open
+`/app/organizations/:organizationId/projects/:projectId/tasks/:taskId`.
+The detail page shows the task state, sprint, metadata, edit/archive controls,
+and chronological activity. Timeline entries include actor, source, time,
+changed values, and an automation reason when provided. Branch, commit, pull
+request, CI, and deployment areas are reserved for later integrations.
+
+Task writes use `mutate_task`: PostgreSQL commits the task, its history, and a
+request receipt atomically. Identical retries within the same repository instance
+reuse the request ID; stale versions are rejected. Reload the task after a
+conflict. No-op changes add no event. Existing tasks may have no history before
+automatic recording was installed. Use **Reload task** or **Refresh history**
+to retrieve new changes; live subscriptions are a later milestone.
+
+### Task and permission verification
+
+`make test` is the offline command after dependencies are installed. It uses
+test-only configuration, so an existing local `.env` does not change its results.
+For real database/API checks, start local Supabase and apply pending migrations:
+
+```sh
+corepack pnpm run supabase:start
+corepack pnpm exec supabase migration up --local
+corepack pnpm run test:db
+corepack pnpm run test:api
+```
+
+`test:db` checks RLS, history atomicity, rollback, stale writes, and concurrent
+request deduplication. `test:api` exercises the actual application repositories
+through local Supabase Auth/PostgREST, including bigint task keys, multi-page
+timeline ordering, viewer denial, and project/organization isolation. Both use
+isolated fixtures and clean up after themselves; neither resets existing data.
+The API suite keeps temporary credentials in memory and is excluded from the
+offline command. `SUPABASE_DB_CONTAINER` can override the default database
+container name, `supabase_db_projectpulse`.
+
 ## Development and deployment
 
 ### Local web development
 
-Copy the documented placeholders before starting local services:
+Keep an existing `.env`; on a fresh checkout, copy the documented placeholders:
 
 ```sh
-cp .env.example .env
-corepack pnpm --filter @projectpulse/web dev
+test -f .env || cp .env.example .env
+```
+
+Start local Supabase using the commands below, then fill the two public
+`VITE_SUPABASE_*` values in the root `.env` from `supabase:status`. Vite reads
+that root file for both development and production builds. Start the app with:
+
+```sh
+corepack pnpm run dev
 ```
 
 The Vite server listens on `http://localhost:5173`. The browser configuration
@@ -122,20 +170,38 @@ defaults point to `http://127.0.0.1:54321`.
 
 ### Docker
 
-Build and run the production web container with no global project dependency:
+Build and run the production web container with no global project dependency.
+For a connected app, export `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+in the shell before this direct Docker build:
 
 ```sh
-docker build --tag projectpulse:local .
+docker build --tag projectpulse:local \
+  --build-arg VITE_SUPABASE_URL \
+  --build-arg VITE_SUPABASE_ANON_KEY .
 docker run --rm --publish 8080:8080 projectpulse:local
 ```
 
 Open `http://localhost:8080`. The container serves the Vite build through
 nginx, supports client-side route fallback, and exposes `GET /healthz` with an
-`ok` response. Docker Compose provides the same flow and allows the host port
-to be changed with `PROJECTPULSE_PORT`:
+`ok` response. Docker Compose reads the public values from the root `.env` as
+build arguments and allows the host port to be changed with `PROJECTPULSE_PORT`:
 
 ```sh
 PROJECTPULSE_PORT=8080 docker compose up --build
+```
+
+Vite embeds these public settings at build time; rebuild when they change. Use
+the backend URL reachable from the user's browser. Server/service-role secrets
+are never build arguments. Configure Supabase Auth to allow the deployed
+`/auth/callback` URL. The image excludes local environment files, dependencies,
+compiled workspace output, and TypeScript caches, then rebuilds its own artifacts.
+
+To verify the pinned Node 22/Linux toolchain with networking disabled after the
+image has installed its dependencies:
+
+```sh
+docker build --target build --tag projectpulse:check .
+docker run --rm --network none projectpulse:check pnpm test
 ```
 
 ### Local Supabase prerequisites
@@ -150,7 +216,9 @@ corepack pnpm run supabase:start
 corepack pnpm run supabase:status
 ```
 
-Reset the local database and apply the deterministic seed with:
+For an existing local database, apply only pending migrations with
+`corepack pnpm exec supabase migration up --local`. To deliberately erase local
+data and apply the deterministic seed, use:
 
 ```sh
 corepack pnpm run supabase:reset
