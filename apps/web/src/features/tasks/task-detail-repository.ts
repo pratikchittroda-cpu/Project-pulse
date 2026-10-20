@@ -6,6 +6,12 @@ import {
   type TaskRecord,
   type TaskScope,
 } from "./task-repository.js";
+import {
+  createTaskRelationRepository,
+  type TaskDependencyDraft,
+  type TaskDependencyState,
+  type TaskRelationRecord,
+} from "./task-relations-repository.js";
 
 export interface TaskDetailAddress {
   organizationId: string;
@@ -21,6 +27,21 @@ export interface TaskDetail {
   projectName: string;
   projectArchived: boolean;
   cycleName: string | null;
+  dependencies?: TaskDependencyState;
+}
+
+export interface TaskDetailRepository {
+  load(address: TaskDetailAddress): Promise<TaskDetail | null>;
+  save: ReturnType<typeof createTaskRepository>["save"];
+  setArchived: ReturnType<typeof createTaskRepository>["setArchived"];
+  createDependency?: (
+    scope: TaskScope,
+    draft: TaskDependencyDraft,
+  ) => Promise<TaskRelationRecord>;
+  removeDependency?: (
+    scope: TaskScope,
+    relation: TaskRelationRecord,
+  ) => Promise<TaskRelationRecord>;
 }
 
 export function taskDetailPath(
@@ -32,6 +53,7 @@ export function taskDetailPath(
 
 export function createTaskDetailRepository(client: SupabaseClient = supabase) {
   const tasks = createTaskRepository(client);
+  const relations = createTaskRelationRepository(client, tasks);
   return {
     async load(address: TaskDetailAddress): Promise<TaskDetail | null> {
       const { data: project, error } = await client
@@ -55,11 +77,12 @@ export function createTaskDetailRepository(client: SupabaseClient = supabase) {
       };
       const task = await tasks.get(scope, address.taskId);
       if (!task) return null;
-      const [options, cycleName] = await Promise.all([
+      const [options, cycleName, dependencies] = await Promise.all([
         tasks.options(scope),
         task.cycleId
           ? tasks.cycleName(scope, task.cycleId)
           : Promise.resolve(null),
+        relations.list(scope, task.id),
       ]);
       return {
         scope,
@@ -68,14 +91,16 @@ export function createTaskDetailRepository(client: SupabaseClient = supabase) {
         cycleName,
         projectName: project.name,
         projectArchived: Boolean(project.archived_at),
+        dependencies,
       };
     },
     save: tasks.save,
     setArchived: tasks.setArchived,
+    createDependency: (scope: TaskScope, draft: TaskDependencyDraft) =>
+      relations.create(scope, draft),
+    removeDependency: (scope: TaskScope, relation: TaskRelationRecord) =>
+      relations.remove(scope, relation),
   };
 }
 
-export type TaskDetailRepository = ReturnType<
-  typeof createTaskDetailRepository
->;
 export const taskDetailRepository = createTaskDetailRepository();

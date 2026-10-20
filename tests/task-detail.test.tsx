@@ -18,6 +18,7 @@ import {
   type TaskDetail,
   type TaskDetailAddress,
 } from "../apps/web/src/features/tasks/task-detail-repository.js";
+import type { TaskRelationRecord } from "../apps/web/src/features/tasks/task-relations-repository.js";
 import { TasksWorkspace } from "../apps/web/src/features/tasks/tasks-workspace.js";
 import {
   deferred,
@@ -33,6 +34,8 @@ function setup(detail = taskDetailFixture()) {
     load: vi.fn(async (): Promise<TaskDetail | null> => detail),
     save: vi.fn(async () => detail.task),
     setArchived: vi.fn(async () => detail.task),
+    createDependency: vi.fn(async () => detail.dependencies?.blockers[0]),
+    removeDependency: vi.fn(async (_scope, relation) => relation),
   };
   const eventsRepository = {
     list: vi.fn(async () => [taskEventFixture()]),
@@ -104,6 +107,79 @@ describe("task detail flow", () => {
       projectId: detail.scope.projectId,
       taskId: detail.task.id,
     });
+  });
+
+  it("shows dependency direction, critical blocker warning, and saves/removes links", async () => {
+    const detail = taskDetailFixture();
+    const blocker: TaskDetail["task"] = {
+      ...detail.task,
+      id: "blocker-task",
+      key: "SHIP-41",
+      number: "41",
+      title: "Security review",
+      priority: "urgent",
+      status: "in_progress",
+    };
+    const relation: TaskRelationRecord = {
+      id: "relation-1",
+      organizationId: detail.scope.organizationId,
+      projectId: detail.scope.projectId,
+      blockerTaskId: blocker.id,
+      blockedTaskId: detail.task.id,
+      explanation: "Security review must land first.",
+      targetDate: "2026-11-01",
+      createdAt: "2026-10-20T00:00:00.000Z",
+      blockerTask: blocker,
+      blockedTask: detail.task,
+    };
+    detail.dependencies = {
+      blockers: [relation],
+      blocking: [],
+      availableTasks: [blocker],
+    };
+    const { view, repository } = setup(detail);
+    render(view());
+    const dependencies = await screen.findByRole("region", {
+      name: "Task dependencies",
+    });
+    expect(
+      within(dependencies).getByText("Critical task blocked"),
+    ).toBeTruthy();
+    expect(
+      within(dependencies).getByRole("link", {
+        name: "SHIP-41 · Security review",
+      }),
+    ).toBeTruthy();
+    expect(
+      within(dependencies).getByText("Security review must land first."),
+    ).toBeTruthy();
+    fireEvent.change(within(dependencies).getByLabelText("Dependency task"), {
+      target: { value: blocker.id },
+    });
+    fireEvent.change(
+      within(dependencies).getByLabelText("Blocker explanation"),
+      {
+        target: { value: "The review is required." },
+      },
+    );
+    fireEvent.click(
+      within(dependencies).getByRole("button", { name: "Add dependency" }),
+    );
+    await screen.findByText("Dependency added.");
+    expect(repository.createDependency).toHaveBeenCalledWith(detail.scope, {
+      blockerTaskId: blocker.id,
+      blockedTaskId: detail.task.id,
+      explanation: "The review is required.",
+      targetDate: "",
+    });
+    fireEvent.click(
+      within(dependencies).getByRole("button", { name: "Remove dependency" }),
+    );
+    await screen.findByText("Dependency removed.");
+    expect(repository.removeDependency).toHaveBeenCalledWith(
+      detail.scope,
+      relation,
+    );
   });
 
   it.each(["viewer", "archived project"])(

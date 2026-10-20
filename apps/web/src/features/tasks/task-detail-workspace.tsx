@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { Link } from "react-router-dom";
 import {
   Badge,
@@ -7,15 +13,22 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  Input,
   PageLayout,
   PriorityBadge,
 } from "@projectpulse/ui";
 import { TaskTimeline } from "../events/task-timeline.js";
 import type { TaskEventRepository } from "../events/task-events-repository.js";
 import { TaskForm } from "./task-form.js";
-import { taskToDraft } from "./task-repository.js";
+import { taskToDraft, type TaskScope } from "./task-repository.js";
+import type {
+  TaskDependencyDraft,
+  TaskDependencyState,
+  TaskRelationRecord,
+} from "./task-relations-repository.js";
 import {
   taskDetailRepository,
+  taskDetailPath,
   type TaskDetail,
   type TaskDetailAddress,
   type TaskDetailRepository,
@@ -108,6 +121,7 @@ function TaskDetailContent({
 
   const { task, scope, options } = detail;
   const canWrite = options.canWrite && !detail.projectArchived;
+  const dependencies = detail.dependencies ?? emptyDependencyState();
   async function archive() {
     if (busy.current || !detail) return;
     busy.current = true;
@@ -132,6 +146,54 @@ function TaskDetailContent({
           cause instanceof Error
             ? cause.message
             : "Could not change archive state.",
+        );
+    } finally {
+      busy.current = false;
+      if (mounted.current) setSaving(false);
+    }
+  }
+
+  async function createDependency(draft: TaskDependencyDraft) {
+    if (busy.current || !repository.createDependency) return;
+    busy.current = true;
+    setSaving(true);
+    setMessage(null);
+    setMutationError(null);
+    try {
+      await repository.createDependency(scope, draft);
+      if (mounted.current) {
+        setMessage("Dependency added.");
+        await load();
+      }
+    } catch (cause) {
+      if (mounted.current)
+        setMutationError(
+          cause instanceof Error ? cause.message : "Could not add dependency.",
+        );
+    } finally {
+      busy.current = false;
+      if (mounted.current) setSaving(false);
+    }
+  }
+
+  async function removeDependency(relation: TaskRelationRecord) {
+    if (busy.current || !repository.removeDependency) return;
+    busy.current = true;
+    setSaving(true);
+    setMessage(null);
+    setMutationError(null);
+    try {
+      await repository.removeDependency(scope, relation);
+      if (mounted.current) {
+        setMessage("Dependency removed.");
+        await load();
+      }
+    } catch (cause) {
+      if (mounted.current)
+        setMutationError(
+          cause instanceof Error
+            ? cause.message
+            : "Could not remove dependency.",
         );
     } finally {
       busy.current = false;
@@ -276,6 +338,15 @@ function TaskDetailContent({
           </CardContent>
         </Card>
       </div>
+      <DependencyPanel
+        canWrite={canWrite && Boolean(repository.createDependency)}
+        disabled={saving}
+        onCreate={(draft) => void createDependency(draft)}
+        onRemove={(relation) => void removeDependency(relation)}
+        scope={scope}
+        state={dependencies}
+        task={task}
+      />
       {editing && canWrite ? (
         <Card>
           <CardHeader>
@@ -316,5 +387,189 @@ function TaskDetailContent({
         repository={eventsRepository}
       />
     </PageLayout>
+  );
+}
+
+function emptyDependencyState(): TaskDependencyState {
+  return { blockers: [], blocking: [], availableTasks: [] };
+}
+
+function DependencyPanel({
+  canWrite,
+  disabled,
+  onCreate,
+  onRemove,
+  scope,
+  state,
+  task,
+}: {
+  canWrite: boolean;
+  disabled: boolean;
+  onCreate: (draft: TaskDependencyDraft) => void;
+  onRemove: (relation: TaskRelationRecord) => void;
+  scope: Pick<TaskScope, "organizationId" | "projectId">;
+  state: TaskDependencyState;
+  task: TaskDetail["task"];
+}) {
+  const [direction, setDirection] = useState<"blocked_by" | "blocks">(
+    "blocked_by",
+  );
+  const [otherTaskId, setOtherTaskId] = useState("");
+  const [explanation, setExplanation] = useState("");
+  const [targetDate, setTargetDate] = useState("");
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!otherTaskId || !explanation.trim()) return;
+    onCreate({
+      blockerTaskId: direction === "blocked_by" ? otherTaskId : task.id,
+      blockedTaskId: direction === "blocked_by" ? task.id : otherTaskId,
+      explanation,
+      targetDate,
+    });
+    setOtherTaskId("");
+    setExplanation("");
+    setTargetDate("");
+  };
+  const relationRow = (
+    relation: TaskRelationRecord,
+    side: "blocker" | "blocked",
+  ) => {
+    const other =
+      side === "blocker" ? relation.blockerTask : relation.blockedTask;
+    const otherId =
+      side === "blocker" ? relation.blockerTaskId : relation.blockedTaskId;
+    return (
+      <li className="task-dependency-item" key={relation.id}>
+        <div>
+          {other ? (
+            <Link to={taskDetailPath(scope, other.id)}>
+              {other.key} · {other.title}
+            </Link>
+          ) : (
+            <span>{otherId} · unavailable</span>
+          )}
+          <p>{relation.explanation || "No explanation provided."}</p>
+          {relation.targetDate ? (
+            <small>Target date: {relation.targetDate}</small>
+          ) : null}
+        </div>
+        {canWrite ? (
+          <Button
+            disabled={disabled}
+            onClick={() => onRemove(relation)}
+            size="sm"
+            variant="ghost"
+          >
+            Remove dependency
+          </Button>
+        ) : null}
+      </li>
+    );
+  };
+  return (
+    <Card aria-label="Task dependencies">
+      <CardHeader>
+        <div className="task-dependency-heading">
+          <div>
+            <CardTitle>Dependencies</CardTitle>
+            <p className="muted">
+              {state.blockers.length
+                ? `${state.blockers.length} blocker${state.blockers.length === 1 ? "" : "s"} currently affect this task.`
+                : "No blockers currently affect this task."}
+            </p>
+          </div>
+          {state.blockers.length &&
+          (task.priority === "urgent" || task.priority === "high") ? (
+            <Badge tone="danger">Critical task blocked</Badge>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="task-dependency-sections">
+          <section aria-label="Blocked by">
+            <h3>Blocked by</h3>
+            {state.blockers.length ? (
+              <ul className="task-dependency-list">
+                {state.blockers.map((relation) =>
+                  relationRow(relation, "blocker"),
+                )}
+              </ul>
+            ) : (
+              <p className="muted">No blocking tasks.</p>
+            )}
+          </section>
+          <section aria-label="Blocks">
+            <h3>Blocks</h3>
+            {state.blocking.length ? (
+              <ul className="task-dependency-list">
+                {state.blocking.map((relation) =>
+                  relationRow(relation, "blocked"),
+                )}
+              </ul>
+            ) : (
+              <p className="muted">This task is not blocking other work.</p>
+            )}
+          </section>
+        </div>
+        {canWrite ? (
+          <form className="task-dependency-form" onSubmit={submit}>
+            <h3>Add dependency</h3>
+            <label className="field">
+              <span className="pp-field-label">Relationship</span>
+              <select
+                className="pp-input"
+                disabled={disabled}
+                value={direction}
+                onChange={(event) =>
+                  setDirection(event.target.value as "blocked_by" | "blocks")
+                }
+              >
+                <option value="blocked_by">This task is blocked by…</option>
+                <option value="blocks">This task blocks…</option>
+              </select>
+            </label>
+            <label className="field">
+              <span className="pp-field-label">Task</span>
+              <select
+                aria-label="Dependency task"
+                className="pp-input"
+                disabled={disabled}
+                required
+                value={otherTaskId}
+                onChange={(event) => setOtherTaskId(event.target.value)}
+              >
+                <option value="">Choose a task</option>
+                {state.availableTasks.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.key} · {candidate.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Input
+              disabled={disabled}
+              label="Blocker explanation"
+              maxLength={2000}
+              required
+              value={explanation}
+              onChange={(event) => setExplanation(event.target.value)}
+            />
+            <Input
+              disabled={disabled}
+              label="Target date (optional)"
+              type="date"
+              value={targetDate}
+              onChange={(event) => setTargetDate(event.target.value)}
+            />
+            <Button
+              disabled={disabled || !otherTaskId || !explanation.trim()}
+              type="submit"
+            >
+              Add dependency
+            </Button>
+          </form>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

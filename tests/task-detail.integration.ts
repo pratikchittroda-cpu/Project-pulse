@@ -415,6 +415,79 @@ it("reads roadmap hierarchy, links tasks, and enforces project permissions throu
   ).rejects.toThrow(/permission/);
 });
 
+it("creates, reads, summarizes, and removes dependencies through PostgREST", async () => {
+  if (!client) throw new Error("Local API fixture was not initialized.");
+  const login = await client.auth.signInWithPassword({
+    email: users[0].email,
+    password,
+  });
+  if (login.error) throw new Error("Could not sign in fixture owner.");
+  const { createTaskRepository, emptyTaskDraft } = await import(
+    "../apps/web/src/features/tasks/task-repository.js"
+  );
+  const { createTaskRelationRepository } = await import(
+    "../apps/web/src/features/tasks/task-relations-repository.js"
+  );
+  const scope = {
+    organizationId,
+    projectId: planningProjectId,
+    projectKey: "PLAN",
+    userId: users[0].id,
+  };
+  const tasks = createTaskRepository(client);
+  const relations = createTaskRelationRepository(client, tasks);
+  const blocker = await tasks.save(scope, {
+    ...emptyTaskDraft,
+    title: "API dependency blocker",
+    priority: "urgent",
+  });
+  const blocked = await tasks.save(scope, {
+    ...emptyTaskDraft,
+    title: "API dependency target",
+    priority: "high",
+  });
+  const relation = await relations.create(scope, {
+    blockerTaskId: blocker.id,
+    blockedTaskId: blocked.id,
+    explanation: "The urgent task must finish first.",
+    targetDate: "2026-12-01",
+  });
+  expect(relation).toMatchObject({
+    blockerTaskId: blocker.id,
+    blockedTaskId: blocked.id,
+    explanation: "The urgent task must finish first.",
+    targetDate: "2026-12-01",
+  });
+  expect(await relations.list(scope, blocked.id)).toMatchObject({
+    blockers: [expect.objectContaining({ id: relation.id })],
+  });
+  expect(await relations.summary(scope)).toMatchObject({
+    [blocked.id]: {
+      blockerCount: 1,
+      hasCriticalBlocker: true,
+    },
+  });
+  await relations.remove(scope, relation);
+  expect((await relations.list(scope, blocked.id)).blockers).toHaveLength(0);
+
+  const viewerLogin = await client.auth.signInWithPassword({
+    email: users[1].email,
+    password,
+  });
+  if (viewerLogin.error) throw new Error("Could not sign in fixture viewer.");
+  await expect(
+    relations.create(
+      { ...scope, userId: users[1].id },
+      {
+        blockerTaskId: blocker.id,
+        blockedTaskId: blocked.id,
+        explanation: "Viewer cannot add this.",
+        targetDate: "",
+      },
+    ),
+  ).rejects.toThrow(/permission/);
+});
+
 afterAll(async () => {
   try {
     await client?.auth.signOut();

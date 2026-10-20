@@ -58,12 +58,18 @@ sql(
 );
 sql(
   readFileSync(
+    new URL("../supabase/dependency-tests.sql", import.meta.url),
+    "utf8",
+  ),
+);
+sql(
+  readFileSync(
     new URL("../supabase/roadmap-tests.sql", import.meta.url),
     "utf8",
   ),
 );
 console.log(
-  "Database RLS, history, cycle lifecycle, roadmap hierarchy, replay, and rollback assertions passed.",
+  "Database RLS, history, cycle lifecycle, roadmap hierarchy, dependency graph, replay, and rollback assertions passed.",
 );
 
 const user = randomUUID();

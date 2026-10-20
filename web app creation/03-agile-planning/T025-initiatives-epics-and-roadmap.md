@@ -121,7 +121,8 @@ Provide planning hierarchy above individual tasks.
 - No authenticated browser/mobile visual walkthrough was performed; component
   tests and real API readback cover the implemented flow.
 - Roadmap reporting and milestone health can now consume the hierarchy and
-  explainable rollups. The next planned agile task is `T026`.
+  explainable rollups. Task dependency health is now available from `T026`; the
+  next planned agile task is `T027`.
 
 ## Commit
 

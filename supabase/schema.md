@@ -35,6 +35,17 @@ statuses count as completed; null estimates count as tasks and contribute zero
 points. The UI loads the hierarchy and tasks in bounded pages, then explains each
 initiative, epic, and milestone rollup from its child task links.
 
+T026 uses `task_relations` for a canonical dependency graph. A `blocks` row
+stores the blocker in `task_id` and the blocked task in `related_task_id`; the
+application derives the inverse blocked-by view without storing reciprocal rows.
+Each dependency may carry a trimmed explanation and finite target date. The
+authenticated `manage_task_relation` RPC validates active same-project tasks,
+rejects self-links, duplicates, and cycles, serializes graph changes per project,
+and records private request receipts. Dependency changes emit task-scoped
+`task.dependency_changed` history events for both affected tasks. Repository
+summaries expose blocker counts, blocking counts, and active urgent/high-priority
+blocker signals for boards and later health analytics.
+
 ## Delivery and audit model
 
 - `repositories` stores provider-neutral repository metadata.

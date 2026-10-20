@@ -112,6 +112,24 @@ status is neither completed nor canceled. Progress is a client-readable rollup
 of RLS-visible tasks: canceled tasks are excluded, terminal non-canceled statuses
 count as complete, and unestimated tasks contribute zero points.
 
+## Task dependencies and blockers
+
+T026 keeps dependency reads behind the existing organization/project RLS
+boundary. Viewers and assigned project readers can read visible `task_relations`
+rows; removed members, other organizations, and anonymous clients cannot see
+them. Direct `task_relations` insert/update/delete privileges are revoked from
+clients and service role. Authenticated project writers use the
+`manage_task_relation` security-definer RPC, which is the only mutation path and
+is not executable by `anon` or `service_role`.
+
+The RPC checks the active project, actor write access, same-project active tasks,
+explanation/date validity, duplicate edges, and recursive cycles before changing
+the graph. A private receipt binds the organization, project, actor, request
+fingerprint, and response for safe retries. Each create/delete records a
+task-scoped dependency event for both endpoints in the same transaction. Viewer
+and archived-project UI flows remain read-only, while project writers can create
+and remove dependencies through the task detail editor.
+
 Initial and closing snapshots preserve string task numbers, keys, titles,
 estimates, and workflow status. Completed/canceled cycle rows stay immutable.
 Tasks cannot enter a closed cycle or change estimate/status/archive state while

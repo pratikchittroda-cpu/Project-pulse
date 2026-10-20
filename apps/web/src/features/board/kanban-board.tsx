@@ -20,6 +20,11 @@ import type {
   TaskRepository,
   TaskScope,
 } from "../tasks/task-repository.js";
+import {
+  taskDependencyRepository,
+  type TaskRelationRepository,
+  type TaskDependencySummary,
+} from "../tasks/task-relations-repository.js";
 import { useKanbanBoard } from "./use-kanban-board.js";
 
 export interface BoardFilters {
@@ -114,6 +119,7 @@ function KanbanCard({
   options,
   scope,
   task,
+  dependency,
 }: {
   canWrite: boolean;
   isMoving: boolean;
@@ -123,6 +129,7 @@ function KanbanCard({
   options: TaskOptions;
   scope: TaskScope;
   task: TaskRecord;
+  dependency?: TaskDependencySummary;
 }) {
   const draggable = canWrite && !task.archivedAt && !isMoving;
   const status = options.statuses.find(({ status }) => status === task.status);
@@ -149,6 +156,15 @@ function KanbanCard({
       <div className="kanban-card-badges">
         <PriorityBadge priority={task.priority} />
         {task.archivedAt ? <Badge>Archived</Badge> : null}
+        {dependency?.blockerCount ? (
+          <Badge tone={dependency.hasCriticalBlocker ? "danger" : "warning"}>
+            {dependency.blockerCount} blocker
+            {dependency.blockerCount === 1 ? "" : "s"}
+          </Badge>
+        ) : null}
+        {dependency?.blockingCount ? (
+          <Badge tone="accent">Blocking {dependency.blockingCount}</Badge>
+        ) : null}
       </div>
       <dl className="kanban-card-metadata">
         <div>
@@ -195,10 +211,12 @@ function KanbanCard({
 
 export function KanbanBoard({
   archivedProject = false,
+  dependencyRepository,
   repository,
   scope,
 }: {
   archivedProject?: boolean;
+  dependencyRepository?: TaskRelationRepository;
   repository?: TaskRepository;
   scope: TaskScope;
 }) {
@@ -216,7 +234,13 @@ export function KanbanBoard({
     options,
     reload,
     tasks,
-  } = useKanbanBoard(scope, includeArchived, repository);
+    dependencySummary,
+  } = useKanbanBoard(
+    scope,
+    includeArchived,
+    repository,
+    dependencyRepository ?? (repository ? null : taskDependencyRepository),
+  );
   const canWrite = options.canWrite && !archivedProject && !isLoading;
   const filteredTasks = useMemo(
     () => filterKanbanTasks(tasks, filters),
@@ -458,6 +482,7 @@ export function KanbanBoard({
                         options={options}
                         scope={scope}
                         task={task}
+                        dependency={dependencySummary[task.id]}
                       />
                     ))
                   ) : (

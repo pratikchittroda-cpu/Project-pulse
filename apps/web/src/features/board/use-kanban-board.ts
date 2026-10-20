@@ -8,6 +8,11 @@ import {
   type TaskRepository,
   type TaskScope,
 } from "../tasks/task-repository.js";
+import {
+  taskDependencyRepository,
+  type TaskRelationRepository,
+  type TaskDependencySummary,
+} from "../tasks/task-relations-repository.js";
 
 const emptyOptions: TaskOptions = {
   assignees: [],
@@ -25,12 +30,16 @@ export function useKanbanBoard(
   scope: TaskScope,
   includeArchived: boolean,
   repository: TaskRepository = taskRepository,
+  dependencyRepository: TaskRelationRepository | null = taskDependencyRepository,
 ) {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [options, setOptions] = useState<TaskOptions>(emptyOptions);
   const [isLoading, setIsLoading] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
   const [movingTaskId, setMovingTaskId] = useState<string | null>(null);
+  const [dependencySummary, setDependencySummary] = useState<
+    Record<string, TaskDependencySummary>
+  >({});
   const [error, setError] = useState<string | null>(null);
   const request = useRef(0);
   const mounted = useRef(false);
@@ -41,24 +50,29 @@ export function useKanbanBoard(
     setIsLoading(true);
     setError(null);
     try {
-      const [nextTasks, nextOptions] = await Promise.all([
-        repository.list(scope, includeArchived),
-        repository.options(scope),
-      ]);
+      const [nextTasks, nextOptions, nextDependencySummary] = await Promise.all(
+        [
+          repository.list(scope, includeArchived),
+          repository.options(scope),
+          dependencyRepository?.summary(scope) ?? Promise.resolve({}),
+        ],
+      );
       if (mounted.current && request.current === current) {
         setTasks(nextTasks);
         setOptions(nextOptions);
+        setDependencySummary(nextDependencySummary);
       }
     } catch (cause) {
       if (mounted.current && request.current === current) {
         setTasks([]);
         setOptions(emptyOptions);
+        setDependencySummary({});
         setError(errorMessage(cause));
       }
     } finally {
       if (mounted.current && request.current === current) setIsLoading(false);
     }
-  }, [includeArchived, repository, scope]);
+  }, [dependencyRepository, includeArchived, repository, scope]);
 
   useEffect(() => {
     mounted.current = true;
@@ -126,6 +140,7 @@ export function useKanbanBoard(
 
   return {
     error,
+    dependencySummary,
     isLoading,
     isMoving,
     moveTask,

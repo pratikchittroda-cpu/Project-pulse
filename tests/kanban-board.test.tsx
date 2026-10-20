@@ -22,6 +22,7 @@ import type {
   TaskRecord,
   TaskRepository,
 } from "../apps/web/src/features/tasks/task-repository.js";
+import type { TaskRelationRepository } from "../apps/web/src/features/tasks/task-relations-repository.js";
 import { deferred, taskDetailFixture } from "./task-fixtures.js";
 
 afterEach(cleanup);
@@ -87,10 +88,17 @@ function createRepository(
   };
 }
 
-function renderBoard(repository: TaskRepository = createRepository()) {
+function renderBoard(
+  repository: TaskRepository = createRepository(),
+  dependencyRepository?: TaskRelationRepository,
+) {
   return render(
     <MemoryRouter>
-      <KanbanBoard repository={repository} scope={scope} />
+      <KanbanBoard
+        dependencyRepository={dependencyRepository}
+        repository={repository}
+        scope={scope}
+      />
     </MemoryRouter>,
   );
 }
@@ -145,6 +153,32 @@ describe("kanban board models", () => {
 });
 
 describe("kanban board interaction", () => {
+  it("shows blocker counts on cards when dependency summaries are available", async () => {
+    const dependencyRepository: TaskRelationRepository = {
+      list: vi.fn(async () => ({
+        blockers: [],
+        blocking: [],
+        availableTasks: [],
+      })),
+      summary: vi.fn(async () => ({
+        "task-1": {
+          blockerCount: 1,
+          blockingCount: 0,
+          hasCriticalBlocker: true,
+        },
+      })),
+      create: vi.fn(),
+      remove: vi.fn(),
+    };
+    renderBoard(createRepository(), dependencyRepository);
+    const card = (
+      await screen.findByRole("link", { name: "Ship task history" })
+    ).closest("article");
+    if (!card) throw new Error("Kanban task card was not rendered.");
+    expect(within(card).getByText("1 blocker")).toBeTruthy();
+    expect(dependencyRepository.summary).toHaveBeenCalledWith(scope);
+  });
+
   it("renders cards in status columns with compact and expanded content", async () => {
     renderBoard();
 

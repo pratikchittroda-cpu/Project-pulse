@@ -117,6 +117,13 @@ and chronological activity. Timeline entries include actor, source, time,
 changed values, and an automation reason when provided. Branch, commit, pull
 request, CI, and deployment areas are reserved for later integrations.
 
+The task detail page also shows **Dependencies**. Add a `blocked by` or `blocks`
+link with a required explanation and optional target date, then remove it after
+the work is unblocked. The database rejects self-links, duplicate links, cycles,
+archived-task links, and cross-project links. Urgent and high-priority tasks with
+active blockers show a critical warning; viewers and archived projects retain
+read-only dependency visibility.
+
 Use **Board** in the workspace navigation or open `/app/board` for the
 configured Kanban workflow. Cards are grouped by project status and include
 priority, estimate, assignee, labels, a compact detail disclosure, and a link
@@ -124,7 +131,8 @@ back to the task detail page. Authorized users can drag cards between columns or
 choose a destination in the keyboard-friendly **Move** control. Moves update
 optimistically and restore the original column if the server rejects the write.
 Board filters cover task text/keys/descriptions/labels, priority, assignee, and
-archived visibility. Each column reports its current WIP count; the current
+archived visibility. Cards show blocker and blocking counts when dependencies
+exist. Each column reports its current WIP count; the current
 schema has no persisted WIP limit, so the board labels that state honestly as
 `no limit`. Viewer roles and archived projects remain read-only.
 
@@ -186,16 +194,16 @@ corepack pnpm run test:db
 corepack pnpm run test:api
 ```
 
-`test:db` checks RLS, history atomicity, rollback, stale writes, and concurrent
-request deduplication. Roadmap assertions cover hierarchy links, task-history
+`test:db` checks RLS, history atomicity, rollback, dependency graph validation,
+dependency replay, stale writes, and concurrent request deduplication. Roadmap assertions cover hierarchy links, task-history
 capture, finite dates, member/viewer permissions, and cross-project/organization
 denial. Sprint assertions cover lifecycle replay, immutable
 snapshots, paused scope changes, carryover, audit-failure rollback, concurrent
 starts/assignments, and completion isolation. `test:api` exercises the actual
 application repositories through local Supabase Auth/PostgREST, including bigint
 task keys, multi-page task/sprint/timeline reads, sprint lifecycle and carryover,
-roadmap create/readback and task linking, viewer denial, and project/organization
-isolation. Both use
+roadmap create/readback and task linking, dependency create/readback/summary/
+deletion, viewer denial, and project/organization isolation. Both use
 isolated fixtures and clean up after themselves; neither resets existing data.
 The API suite keeps temporary credentials in memory and is excluded from the
 offline command. `SUPABASE_DB_CONTAINER` can override the default database
