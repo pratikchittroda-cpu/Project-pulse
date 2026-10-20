@@ -79,6 +79,10 @@ function createRepository(
       updatedAt: "2026-10-20T13:00:00.000Z",
     })),
     setArchived: vi.fn(async (_scope, task) => task),
+    updatePlanning: vi.fn(async (_scope, task, patch) => ({
+      ...task,
+      ...patch,
+    })),
     ...overrides,
   };
 }

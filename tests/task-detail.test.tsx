@@ -60,6 +60,7 @@ describe("task detail flow", () => {
       options: vi.fn(async () => detail.options),
       save: vi.fn(async () => detail.task),
       setArchived: vi.fn(async () => detail.task),
+      updatePlanning: vi.fn(async () => detail.task),
     };
     render(
       <MemoryRouter>

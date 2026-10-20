@@ -69,6 +69,13 @@ describe("web route groups", () => {
     expect(markup).toContain("Select an organization and project");
   });
 
+  it("renders the protected backlog route", () => {
+    const { markup } = renderRoute("/app/backlog");
+
+    expect(markup).toContain("Backlog and sprints");
+    expect(markup).toContain("Select an organization and project");
+  });
+
   it("requires a real session for scoped task details even in demo mode", () => {
     const { markup } = renderRoute(
       "/app/organizations/00000000-0000-4000-8000-000000000001/projects/00000000-0000-4000-8000-000000000002/tasks/00000000-0000-4000-8000-000000000003",

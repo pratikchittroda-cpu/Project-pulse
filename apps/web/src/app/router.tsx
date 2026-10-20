@@ -15,6 +15,7 @@ import { RouteErrorPage } from "./route-error-page.js";
 import { ActivityPage } from "../pages/activity-page.js";
 import { AuthCallbackPage } from "../pages/auth-callback-page.js";
 import { BoardPage } from "../pages/board-page.js";
+import { BacklogPage } from "../pages/backlog-page.js";
 import { DashboardPage } from "../pages/dashboard-page.js";
 import { LandingPage } from "../pages/landing-page.js";
 import { LoginPage } from "../pages/login-page.js";
@@ -70,6 +71,7 @@ export function createAppRoutes({
                     { index: true, element: <DashboardPage /> },
                     { path: "activity", element: <ActivityPage /> },
                     { path: "board", element: <BoardPage /> },
+                    { path: "backlog", element: <BacklogPage /> },
                     { path: "organization", element: <OrganizationPage /> },
                     { path: "projects", element: <ProjectsPage /> },
                     { path: "tasks", element: <TasksPage /> },

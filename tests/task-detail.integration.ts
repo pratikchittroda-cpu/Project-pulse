@@ -7,6 +7,7 @@ const container =
 const organizationId = randomUUID();
 const otherOrganizationId = randomUUID();
 const projectId = randomUUID();
+const planningProjectId = randomUUID();
 const privateProjectId = randomUUID();
 const otherProjectId = randomUUID();
 const cycleId = randomUUID();
@@ -105,6 +106,7 @@ beforeAll(async () => {
       ('${otherOrganizationId}', '${users[0].id}', 'owner');
     insert into public.projects (id, organization_id, name, project_key) values
       ('${projectId}', '${organizationId}', 'API project', 'APIT'),
+      ('${planningProjectId}', '${organizationId}', 'Planning API project', 'PLAN'),
       ('${privateProjectId}', '${organizationId}', 'Private API project', 'PRIV'),
       ('${otherProjectId}', '${otherOrganizationId}', 'Other API project', 'OTHER');
     insert into public.project_memberships (organization_id, project_id, user_id, role) values
@@ -112,6 +114,211 @@ beforeAll(async () => {
     insert into public.cycles (id, organization_id, project_id, name) values ('${cycleId}', '${organizationId}', '${projectId}', 'API sprint');
     update public.project_task_sequences set next_task_number = 9007199254740993 where project_id = '${projectId}';
     commit;`);
+});
+
+it("reads sprint lifecycle, commitment, scope changes and carryover back through the application repositories", async () => {
+  if (!client) throw new Error("Local API fixture was not initialized.");
+  const login = await client.auth.signInWithPassword({
+    email: users[0].email,
+    password,
+  });
+  if (login.error) throw new Error("Could not sign in the fixture owner.");
+  const { createCycleRepository } = await import(
+    "../apps/web/src/features/planning/cycle-repository.js"
+  );
+  const { createTaskRepository, emptyTaskDraft, taskToDraft } = await import(
+    "../apps/web/src/features/tasks/task-repository.js"
+  );
+  const cycles = createCycleRepository(client);
+  const tasks = createTaskRepository(client);
+  const scope = {
+    organizationId,
+    projectId: planningProjectId,
+    projectKey: "PLAN",
+    userId: users[0].id,
+  };
+  const readCycle = async (id: string) => {
+    const cycle = (await cycles.list(scope)).find((item) => item.id === id);
+    if (!cycle) throw new Error("Sprint readback missing");
+    return cycle;
+  };
+  let sprint = await cycles.create(scope, {
+    name: "Sprint API",
+    startsAt: "2026-10-21",
+    endsAt: "2026-11-04",
+  });
+  sprint = await cycles.edit(scope, sprint, {
+    name: "Sprint API edited",
+    startsAt: "2026-10-22",
+    endsAt: "2026-11-05",
+  });
+  const next = await cycles.create(scope, {
+    name: "Next API sprint",
+    startsAt: "",
+    endsAt: "",
+  });
+  let planned = await tasks.save(scope, {
+    ...emptyTaskDraft,
+    title: "Plan through UI repository",
+  });
+  planned = await tasks.updatePlanning(scope, planned, {
+    cycleId: sprint.id,
+    estimate: 3.5,
+  });
+  sprint = await readCycle(sprint.id);
+  expect(sprint).toMatchObject({
+    name: "Sprint API edited",
+    taskCount: 1,
+    committedPoints: 3.5,
+  });
+  sprint = await cycles.manage(scope, "start", sprint);
+  expect(sprint.initialTasks).toMatchObject([
+    { id: planned.id, estimate: 3.5, number: planned.number },
+  ]);
+  await expect(cycles.manage(scope, "start", next)).rejects.toThrow(
+    /active sprint/,
+  );
+  planned = await tasks.updatePlanning(scope, planned, {
+    cycleId: sprint.id,
+    estimate: 5,
+  });
+  sprint = await cycles.manage(scope, "pause", await readCycle(sprint.id));
+  planned = await tasks.updatePlanning(scope, planned, {
+    cycleId: null,
+    estimate: 5,
+  });
+  planned = await tasks.updatePlanning(scope, planned, {
+    cycleId: sprint.id,
+    estimate: 5,
+  });
+  sprint = await cycles.manage(scope, "start", await readCycle(sprint.id));
+  expect(sprint).toMatchObject({
+    initialCommitment: 3.5,
+    committedPoints: 5,
+    addedPoints: 6.5,
+    removedPoints: 5,
+  });
+  sprint = await cycles.manage(scope, "complete", sprint);
+  expect(sprint).toMatchObject({
+    status: "completed",
+    carriedOverPoints: 5,
+    carriedOverTaskCount: 1,
+  });
+  const frozen = structuredClone(sprint);
+  await expect(
+    tasks.updatePlanning(scope, planned, { cycleId: sprint.id, estimate: 8 }),
+  ).rejects.toThrow(/carried over/);
+  planned = await tasks.updatePlanning(scope, planned, {
+    cycleId: next.id,
+    estimate: planned.estimate,
+  });
+  planned = await tasks.updatePlanning(scope, planned, {
+    cycleId: next.id,
+    estimate: 8,
+  });
+  expect(await readCycle(sprint.id)).toEqual(frozen);
+  expect(await tasks.get(scope, planned.id)).toMatchObject({
+    cycleId: next.id,
+    estimate: 8,
+  });
+  expect(await readCycle(next.id)).toMatchObject({
+    committedPoints: 8,
+    taskCount: 1,
+  });
+  const ledger = await client
+    .from("cycle_events")
+    .select("event_type, payload")
+    .eq("cycle_id", sprint.id)
+    .order("occurred_at");
+  expect(ledger.error).toBeNull();
+  expect(ledger.data?.map(({ event_type }) => event_type)).toEqual(
+    expect.arrayContaining([
+      "cycle.created",
+      "cycle.updated",
+      "cycle.started",
+      "cycle.paused",
+      "cycle.resumed",
+      "cycle.completed",
+      "cycle.task_carried_over",
+    ]),
+  );
+  const canceled = await cycles.manage(
+    scope,
+    "cancel",
+    await readCycle(next.id),
+  );
+  expect(canceled.status).toBe("canceled");
+  await expect(
+    cycles.edit(scope, canceled, {
+      name: "Rewrite history",
+      startsAt: "",
+      endsAt: "",
+    }),
+  ).rejects.toThrow(/immutable/);
+
+  // Test browser-level viewer permissions independently of the SQL role tests.
+  sql(`insert into public.organization_memberships (organization_id, user_id, role) values ('${organizationId}', '${users[1].id}', 'viewer') on conflict do nothing;
+    insert into public.project_memberships (organization_id, project_id, user_id, role) values ('${organizationId}', '${planningProjectId}', '${users[1].id}', 'viewer') on conflict do nothing;`);
+  const viewerLogin = await client.auth.signInWithPassword({
+    email: users[1].email,
+    password,
+  });
+  if (viewerLogin.error) throw new Error("Could not sign in fixture viewer.");
+  expect((await readCycle(sprint.id)).completionTasks).toEqual(
+    frozen.completionTasks,
+  );
+  await expect(
+    cycles.create(
+      { ...scope, userId: users[1].id },
+      { name: "Not allowed", startsAt: "", endsAt: "" },
+    ),
+  ).rejects.toThrow(/write access/);
+  await expect(
+    tasks.save(
+      { ...scope, userId: users[1].id },
+      taskToDraft(planned),
+      planned,
+    ),
+  ).rejects.toThrow(/permission/);
+  expect(await cycles.list({ ...scope, projectId: privateProjectId })).toEqual(
+    [],
+  );
+  const denied = await client
+    .from("cycles")
+    .update({ initial_commitment: 99 })
+    .eq("id", sprint.id);
+  expect(denied.error?.code).toBe("42501");
+});
+
+it("loads planning tasks and sprints across repository page boundaries", async () => {
+  if (!client) throw new Error("Local API fixture was not initialized.");
+  const login = await client.auth.signInWithPassword({
+    email: users[0].email,
+    password,
+  });
+  if (login.error) throw new Error("Could not sign in fixture owner.");
+  const { createTaskRepository } = await import(
+    "../apps/web/src/features/tasks/task-repository.js"
+  );
+  const { createCycleRepository } = await import(
+    "../apps/web/src/features/planning/cycle-repository.js"
+  );
+  const scope = {
+    organizationId,
+    projectId: planningProjectId,
+    projectKey: "PLAN",
+    userId: users[0].id,
+  };
+  const tasks = createTaskRepository(client);
+  const cycles = createCycleRepository(client);
+  const beforeTasks = (await tasks.list(scope, false)).length;
+  const beforeCycles = (await cycles.list(scope)).length;
+  sql(`insert into public.tasks (organization_id, project_id, title)
+    select '${organizationId}', '${planningProjectId}', 'Paged planning task ' || n from generate_series(1, 205) n;
+    insert into public.cycles (organization_id, project_id, name)
+    select '${organizationId}', '${planningProjectId}', 'Paged sprint ' || n from generate_series(1, 105) n;`);
+  expect(await tasks.list(scope, false)).toHaveLength(beforeTasks + 205);
+  expect(await cycles.list(scope)).toHaveLength(beforeCycles + 105);
 });
 
 afterAll(async () => {

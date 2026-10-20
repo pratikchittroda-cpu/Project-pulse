@@ -50,6 +50,11 @@ export interface TaskOptions {
 
 export type TaskFieldErrors = Partial<Record<keyof TaskDraft, string>>;
 
+export interface TaskPlanningPatch {
+  cycleId: string | null;
+  estimate: number | null;
+}
+
 export class TaskValidationError extends Error {
   constructor(readonly fields: TaskFieldErrors) {
     super("Check the highlighted task fields.");
@@ -183,6 +188,7 @@ function databaseError(error: { code?: string; message: string }) {
       "This task changed or is no longer available. Reload tasks before trying again.",
     );
   }
+  if (error.code === "55000") return new Error(error.message);
   if (error.code === "23503") {
     return new Error(
       "The selected status or project member is no longer available. Reload tasks and choose again.",
@@ -217,6 +223,11 @@ export interface TaskRepository {
     task: TaskRecord,
     archived: boolean,
   ): Promise<TaskRecord>;
+  updatePlanning(
+    scope: TaskScope,
+    task: TaskRecord,
+    patch: TaskPlanningPatch,
+  ): Promise<TaskRecord>;
 }
 
 export function createTaskRepository(
@@ -228,7 +239,7 @@ export function createTaskRepository(
   async function mutate(
     scope: TaskScope,
     action: string,
-    values: ReturnType<typeof taskPayload> | Record<string, never>,
+    values: Record<string, unknown>,
     previous?: TaskRecord,
   ) {
     const key = JSON.stringify([
@@ -282,18 +293,23 @@ export function createTaskRepository(
       return data?.name ?? null;
     },
     async list(scope, includeArchived) {
-      let query = client
-        .from("tasks")
-        .select(taskColumns)
-        .eq("organization_id", scope.organizationId)
-        .eq("project_id", scope.projectId)
-        .order("task_number", { ascending: false });
-      if (!includeArchived) {
-        query = query.is("archived_at", null);
+      const tasks = new Map<string, TaskRecord>();
+      const pageSize = 200;
+      for (let offset = 0; ; offset += pageSize) {
+        let query = client
+          .from("tasks")
+          .select(taskColumns)
+          .eq("organization_id", scope.organizationId)
+          .eq("project_id", scope.projectId)
+          .order("task_number", { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        if (!includeArchived) query = query.is("archived_at", null);
+        const { data, error } = await query.returns<TaskRow[]>();
+        if (error) throw databaseError(error);
+        for (const row of data ?? [])
+          tasks.set(row.id, toTask(row, scope.projectKey));
+        if (!data || data.length < pageSize) return [...tasks.values()];
       }
-      const { data, error } = await query.returns<TaskRow[]>();
-      if (error) throw databaseError(error);
-      return (data ?? []).map((row) => toTask(row, scope.projectKey));
     },
     async options(scope) {
       const [workflow, organizationMembers, projectMembers, permission] =
@@ -362,6 +378,26 @@ export function createTaskRepository(
     },
     async setArchived(scope, task, archived) {
       return mutate(scope, archived ? "archive" : "restore", {}, task);
+    },
+    async updatePlanning(scope, task, patch) {
+      if (
+        patch.estimate !== null &&
+        (!Number.isFinite(patch.estimate) ||
+          patch.estimate < 0 ||
+          patch.estimate >= 100000000 ||
+          Number(patch.estimate.toFixed(2)) !== patch.estimate)
+      ) {
+        throw new TaskValidationError({
+          estimate:
+            "Use a non-negative estimate below 100,000,000 with at most two decimal places.",
+        });
+      }
+      return mutate(
+        scope,
+        "update",
+        { cycle_id: patch.cycleId, estimate: patch.estimate },
+        task,
+      );
     },
   };
 }
