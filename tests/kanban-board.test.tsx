@@ -23,6 +23,10 @@ import type {
   TaskRepository,
 } from "../apps/web/src/features/tasks/task-repository.js";
 import type { TaskRelationRepository } from "../apps/web/src/features/tasks/task-relations-repository.js";
+import type {
+  TaskRealtimeChange,
+  TaskRealtimeSubscription,
+} from "../apps/web/src/features/board/task-realtime.js";
 import { deferred, taskDetailFixture } from "./task-fixtures.js";
 
 afterEach(cleanup);
@@ -91,12 +95,14 @@ function createRepository(
 function renderBoard(
   repository: TaskRepository = createRepository(),
   dependencyRepository?: TaskRelationRepository,
+  realtimeSubscription?: TaskRealtimeSubscription | null,
 ) {
   return render(
     <MemoryRouter>
       <KanbanBoard
         dependencyRepository={dependencyRepository}
         repository={repository}
+        realtimeSubscription={realtimeSubscription}
         scope={scope}
       />
     </MemoryRouter>,
@@ -225,6 +231,129 @@ describe("kanban board interaction", () => {
           }) as HTMLSelectElement
         ).value,
       ).toBe("in_progress"),
+    );
+  });
+
+  it("keeps a newer realtime move when an older optimistic save response arrives", async () => {
+    const pending = deferred<TaskRecord>();
+    let realtimeHandlers:
+      | {
+          onChange: (change: TaskRealtimeChange) => void;
+          onResync: () => void | Promise<void>;
+        }
+      | undefined;
+    const realtimeSubscription: TaskRealtimeSubscription = {
+      subscribe: vi.fn((_scope, handlers) => {
+        realtimeHandlers = handlers;
+        return vi.fn();
+      }),
+    };
+    const repository = createRepository([], {
+      list: vi.fn(async () => [boardTasks()[0]]),
+      save: vi.fn(() => pending.promise),
+    });
+    renderBoard(repository, undefined, realtimeSubscription);
+
+    const move = await screen.findByRole("combobox", {
+      name: "Move SHIP-42",
+    });
+    fireEvent.change(move, { target: { value: "in_progress" } });
+    const remoteTask = {
+      ...boardTasks()[0],
+      status: "completed",
+      updatedAt: "2026-10-21T10:02:00.000Z",
+    };
+    realtimeHandlers?.onChange({
+      eventType: "UPDATE",
+      task: remoteTask,
+      taskId: remoteTask.id,
+      version: remoteTask.updatedAt,
+    });
+    pending.resolve({
+      ...boardTasks()[0],
+      status: "in_progress",
+      updatedAt: "2026-10-21T10:01:00.000Z",
+    });
+
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole("combobox", {
+            name: "Move SHIP-42",
+          }) as HTMLSelectElement
+        ).value,
+      ).toBe("completed"),
+    );
+  });
+
+  it("unsubscribes the injected project stream when the board unmounts", async () => {
+    const unsubscribe = vi.fn();
+    const realtimeSubscription: TaskRealtimeSubscription = {
+      subscribe: vi.fn(() => unsubscribe),
+    };
+    const rendered = renderBoard(
+      createRepository([], {
+        list: vi.fn(async () => [boardTasks()[0]]),
+      }),
+      undefined,
+      realtimeSubscription,
+    );
+
+    await screen.findByRole("list", { name: "Backlog tasks" });
+    expect(realtimeSubscription.subscribe).toHaveBeenCalledWith(
+      scope,
+      expect.objectContaining({
+        onChange: expect.any(Function),
+        onResync: expect.any(Function),
+      }),
+    );
+    rendered.unmount();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  it("replaces the project stream when the board scope changes", async () => {
+    const firstUnsubscribe = vi.fn();
+    const secondUnsubscribe = vi.fn();
+    const subscriptions = [firstUnsubscribe, secondUnsubscribe];
+    const realtimeSubscription: TaskRealtimeSubscription = {
+      subscribe: vi.fn(() => {
+        return subscriptions.shift() ?? vi.fn();
+      }),
+    };
+    const repository = createRepository([], {
+      list: vi.fn(async () => [boardTasks()[0]]),
+    });
+    const rendered = render(
+      <MemoryRouter>
+        <KanbanBoard
+          realtimeSubscription={realtimeSubscription}
+          repository={repository}
+          scope={scope}
+        />
+      </MemoryRouter>,
+    );
+    await screen.findByRole("list", { name: "Backlog tasks" });
+
+    const nextScope = { ...scope, projectId: "project-2" };
+    rendered.rerender(
+      <MemoryRouter>
+        <KanbanBoard
+          realtimeSubscription={realtimeSubscription}
+          repository={repository}
+          scope={nextScope}
+        />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(realtimeSubscription.subscribe).toHaveBeenCalledTimes(2),
+    );
+    expect(firstUnsubscribe).toHaveBeenCalledTimes(1);
+    expect(realtimeSubscription.subscribe).toHaveBeenLastCalledWith(
+      nextScope,
+      expect.objectContaining({
+        onChange: expect.any(Function),
+        onResync: expect.any(Function),
+      }),
     );
   });
 

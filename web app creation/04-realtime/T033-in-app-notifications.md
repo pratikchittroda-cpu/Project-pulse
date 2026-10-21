@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -25,28 +25,42 @@ Create a reliable in-app notification inbox for important project events.
 
 ## Implementation steps
 
-1. Define notification types and target users.
-2. Create notifications from task, mention, review, and CI events.
+1. Define notification types, target users, and dedupe keys.
+2. Create notifications from task assignment/status, mention, review, and CI
+   event hooks.
 3. Add read, unread, and mark-all-read actions.
-4. Add deep links to the relevant project object.
-5. Avoid duplicate notifications for duplicate events.
+4. Add deep links to the relevant task/event.
+5. Deliver through Realtime with unread retrieval fallback and deduplication.
 
 ## Acceptance criteria
 
-- [ ] Notifications are scoped to the intended user.
-- [ ] Notifications link to the relevant task or event.
-- [ ] Duplicate source events do not spam the inbox.
-- [ ] Read state persists.
-- [ ] Realtime delivery is supplemented by unread retrieval.
+- [x] Notifications are scoped to the intended user.
+- [x] Notifications link to the relevant task or event.
+- [x] Duplicate source events do not spam the inbox.
+- [x] Read state persists.
+- [x] Realtime delivery is supplemented by unread retrieval.
 
 ## Verification
 
-- Test notification creation, deduplication, and read state.
-- Test project permission boundaries.
+- Test notification creation, deduplication, read/unread/mark-all state, deep
+  links, realtime fallback, and project permission boundaries.
 
 ## Handoff
 
-Record notification types, dedupe keys, delivery hooks, and future email/chat extension points.
+- Notification types are `task_assigned`, `task_status_changed`,
+  `task_comment_mention`, `task_review_requested`, `task_ci_failed`, and
+  `task_event`. Rows are scoped to recipient, organization, project, task, and
+  source event; `(organization_id, recipient_user_id, dedupe_key)` prevents
+  duplicate inbox entries.
+- T028 mention events fan out to project members through the notification
+  trigger. Task assignment/status events and trusted generic event payloads use
+  the same service-side enqueue boundary. Actor self-notifications are skipped.
+- `/app/notifications` retrieves unread rows, subscribes to recipient-scoped
+  Realtime changes, marks individual/all rows read, and falls back to retrieval
+  after channel errors or when Realtime is unavailable. Deep links retain the
+  task scope and source event ID.
+- Email, chat, and push delivery are intentionally future event-consumer
+  extensions; the durable inbox remains the source of truth.
 
 ## Commit
 

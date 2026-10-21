@@ -33,6 +33,10 @@ import {
   type TaskDependencySummary,
 } from "../tasks/task-relations-repository.js";
 import { useTaskFilters } from "../tasks/use-task-filters.js";
+import {
+  taskRealtimeSubscription,
+  type TaskRealtimeSubscription,
+} from "./task-realtime.js";
 import { useKanbanBoard } from "./use-kanban-board.js";
 
 export interface BoardFilters {
@@ -203,12 +207,14 @@ export function KanbanBoard({
   archivedProject = false,
   dependencyRepository,
   repository,
+  realtimeSubscription,
   savedViewRepository,
   scope,
 }: {
   archivedProject?: boolean;
   dependencyRepository?: TaskRelationRepository;
   repository?: TaskRepository;
+  realtimeSubscription?: TaskRealtimeSubscription | null;
   savedViewRepository?: SavedTaskViewRepository;
   scope: TaskScope;
 }) {
@@ -216,6 +222,12 @@ export function KanbanBoard({
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const resolvedRealtimeSubscription =
+    realtimeSubscription === undefined
+      ? repository
+        ? null
+        : taskRealtimeSubscription
+      : realtimeSubscription;
   const {
     error,
     isLoading,
@@ -231,6 +243,7 @@ export function KanbanBoard({
     filters.includeArchived,
     repository,
     dependencyRepository ?? (repository ? null : taskDependencyRepository),
+    resolvedRealtimeSubscription,
   );
   const canWrite = options.canWrite && !archivedProject && !isLoading;
   const filterOptions = useMemo(

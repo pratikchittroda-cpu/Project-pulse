@@ -59,6 +59,23 @@ metadata for task files and enforces the PDF/ZIP/image/Markdown/text allowlist,
 `projectpulse-attachments` bucket uses signed URLs and storage policies derived
 from the metadata row's project access.
 
+T031 adds `tasks` to the `supabase_realtime` publication with full replica
+identity for tenant-safe delete payloads. The board subscribes to one
+organization/project channel and merges versioned changes into its local cache;
+the durable task/event tables remain the source of truth.
+
+T032 keeps developer presence ephemeral in Supabase Presence channels. Presence
+state is not stored in the application schema; `realtime.messages` policies use
+the encoded organization/project topic and `can_access_project` to authorize
+authenticated readers and publishers. The application redacts file metadata and
+expires stale records locally.
+
+T033 adds durable recipient-scoped `notifications` rows with source event IDs,
+dedupe keys, read timestamps, metadata, and task/event deep links. A task-event
+trigger fans out approved mention/assignment/status/generic notification hooks;
+the table is included in the Realtime publication, while unread RPC retrieval
+remains the recovery path after reconnects.
+
 ## Delivery and audit model
 
 - `repositories` stores provider-neutral repository metadata.

@@ -20,6 +20,7 @@ import { DashboardPage } from "../pages/dashboard-page.js";
 import { LandingPage } from "../pages/landing-page.js";
 import { LoginPage } from "../pages/login-page.js";
 import { NotFoundPage } from "../pages/not-found-page.js";
+import { NotificationsPage } from "../pages/notifications-page.js";
 import { OrganizationPage } from "../pages/organization-page.js";
 import { ProjectsPage } from "../pages/projects-page.js";
 import { RoadmapPage } from "../pages/roadmap-page.js";
@@ -71,6 +72,7 @@ export function createAppRoutes({
                   children: [
                     { index: true, element: <DashboardPage /> },
                     { path: "activity", element: <ActivityPage /> },
+                    { path: "notifications", element: <NotificationsPage /> },
                     { path: "board", element: <BoardPage /> },
                     { path: "backlog", element: <BacklogPage /> },
                     { path: "roadmap", element: <RoadmapPage /> },

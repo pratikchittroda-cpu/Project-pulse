@@ -95,6 +95,13 @@ interface TaskRow {
   updated_at: string;
 }
 
+export type TaskRealtimeRow = Omit<Partial<TaskRow>, "number"> & {
+  number?: string | number;
+  organization_id?: string;
+  project_id?: string;
+  task_number?: string | number;
+};
+
 // Cast bigint on the server, before JSON decoding, so task identities never lose precision.
 const taskColumns =
   "id, number:task_number::text, title, description, status, priority, assignee_id, labels, estimate, due_date, cycle_id, epic_id, milestone_id, team_id, archived_at, updated_at";
@@ -200,6 +207,51 @@ function toTask(row: TaskRow, projectKey: string): TaskRecord {
     title: row.title,
     updatedAt: row.updated_at,
   };
+}
+
+export function taskFromRealtimeRow(
+  row: TaskRealtimeRow,
+  projectKey: string,
+): TaskRecord | null {
+  const number = row.task_number ?? row.number;
+  if (
+    typeof row.id !== "string" ||
+    !row.id ||
+    number === undefined ||
+    typeof row.title !== "string" ||
+    typeof row.status !== "string" ||
+    typeof row.updated_at !== "string" ||
+    !DEFAULT_TASK_PRIORITIES.includes(row.priority as TaskPriority) ||
+    !Array.isArray(row.labels)
+  ) {
+    return null;
+  }
+
+  return toTask(
+    {
+      archived_at: row.archived_at ?? null,
+      branch_name: row.branch_name ?? null,
+      cycle_id: row.cycle_id ?? null,
+      epic_id: row.epic_id ?? null,
+      milestone_id: row.milestone_id ?? null,
+      assignee_id: row.assignee_id ?? null,
+      description: row.description ?? null,
+      due_date: row.due_date ?? null,
+      estimate: row.estimate ?? null,
+      id: row.id,
+      labels: row.labels,
+      number: String(number),
+      priority: row.priority as TaskPriority,
+      pull_request_number: row.pull_request_number ?? null,
+      pull_request_title: row.pull_request_title ?? null,
+      pull_request_url: row.pull_request_url ?? null,
+      status: row.status,
+      team_id: row.team_id ?? null,
+      title: row.title,
+      updated_at: row.updated_at,
+    },
+    projectKey,
+  );
 }
 
 function databaseError(error: { code?: string; message: string }) {

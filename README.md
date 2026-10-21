@@ -169,7 +169,9 @@ work to the backlog or another open sprint. Carryover preserves the old snapshot
 change the task's estimate or status afterward. **Unfinished at close** stays
 fixed even after tasks move. There is no automatic bulk carryover. Viewers and
 archived projects are read-only. Use **Reload planning** after a stale-version
-error or to see other users' changes; realtime subscriptions remain a later task.
+error or to see other users' changes; the Kanban board also receives scoped task
+inserts, updates, and deletes through Supabase Realtime and reloads after a
+reconnect.
 Legacy closed sprints without recorded snapshots display that absence explicitly.
 
 Use **Roadmap** or `/app/roadmap` for the planning hierarchy above tasks. Create
@@ -193,7 +195,20 @@ request receipt atomically. Identical retries within the same repository instanc
 reuse the request ID; stale versions are rejected. Reload the task after a
 conflict. No-op changes add no event. Existing tasks may have no history before
 automatic recording was installed. Use **Reload task** or **Refresh history**
-to retrieve new changes; live subscriptions are a later milestone.
+to retrieve new changes; the board synchronizes confirmed task changes live,
+while durable task history and ephemeral presence remain separate concerns.
+
+The workspace includes a **Notifications** inbox at `/app/notifications` for
+task assignment/status changes, project-member mentions, review/CI hooks, and
+important task activity. Notifications are recipient-scoped, deduplicated by
+source event, linked to the relevant task, and support individual or mark-all
+read state. Realtime delivery is supplemented by unread retrieval after a
+reconnect or channel failure.
+
+Developer presence is available through the project-scoped Presence controller
+and `ActiveDevelopers` UI primitive. It expires after 45 seconds without an
+update, redacts file metadata, shares no source content, and remains hidden when
+telemetry is paused.
 
 ### Task and permission verification
 
@@ -209,8 +224,9 @@ corepack pnpm run test:api
 ```
 
 `test:db` checks RLS, history atomicity, rollback, dependency graph validation,
-saved-view ownership, collaboration permissions, dependency replay, stale writes,
-and concurrent request deduplication. Roadmap assertions cover hierarchy links, task-history
+saved-view ownership, collaboration permissions, realtime publication and
+presence-channel authorization, notification deduplication/read state,
+dependency replay, stale writes, and concurrent request deduplication. Roadmap assertions cover hierarchy links, task-history
 capture, finite dates, member/viewer permissions, and cross-project/organization
 denial. Sprint assertions cover lifecycle replay, immutable
 snapshots, paused scope changes, carryover, audit-failure rollback, concurrent
@@ -219,7 +235,8 @@ application repositories through local Supabase Auth/PostgREST, including bigint
 task keys, multi-page task/sprint/timeline reads, sprint lifecycle and carryover,
 roadmap create/readback and task linking, dependency create/readback/summary/
 deletion, saved-view readback, comments, member-scoped mentions, protected
-attachments, checklist behavior, viewer denial, and project/organization isolation.
+attachments, checklist behavior, notification delivery/read state, viewer denial,
+and project/organization isolation.
 Both use
 isolated fixtures and clean up after themselves; neither resets existing data.
 The API suite keeps temporary credentials in memory and is excluded from the

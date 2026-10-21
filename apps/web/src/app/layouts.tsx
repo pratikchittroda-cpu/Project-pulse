@@ -1,13 +1,17 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { useMemo } from "react";
 
 import { ProjectPulseMark } from "./brand.js";
 import { useAuth } from "./auth-context.js";
 import { useOrganization } from "./organization-context.js";
 import { useProject } from "./project-context.js";
+import { useNotifications } from "../features/notifications/use-notifications.js";
+import { NotificationHeaderLink } from "../pages/notifications-page.js";
 
 const navigationItems = [
   { icon: "◌", label: "Overview", to: "/app", end: true },
   { icon: "⌁", label: "Activity", to: "/app/activity", end: false },
+  { icon: "♢", label: "Notifications", to: "/app/notifications", end: false },
   { icon: "✓", label: "Tasks", to: "/app/tasks", end: false },
   { icon: "▤", label: "Board", to: "/app/board", end: false },
   { icon: "◫", label: "Backlog", to: "/app/backlog", end: false },
@@ -72,6 +76,17 @@ export function AppLayout() {
     selectedOrganization,
     selectedOrganizationId,
   } = useOrganization();
+  const notificationScope = useMemo(
+    () =>
+      session
+        ? {
+            organizationId: selectedOrganizationId || undefined,
+            userId: session.user.id,
+          }
+        : null,
+    [selectedOrganizationId, session],
+  );
+  const { unreadCount } = useNotifications(notificationScope, undefined, null);
 
   return (
     <div className="app-shell">
@@ -199,6 +214,7 @@ export function AppLayout() {
             <Link className="header-quick-link" to="/app/activity">
               <span aria-hidden="true">⌁</span> Activity
             </Link>
+            <NotificationHeaderLink unreadCount={unreadCount} />
             <div className="header-status" aria-label="Workspace status">
               <span className="status-dot" aria-hidden="true" />
               {isDemoMode ? "Demo preview" : "Live workspace"}

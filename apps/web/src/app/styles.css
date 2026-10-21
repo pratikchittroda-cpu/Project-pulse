@@ -513,6 +513,26 @@ input:focus-visible {
   gap: 0.5rem;
 }
 
+.notification-header-link {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.notification-count {
+  align-items: center;
+  background: var(--violet);
+  border-radius: 999px;
+  color: white;
+  display: inline-flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 1.25rem;
+  min-width: 1.25rem;
+  padding: 0 0.3rem;
+}
+
 .app-content {
   margin: 0 auto;
   max-width: 1180px;
@@ -609,6 +629,80 @@ input:focus-visible {
 
 .activity-list small {
   color: #94a3b8;
+}
+
+.notification-list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notification-item {
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.notification-item-unread {
+  background: #faf9ff;
+  border-color: #cfcaff;
+}
+
+.notification-item-copy {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.notification-item-heading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.notification-item-heading time {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+}
+
+.notification-link {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.notification-link strong {
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.notification-link span {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.notification-link:hover strong {
+  color: var(--violet-dark);
+}
+
+.notification-empty {
+  padding: 1.25rem 0;
+}
+
+.notification-empty strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.notification-empty p {
+  margin-bottom: 0;
 }
 
 .organization-grid {

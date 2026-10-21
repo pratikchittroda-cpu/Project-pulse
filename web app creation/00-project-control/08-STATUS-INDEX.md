@@ -1,6 +1,6 @@
 # Task Status Index
 
-Current state after T028 verification.
+Current state after T033 verification.
 
 ## Done
 
@@ -28,6 +28,9 @@ Current state after T028 verification.
 - `T026` — Task dependencies and blockers
 - `T027` — Search, filters, and saved views
 - `T028` — Comments, attachments, and checklists
+- `T031` — Realtime board synchronization
+- `T032` — Realtime developer presence
+- `T033` — In-app notifications
 
 ## Ready
 
@@ -49,7 +52,7 @@ Current state after T028 verification.
 
 ### Realtime
 
-- `T031`, `T032`, `T033`
+- None
 
 ### GitHub and CI/CD
 

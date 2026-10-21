@@ -155,6 +155,27 @@ row and project read access. Signed URLs are short-lived. Archived projects and
 viewers can read visible metadata but cannot upload, edit, delete, or toggle
 collaboration content.
 
+## Realtime board, presence, and notifications
+
+T031 task changes remain behind the existing `tasks` RLS policies. The Realtime
+publication and board filter are organization/project scoped, and the client
+rejects rows outside the active scope before merging them. Reconnects trigger a
+fresh RLS-scoped snapshot rather than trusting a partial event stream.
+
+T032 private Presence channels use `realtime.messages` select/insert policies
+that parse the organization/project IDs from `projectpulse:presence:*` topics and
+call `can_access_project`. Authenticated viewers and writers can receive and
+publish ephemeral presence only for projects they can read; cross-organization
+topics and malformed topics are denied. Presence contains no durable task or
+source content.
+
+T033 notifications are readable only by the recipient and users with current
+project access. Direct notification writes are revoked from clients; service
+event hooks use the enqueue RPC and validate recipient membership, source event,
+notification type, metadata, and dedupe key. Read/unread RPCs bind mutations to
+the authenticated recipient. Realtime delivery is a convenience layer; unread
+retrieval remains authoritative after reconnects.
+
 Initial and closing snapshots preserve string task numbers, keys, titles,
 estimates, and workflow status. Completed/canceled cycle rows stay immutable.
 Tasks cannot enter a closed cycle or change estimate/status/archive state while

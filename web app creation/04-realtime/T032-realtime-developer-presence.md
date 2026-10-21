@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -25,28 +25,41 @@ Display current developer activity without persisting every heartbeat.
 
 ## Implementation steps
 
-1. Define project-scoped presence state.
+1. Define project-scoped presence state and private channel naming.
 2. Add activity, task, branch, and optional redacted file fields.
 3. Add expiry and offline behavior.
-4. Enforce project membership before joining channels.
-5. Keep presence ephemeral and separate from durable sessions.
+4. Enforce project access before joining or publishing to channels.
+5. Keep presence ephemeral and separate from durable sessions/events.
 
 ## Acceptance criteria
 
-- [ ] Active users appear on the correct project/task.
-- [ ] Stale presence expires automatically.
-- [ ] No source content is exposed.
-- [ ] Presence is hidden when telemetry is paused.
-- [ ] A user cannot join another organization's channel.
+- [x] Active users appear on the correct project/task through the reusable
+  presence controller and UI primitive.
+- [x] Stale presence expires automatically.
+- [x] No source content is exposed.
+- [x] Presence is hidden when telemetry is paused.
+- [x] A user cannot join another organization's channel.
 
 ## Verification
 
-- Test join, update, leave, expiry, and authorization behavior.
-- Test a paused telemetry state.
+- Test join, update, leave, expiry, offline, authorization, and redaction behavior.
+- Test paused telemetry behavior and realtime channel RLS policies.
 
 ## Handoff
 
-Record channel naming, state shape, expiry interval, and UI usage guidance.
+- Channel name: `projectpulse:presence:<organizationId>:<projectId>`, joined as
+  a private Supabase Presence channel. `realtime.messages` policies authorize
+  only authenticated users who can access the encoded project scope.
+- Presence state contains user ID, activity, optional task ID, branch, and a
+  redacted file basename/extension/hash. Full paths, source text, buffers, and
+  secrets are discarded before tracking. Local records expire after 45 seconds
+  without a fresh presence event.
+- `createDeveloperPresence` requires an injected project authorizer and keeps
+  telemetry-paused/offline states off the channel. `ActiveDevelopers` and
+  `DeveloperPresencePanel` are reusable UI primitives; the extension/activity
+  producer and product-specific telemetry preference remain caller-owned.
+- Presence is not written to `task_events` or durable session tables. A later
+  producer can update activity without changing task history.
 
 ## Commit
 
