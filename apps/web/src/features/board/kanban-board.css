@@ -37,6 +37,15 @@
   margin: 0 0.4rem;
 }
 
+.board-realtime-workspace {
+  display: grid;
+  gap: 1rem;
+}
+
+.board-realtime-workspace > [aria-label="Active developers"] {
+  margin-top: 0.25rem;
+}
+
 .kanban-board {
   display: grid;
   gap: 0.85rem;

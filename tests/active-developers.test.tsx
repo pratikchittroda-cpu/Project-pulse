@@ -45,4 +45,14 @@ describe("active developer presence UI", () => {
     ).toBeTruthy();
     expect(screen.queryByText("user-1")).toBeNull();
   });
+
+  it("explains connection failures without hiding board availability", () => {
+    render(<ActiveDevelopers developers={[]} status="error" />);
+
+    expect(
+      screen.getByText(
+        "Project presence could not connect. Task synchronization is still available.",
+      ),
+    ).toBeTruthy();
+  });
 });

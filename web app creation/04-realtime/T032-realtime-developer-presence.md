@@ -55,9 +55,12 @@ Display current developer activity without persisting every heartbeat.
   secrets are discarded before tracking. Local records expire after 45 seconds
   without a fresh presence event.
 - `createDeveloperPresence` requires an injected project authorizer and keeps
-  telemetry-paused/offline states off the channel. `ActiveDevelopers` and
-  `DeveloperPresencePanel` are reusable UI primitives; the extension/activity
-  producer and product-specific telemetry preference remain caller-owned.
+  telemetry-paused/offline states off the channel. The board page now mounts a
+  project-scoped presence controller and joins with a lightweight `testing`
+  activity so the feature can be exercised in two authenticated browser tabs.
+  `ActiveDevelopers` and `DeveloperPresencePanel` remain reusable UI
+  primitives; extension/activity producers and product-specific telemetry
+  preferences remain caller-owned.
 - Presence is not written to `task_events` or durable session tables. A later
   producer can update activity without changing task history.
 

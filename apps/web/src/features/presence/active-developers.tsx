@@ -39,6 +39,68 @@ export function ActiveDevelopers({
     );
   }
 
+  if (status === "joining") {
+    return (
+      <Card aria-label="Active developers">
+        <CardHeader>
+          <CardTitle>Active developers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="muted" role="status">
+            Connecting to project presence…
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (status === "offline") {
+    return (
+      <Card aria-label="Active developers">
+        <CardHeader>
+          <CardTitle>Active developers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="muted" role="status">
+            Presence is offline. Task synchronization can continue when you
+            reconnect.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (status === "unauthorized") {
+    return (
+      <Card aria-label="Active developers">
+        <CardHeader>
+          <CardTitle>Active developers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="auth-error" role="alert">
+            You do not have access to this project&apos;s presence channel.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <Card aria-label="Active developers">
+        <CardHeader>
+          <CardTitle>Active developers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="auth-error" role="alert">
+            Project presence could not connect. Task synchronization is still
+            available.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card aria-label="Active developers">
       <CardHeader>
