@@ -3,9 +3,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { RouterProvider } from "react-router-dom";
 
+import { type AuthStatus } from "../apps/web/src/app/auth-context.js";
 import { createTestRouter } from "../apps/web/src/app/router.js";
 
-function renderRoute(path: string, initialAuthStatus?: "loading") {
+function renderRoute(path: string, initialAuthStatus?: AuthStatus) {
   const router = createTestRouter([path], { initialAuthStatus });
   const markup = renderToStaticMarkup(
     createElement(RouterProvider, { router }),
@@ -16,7 +17,7 @@ function renderRoute(path: string, initialAuthStatus?: "loading") {
 
 describe("web route groups", () => {
   it("renders the public landing route", () => {
-    const { markup } = renderRoute("/");
+    const { markup } = renderRoute("/", "signed_out");
 
     expect(markup).toContain("Make delivery feel visible.");
     expect(markup).toContain("Open the workspace");

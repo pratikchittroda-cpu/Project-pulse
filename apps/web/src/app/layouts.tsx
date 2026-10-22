@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
 import { useMemo } from "react";
 
 import { ProjectPulseMark } from "./brand.js";
@@ -33,6 +33,12 @@ function Brand() {
 }
 
 export function PublicLayout() {
+  const { status } = useAuth();
+
+  if (status === "authenticated") {
+    return <Navigate replace to="/app" />;
+  }
+
   return (
     <div className="public-layout">
       <header className="public-header">
