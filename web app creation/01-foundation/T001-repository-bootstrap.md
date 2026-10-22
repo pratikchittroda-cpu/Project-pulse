@@ -2,7 +2,7 @@
 
 ## Status
 
-Ready
+Done
 
 ## Depends on
 
@@ -35,20 +35,39 @@ Create the reproducible Node.js/TypeScript workspace foundation for ProjectPulse
 
 ## Acceptance criteria
 
-- [ ] A clean checkout identifies the pinned runtime.
-- [ ] The workspace installs from the lockfile.
-- [ ] No global dependency is required.
-- [ ] The repository layout is documented.
-- [ ] No secrets or machine-specific paths are committed.
+- [x] A clean checkout identifies the pinned runtime.
+- [x] The workspace installs from the lockfile.
+- [x] No global dependency is required.
+- [x] The repository layout is documented.
+- [x] No secrets or machine-specific paths are committed.
 
 ## Verification
 
 - Run the package-manager install in a clean environment.
 - Run `git status --short` and confirm only intended files exist.
 
+Completed verification:
+
+- `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
+  completed without changing `pnpm-lock.yaml`.
+- `make test` passed using the offline bootstrap checks.
+- `corepack pnpm run workspace:check` exits with status 1 and clearly lists
+  the five workspace manifests that T002 must add.
+- Ignored worker attachments and OS metadata do not appear in the repository
+  status; no secrets or machine-specific paths were added.
+
 ## Handoff
 
-Record the runtime version, package-manager version, created paths, and the exact next command for `T002`.
+- Runtime: Node.js `22.14.0`, pinned in `.nvmrc` and constrained by the root
+  `package.json` engines field.
+- Package manager: pnpm `10.12.1`, pinned by the root `packageManager` field
+  and captured in `pnpm-lock.yaml`.
+- Created paths: `package.json`, `pnpm-workspace.yaml`, `.nvmrc`,
+  `.gitignore`, `Makefile`, `pnpm-lock.yaml`, `README.md`,
+  `scripts/check-bootstrap.mjs`, `scripts/check-workspaces.mjs`, and the
+  `apps/` and `packages/` workspace directory skeleton.
+- Exact next command for `T002`: `corepack pnpm run workspace:check` after
+  its workspace manifests are created.
 
 ## Commit
 

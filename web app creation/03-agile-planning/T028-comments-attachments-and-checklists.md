@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -25,28 +25,41 @@ Give teams a structured place to discuss work and track task completion details.
 
 ## Implementation steps
 
-1. Add comments and threaded replies if supported by the chosen model.
-2. Add member mentions with notification hooks.
-3. Upload attachments to protected storage.
-4. Add checklists with completion tracking.
-5. Record edit and delete events.
+1. Add task comments with author-controlled edit and soft-delete behavior.
+2. Add project-member mentions with notification-hook events.
+3. Upload attachment metadata and files to protected storage.
+4. Add checklists with completion tracking independent of task status.
+5. Record comment, attachment, and checklist history events with safe tombstones.
 
 ## Acceptance criteria
 
-- [ ] Authorized members can comment.
-- [ ] Mentions resolve only to project members.
-- [ ] Attachments are protected by project access.
-- [ ] Checklists update task detail without changing task status automatically.
-- [ ] Deleted content is represented safely in history.
+- [x] Authorized members can comment.
+- [x] Mentions resolve only to project members.
+- [x] Attachments are protected by project access.
+- [x] Checklists update task detail without changing task status automatically.
+- [x] Deleted content is represented safely in history.
 
 ## Verification
 
-- Test storage access and file type/size limits.
-- Test mention and permission behavior.
+- Test storage access, path rules, file type/size limits, and signed URLs.
+- Test mention scope, author ownership, viewer/archived permissions, checklist
+  behavior, and safe deleted-content history.
 
 ## Handoff
 
-Record storage bucket rules, upload limits, mention events, and moderation assumptions.
+- Comments are stored in the existing `comments` table with `deleted_at`,
+  `deleted_by`, and `edit_version`. Deletes retain a tombstone and redact body
+  content from repository/timeline responses; threaded replies were not added
+  because the current model has no parent-comment field.
+- Mention IDs are checked against `project_memberships`. Mention events contain
+  recipient IDs and a `task_comment_mention` notification hook; delivery is left
+  to a later event consumer.
+- Attachments use the private `projectpulse-attachments` bucket, signed URLs,
+  organization/project/task-prefixed paths, an allowlist for PDF, ZIP, GIF, JPEG,
+  PNG, WEBP, Markdown, and plain text, and a 10 MiB maximum.
+- Checklist items are project/task scoped, ordered by position, and toggle
+  completion without mutating task workflow status. Viewers and archived projects
+  retain read access but no mutation controls.
 
 ## Commit
 

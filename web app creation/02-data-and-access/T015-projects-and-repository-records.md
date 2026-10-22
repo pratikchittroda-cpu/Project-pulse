@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -33,20 +33,41 @@ Allow teams to create project spaces and register repository metadata.
 
 ## Acceptance criteria
 
-- [ ] Project keys are unique within an organization.
-- [ ] Project access follows membership rules.
-- [ ] The selected project is persisted in navigation.
-- [ ] Repository records can later be connected to GitHub.
-- [ ] Invalid keys and duplicate keys have useful errors.
+- [x] Project keys are unique within an organization.
+- [x] Project access follows membership rules.
+- [x] The selected project is persisted in navigation.
+- [x] Repository records can later be connected to GitHub.
+- [x] Invalid keys and duplicate keys have useful errors.
 
 ## Verification
 
-- Test create, edit, archive, and access scenarios.
-- Verify project keys are safe for task identifiers.
+- `docker exec --interactive supabase_db_projectpulse psql -U postgres -d
+  postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
+  PostgreSQL assertions for project visibility, invalid and duplicate keys,
+  archive/edit operations, member/viewer writes, and repository access.
+- `make test` passed workspace checks, typechecking, lint, formatting, build, 30
+  Vitest tests, and workspace smoke checks.
 
 ## Handoff
 
-Record project key validation, route shape, repository fields, and the GitHub integration extension points.
+- The project administration route is `/app/projects`. The sidebar now exposes
+  a project selector and a Projects navigation item. The selected project is
+  persisted in `localStorage` under `projectpulse.selected-project`; the
+  context falls back to the existing `PULSE` placeholder until an authenticated
+  organization has accessible projects.
+- Project keys are normalized to uppercase in the UI and must match
+  `^[A-Z][A-Z0-9]{1,9}$`. The database also enforces that shape and
+  `unique (organization_id, project_key)`. Duplicate-key and check-constraint
+  errors are translated into actionable UI messages.
+- Project settings support name, key, description, optional same-organization
+  team assignment, and archive. Project membership management is available to
+  organization owners/admins and uses the existing project RLS policies.
+- Repository records store `name`, `provider` (`github`, `gitlab`, or `other`),
+  `url`, and `default_branch`. URLs are validated as HTTP(S) in both the UI and
+  schema. Records can be added and removed without provider OAuth or sync logic.
+- The repository fields and provider enum are the extension point for T040
+  GitHub integration; no access tokens or provider credentials are stored by
+  this task.
 
 ## Commit
 

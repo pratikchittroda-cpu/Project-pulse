@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -45,21 +45,49 @@ Create the durable PostgreSQL model for identity, projects, planning, events, in
 
 ## Acceptance criteria
 
-- [ ] Schema supports the first task-to-merge lifecycle.
-- [ ] `TIMESTAMPTZ` is used consistently.
-- [ ] Webhook provider event IDs can be unique.
-- [ ] No table relies on an unprotected organization boundary.
-- [ ] Migration reset succeeds locally.
+- [x] Schema supports the first task-to-merge lifecycle.
+- [x] `TIMESTAMPTZ` is used consistently.
+- [x] Webhook provider event IDs can be unique.
+- [x] No table relies on an unprotected organization boundary.
+- [x] Migration reset succeeds locally.
 
 ## Verification
 
-- Apply migrations to a clean local database.
-- Reset and reapply migrations.
-- Run schema and foreign-key checks.
+Completed verification:
+
+- `corepack pnpm run supabase:reset` applied
+  `20261017000000_initial_schema.sql` to a clean local database after a failed
+  first attempt was corrected before the migration was committed.
+- PostgreSQL checks found all nineteen required public tables, all nineteen
+  organization-owned tables with RLS enabled, forty-seven foreign keys, and
+  the unique webhook provider/event-id constraint.
+- A transaction-level schema smoke test inserted an organization, project,
+  task in `ready_to_merge`, task event, and GitHub webhook event, then rolled
+  back the fixture successfully.
+- `make test` passed the full quality pipeline with twenty Vitest tests.
 
 ## Handoff
 
-Record migration names, table ownership, indexes, and any deferred schema.
+- Migration: `supabase/migrations/20261017000000_initial_schema.sql`. It is
+  append-only and must not be edited after application; future changes require
+  a new timestamped migration.
+- Tables cover organizations/memberships, teams/team memberships, projects and
+  project memberships, repositories, integrations, cycles, initiatives,
+  epics, milestones, tasks, task relations, task events, comments, attachment
+  metadata, webhook events, and audit records.
+- Task identity is `(project_id, task_number)` with a positive task number and
+  project-scoped uniqueness. Project keys are uppercase `[A-Z][A-Z0-9]{1,9}`.
+- Every tenant-owned row carries `organization_id`, composite foreign keys
+  prevent cross-tenant child references, and RLS is enabled on all nineteen
+  tenant-owned tables. T013 adds membership/role policies; the intentional
+  no-policy state currently denies client access by default.
+- `public.set_updated_at()` triggers maintain UTC `updated_at` values. Indexes
+  cover tenant, project, status, assignee, cycle, task number, event time,
+  webhook receipt time, comments, attachments, and audit time.
+- `webhook_events` enforces unique `(provider, provider_event_id)` for
+  idempotency. Provider payloads remain JSONB until normalization into task
+  events.
+- T012 is now ready. RLS policy work in T013 remains blocked on authentication.
 
 ## Commit
 

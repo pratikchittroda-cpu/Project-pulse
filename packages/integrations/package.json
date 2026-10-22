@@ -1,0 +1,25 @@
+{
+  "name": "@projectpulse/integrations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "node ../../scripts/workspace-dev.mjs @projectpulse/integrations",
+    "build": "tsc -p tsconfig.json",
+    "test": "node ../../scripts/check-workspace-package.mjs @projectpulse/integrations",
+    "lint": "node ../../scripts/check-workspace-package.mjs @projectpulse/integrations lint",
+    "typecheck": "tsc -b tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
+}

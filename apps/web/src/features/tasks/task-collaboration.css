@@ -1,0 +1,136 @@
+.task-collaboration {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.task-collaboration-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.task-collaboration-grid > .pp-card {
+  min-width: 0;
+}
+
+.task-comment-list,
+.task-checklist-list,
+.task-attachment-list {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task-comment-item,
+.task-checklist-list li,
+.task-attachment-list li {
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  padding-bottom: 0.8rem;
+}
+
+.task-comment-item:last-child,
+.task-checklist-list li:last-child,
+.task-attachment-list li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.task-comment-meta,
+.task-checklist-list li,
+.task-attachment-list li {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.task-comment-meta {
+  color: var(--ink-soft, #687080);
+  font-size: 0.78rem;
+  justify-content: flex-start;
+}
+
+.task-comment-body {
+  margin: 0.55rem 0;
+  white-space: pre-wrap;
+}
+
+.task-comment-input {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.task-comment-form,
+.task-checklist-form,
+.task-attachment-input {
+  border-top: 1px solid var(--line, #e2e8f0);
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.task-mention-picker {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.task-mention-picker legend {
+  color: var(--ink-soft, #687080);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.task-mention-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+}
+
+.task-mention-options label,
+.task-checklist-list li label {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.task-collaboration-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.5rem 0;
+}
+
+.task-checklist-complete {
+  text-decoration: line-through;
+}
+
+.task-attachment-list li {
+  align-items: flex-start;
+}
+
+.task-attachment-list small {
+  color: var(--ink-soft, #687080);
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.task-collaboration-error {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+@media (max-width: 1050px) {
+  .task-collaboration-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

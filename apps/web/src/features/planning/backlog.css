@@ -1,0 +1,186 @@
+.planning-overview-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+}
+
+.cycle-form,
+.backlog-task-list,
+.cycle-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.cycle-summary-heading h3 {
+  font-size: 1.15rem;
+  margin: 0.55rem 0 0.25rem;
+}
+
+.cycle-summary-heading p,
+.cycle-row p,
+.cycle-row small {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.cycle-metrics {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 1.25rem 0 0;
+}
+
+.cycle-metrics dt {
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+}
+
+.cycle-metrics dd {
+  font-size: 1rem;
+  font-weight: 750;
+  margin: 0.25rem 0 0;
+}
+
+.cycle-row,
+.planning-task-row {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+}
+
+.cycle-row:last-child,
+.planning-task-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.cycle-row:first-child,
+.planning-task-row:first-child {
+  padding-top: 0;
+}
+
+.cycle-history-item {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1.2rem;
+  min-width: 0;
+}
+
+.cycle-row-heading h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cycle-snapshot {
+  margin-top: 1rem;
+}
+
+.cycle-snapshot summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cycle-snapshot summary:focus-visible,
+.cycle-carryover select:focus-visible {
+  outline: var(--pp-focus-ring);
+  outline-offset: 3px;
+}
+
+.cycle-snapshot-list {
+  display: grid;
+  gap: 0.7rem;
+  padding-left: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.cycle-snapshot-list span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.cycle-carryover {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  padding-top: 1rem;
+}
+
+.cycle-carryover .field {
+  flex: 1 1 12rem;
+}
+
+.cycle-row-heading,
+.planning-task-badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cycle-row-heading strong,
+.planning-task-main strong {
+  font-size: 0.88rem;
+}
+
+.cycle-row small {
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.planning-task-main {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.planning-task-main a {
+  overflow-wrap: anywhere;
+}
+
+.planning-task-controls {
+  align-items: end;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: minmax(10rem, 1fr) minmax(7rem, 8rem) auto;
+  min-width: min(100%, 34rem);
+}
+
+.planning-task-controls .pp-field {
+  min-width: 0;
+}
+
+.planning-task-controls .pp-button {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .planning-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cycle-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .planning-task-row,
+  .cycle-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .planning-task-controls {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .planning-task-controls {
+    grid-template-columns: 1fr;
+  }
+}

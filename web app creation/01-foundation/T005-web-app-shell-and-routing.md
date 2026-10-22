@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Done
 
 ## Depends on
 
@@ -33,20 +33,42 @@ Create the navigable React application shell with authenticated and unauthentica
 
 ## Acceptance criteria
 
-- [ ] The app starts and builds.
-- [ ] Public and protected routes are distinguishable.
-- [ ] Navigation works without full-page reloads.
-- [ ] Unknown routes have a useful response.
-- [ ] Layout works at mobile and desktop widths.
+- [x] The app starts and builds.
+- [x] Public and protected routes are distinguishable.
+- [x] Navigation works without full-page reloads.
+- [x] Unknown routes have a useful response.
+- [x] Layout works at mobile and desktop widths.
 
 ## Verification
 
-- Add route rendering tests.
-- Run the web build and `make test`.
+Completed verification:
+
+- `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
+  completed successfully from the committed lockfile.
+- `corepack pnpm --filter @projectpulse/web build` completed the TypeScript and
+  Vite production build.
+- `make test` passed workspace validation, typechecking, linting, formatting,
+  all workspace builds, and six Vitest assertions across public, auth,
+  protected, loading, and not-found routes.
 
 ## Handoff
 
-Record route names, layout ownership, and the extension points for authentication and project context.
+- Vite starts the web workspace with `corepack pnpm --filter
+  @projectpulse/web dev`; the production command runs strict TypeScript before
+  `vite build`.
+- Public routes are `/` and `/auth/login`; application routes are `/app` and
+  `/app/activity`. Unknown paths render the `NotFoundPage` response.
+- `PublicLayout`, `AuthLayout`, and `AppLayout` own their route-group chrome.
+  `ProtectedRoute` separates authenticated application routes and renders a
+  loading state while auth is unresolved.
+- `AuthProvider` is a local placeholder with sign-in/sign-out actions; T012 can
+  replace its status source with Supabase Auth without changing route layout
+  ownership. `ProjectProvider` exposes the placeholder `PULSE` project and is
+  the extension point for T015 project data.
+- `AppErrorBoundary` handles render failures, while `RouteErrorPage` handles
+  router errors. Responsive CSS collapses the sidebar navigation below 760px
+  and includes visible keyboard focus states.
+- T006 is now unblocked. T003, T007, and T050 remain ready for parallel work.
 
 ## Commit
 

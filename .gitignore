@@ -1,0 +1,35 @@
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+*.log
+
+# Build, test, and coverage output
+dist/
+build/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# Local environment files
+.env
+.env.*
+!.env.example
+.realtime-test-credentials.json
+.realtime-status.env
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+!apps/vscode-extension/.vscode/
+!apps/vscode-extension/.vscode/**
+*.swp
+*.swo
+*.vsix
+
+# Temporary files
+tmp/
+temp/
+
+# OmniRush worker attachments are local input, not project source.
+.opencode/omnirush/inbox/
