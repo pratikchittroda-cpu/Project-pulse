@@ -22,6 +22,7 @@
     "test:unit": "vitest run --config vitest.config.ts",
     "test:db": "node ./scripts/test-database.mjs",
     "test:api": "vitest run --config vitest.api.config.ts",
+    "test:realtime": "vitest run --config vitest.api.config.ts tests/realtime.integration.ts",
     "test:workspaces": "corepack pnpm --recursive run test",
     "quality": "corepack pnpm run workspace:check && corepack pnpm run typecheck && corepack pnpm run lint && corepack pnpm run format:check && corepack pnpm run build && corepack pnpm run test:unit && corepack pnpm run test:workspaces",
     "lint": "corepack pnpm run workspace:check && eslint . && corepack pnpm --recursive run lint",

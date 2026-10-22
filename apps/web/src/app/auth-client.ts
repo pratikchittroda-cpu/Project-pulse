@@ -14,14 +14,23 @@ export const supabaseAuthConfig = {
   url: configuredUrl ?? "http://127.0.0.1:54321",
 } as const;
 
-export const supabase = createClient(
-  supabaseAuthConfig.url,
-  supabaseAuthConfig.anonKey,
-  {
+export function createSupabaseClient(
+  url = supabaseAuthConfig.url,
+  anonKey = supabaseAuthConfig.anonKey,
+  authOverrides: Partial<{
+    autoRefreshToken: boolean;
+    detectSessionInUrl: boolean;
+    persistSession: boolean;
+  }> = {},
+) {
+  return createClient(url, anonKey, {
     auth: {
       autoRefreshToken: true,
       detectSessionInUrl: true,
       persistSession: true,
+      ...authOverrides,
     },
-  },
-);
+  });
+}
+
+export const supabase = createSupabaseClient();

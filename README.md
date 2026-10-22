@@ -239,6 +239,17 @@ Use the `LIVE` project to test:
 - Disconnect/reconnect a window or stop/start Realtime to verify the documented
   reload fallback.
 
+Run the authenticated real-database Realtime verification directly with:
+
+```sh
+corepack pnpm run test:realtime
+```
+
+That test uses two real local Supabase Auth sessions, Postgres RPCs/triggers,
+the `task_events` and `notifications` tables, authenticated Realtime channels,
+and Presence. It does not use the React test repositories or in-memory event
+fakes.
+
 ### Task and permission verification
 
 `make test` is the offline command after dependencies are installed. It uses

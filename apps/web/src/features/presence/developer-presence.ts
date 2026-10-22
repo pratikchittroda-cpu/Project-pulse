@@ -524,6 +524,12 @@ export function createDeveloperPresence(
     status: "error" | "offline",
     error?: Error,
   ) {
+    // removeChannel() causes Supabase to emit CLOSED. Once releaseChannel has
+    // detached this controller's channel reference, ignore that intentional
+    // close instead of recursively trying to remove the same channel again.
+    if (channel !== currentChannel) {
+      return error ?? new Error("Developer presence channel is unavailable.");
+    }
     void releaseChannel(currentChannel, false);
     currentState = null;
     clearRecords();
