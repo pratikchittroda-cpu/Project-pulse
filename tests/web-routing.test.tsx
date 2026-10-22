@@ -20,6 +20,13 @@ describe("web route groups", () => {
 
     expect(markup).toContain("Make delivery feel visible.");
     expect(markup).toContain("Open the workspace");
+    expect(markup).toContain("From planning signals to shipping decisions.");
+    expect(markup).toContain(
+      "See how work moves without turning work into surveillance.",
+    );
+    expect(markup).toContain("Signal lens");
+    expect(markup).toContain("PERMISSIONS / VISIBLE");
+    expect(markup).toContain("Make delivery feel calmer.");
   });
 
   it("renders the authentication route separately from the app shell", () => {

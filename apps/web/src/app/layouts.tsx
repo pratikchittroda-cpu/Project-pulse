@@ -37,6 +37,11 @@ export function PublicLayout() {
     <div className="public-layout">
       <header className="public-header">
         <Brand />
+        <nav className="public-nav" aria-label="Public page navigation">
+          <a href="#product">Product</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#principles">Principles</a>
+        </nav>
         <Link className="button button-secondary button-small" to="/auth/login">
           Sign in
         </Link>
