@@ -17,9 +17,43 @@ import { supabase, supabaseAuthConfig } from "./auth-client.js";
 
 export type AuthStatus = "authenticated" | "error" | "loading" | "signed_out";
 
+export interface LocalRealtimeTestAccount {
+  email: string;
+  label: string;
+  password: string;
+}
+
 const DEMO_AUTH_STORAGE_KEY = "projectpulse.demo-auth";
 
 export const demoModeEnabled = import.meta.env.DEV;
+
+export const localRealtimeTestAccounts: readonly LocalRealtimeTestAccount[] =
+  demoModeEnabled
+    ? [
+        {
+          email:
+            (import.meta.env.VITE_REALTIME_TEST_OWNER_EMAIL as
+              | string
+              | undefined) ?? "",
+          label: "Realtime owner",
+          password:
+            (import.meta.env.VITE_REALTIME_TEST_OWNER_PASSWORD as
+              | string
+              | undefined) ?? "",
+        },
+        {
+          email:
+            (import.meta.env.VITE_REALTIME_TEST_REVIEWER_EMAIL as
+              | string
+              | undefined) ?? "",
+          label: "Realtime reviewer",
+          password:
+            (import.meta.env.VITE_REALTIME_TEST_REVIEWER_PASSWORD as
+              | string
+              | undefined) ?? "",
+        },
+      ].filter(({ email, password }) => Boolean(email && password))
+    : [];
 
 interface AuthContextValue {
   clearError: () => void;
@@ -28,9 +62,14 @@ interface AuthContextValue {
   enterDemoMode: () => void;
   isConfigured: boolean;
   isDemoMode: boolean;
+  localTestAccounts: readonly LocalRealtimeTestAccount[];
   requestMagicLink: (email: string) => Promise<{ error: string | null }>;
   session: Session | null;
   signInWithGithub: () => Promise<{ error: string | null }>;
+  signInWithPassword: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<{ error: string | null }>;
   status: AuthStatus;
 }
@@ -215,6 +254,34 @@ export function AuthProvider({
     return { error: null };
   }, [client]);
 
+  const signInWithPassword = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+
+      if (!supabaseAuthConfig.isConfigured) {
+        const message =
+          "Supabase Auth is not configured. Start local Supabase and run the realtime setup command.";
+        setError(message);
+        return { error: message };
+      }
+
+      const { data, error: authError } = await client.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (authError) {
+        const message = authErrorMessage(authError);
+        setError(message);
+        return { error: message };
+      }
+
+      setSession(data.session);
+      setStatus(data.session ? "authenticated" : "signed_out");
+      return { error: null };
+    },
+    [client],
+  );
+
   const signOut = useCallback(async () => {
     setError(null);
 
@@ -248,9 +315,11 @@ export function AuthProvider({
       enterDemoMode,
       isConfigured: supabaseAuthConfig.isConfigured,
       isDemoMode,
+      localTestAccounts: localRealtimeTestAccounts,
       requestMagicLink,
       session,
       signInWithGithub,
+      signInWithPassword,
       signOut,
       status,
     }),
@@ -259,9 +328,11 @@ export function AuthProvider({
       enterDemoMode,
       error,
       isDemoMode,
+      localRealtimeTestAccounts,
       requestMagicLink,
       session,
       signInWithGithub,
+      signInWithPassword,
       signOut,
       status,
     ],

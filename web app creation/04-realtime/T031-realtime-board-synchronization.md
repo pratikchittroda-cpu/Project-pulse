@@ -48,9 +48,10 @@ Keep open project views synchronized when tasks change in another session or int
 ## Handoff
 
 - Channel name: `projectpulse:tasks:<organizationId>:<projectId>`. The
-  subscription listens to `public.tasks` with the organization/project filter.
-  Existing task RLS remains the server boundary; the client also rejects rows
-  whose tenant/project identifiers do not match the active scope.
+  subscription listens to `public.tasks` with the single-column
+  `project_id=eq.<projectId>` filter supported by Supabase Realtime. Existing
+  task RLS remains the server boundary; the client also rejects rows whose
+  tenant/project identifiers do not match the active scope.
 - `supabase/migrations/20261021062000_t031_task_realtime.sql` adds `tasks` to
   the `supabase_realtime` publication and uses full replica identity so delete
   payloads retain tenant/project scope.

@@ -59,6 +59,9 @@ Create a reliable in-app notification inbox for important project events.
   Realtime changes, marks individual/all rows read, and falls back to retrieval
   after channel errors or when Realtime is unavailable. Deep links retain the
   task scope and source event ID.
+- The workspace header uses the same recipient-scoped subscription, so the
+  unread badge updates while the user is on another route. Task detail changes
+  reload the notification and history surfaces through the shared detail stream.
 - Email, chat, and push delivery are intentionally future event-consumer
   extensions; the durable inbox remains the source of truth.
 

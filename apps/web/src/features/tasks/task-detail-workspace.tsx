@@ -29,6 +29,10 @@ import type {
   TaskRelationRecord,
 } from "./task-relations-repository.js";
 import {
+  taskDetailRealtimeSubscription,
+  type TaskDetailRealtimeSubscription,
+} from "../realtime/task-detail-realtime.js";
+import {
   taskDetailRepository,
   taskDetailPath,
   type TaskDetail,
@@ -38,6 +42,7 @@ import {
 
 interface TaskDetailWorkspaceProps {
   address: TaskDetailAddress;
+  realtimeSubscription?: TaskDetailRealtimeSubscription | null;
   repository?: TaskDetailRepository;
   eventsRepository?: TaskEventRepository;
   collaborationRepository?: TaskCollaborationRepository;
@@ -55,6 +60,7 @@ export function TaskDetailWorkspace(props: TaskDetailWorkspaceProps) {
 
 function TaskDetailContent({
   address,
+  realtimeSubscription = taskDetailRealtimeSubscription,
   repository = taskDetailRepository,
   eventsRepository,
   collaborationRepository,
@@ -103,6 +109,20 @@ function TaskDetailContent({
       generation.current += 1;
     };
   }, [load]);
+
+  useEffect(() => {
+    if (!realtimeSubscription) return undefined;
+    return realtimeSubscription.subscribe(
+      { organizationId, projectId, taskId },
+      {
+        onChange: () => {
+          setCollaborationVersion((version) => version + 1);
+          void load();
+        },
+        onResync: () => load(),
+      },
+    );
+  }, [load, organizationId, projectId, realtimeSubscription, taskId]);
 
   if (loading) return <p role="status">Loading task…</p>;
   if (error)
@@ -397,6 +417,7 @@ function TaskDetailContent({
           onChanged={() => setCollaborationVersion((version) => version + 1)}
           projectArchived={detail.projectArchived}
           repository={collaborationRepository}
+          refreshKey={`${task.id}:${collaborationVersion}`}
           scope={scope}
           taskId={task.id}
         />

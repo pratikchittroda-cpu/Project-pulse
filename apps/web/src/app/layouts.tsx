@@ -86,7 +86,7 @@ export function AppLayout() {
         : null,
     [selectedOrganizationId, session],
   );
-  const { unreadCount } = useNotifications(notificationScope, undefined, null);
+  const { unreadCount } = useNotifications(notificationScope);
 
   return (
     <div className="app-shell">

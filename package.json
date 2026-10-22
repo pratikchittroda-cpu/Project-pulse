@@ -17,6 +17,7 @@
     "supabase:status": "node ./scripts/supabase.mjs status",
     "supabase:reset": "node ./scripts/supabase.mjs reset",
     "supabase:seed": "node ./scripts/supabase.mjs seed",
+    "realtime:setup": "corepack pnpm exec supabase status -o env > .realtime-status.env && node ./scripts/realtime-test-setup.mjs",
     "test": "corepack pnpm run quality",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:db": "node ./scripts/test-database.mjs",

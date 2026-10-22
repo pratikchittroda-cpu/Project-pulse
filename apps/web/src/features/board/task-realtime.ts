@@ -123,7 +123,10 @@ export function taskRealtimeChannelName(scope: TaskScope) {
 }
 
 export function taskRealtimeFilter(scope: TaskScope) {
-  return `organization_id=eq.${scope.organizationId},project_id=eq.${scope.projectId}`;
+  // Supabase Realtime accepts one Postgres filter per listener. Project scope
+  // is the narrowest server-side filter; the client still validates both
+  // organization and project IDs before applying an event.
+  return `project_id=eq.${scope.projectId}`;
 }
 
 export function createTaskRealtimeSubscription(

@@ -158,9 +158,16 @@ collaboration content.
 ## Realtime board, presence, and notifications
 
 T031 task changes remain behind the existing `tasks` RLS policies. The Realtime
-publication and board filter are organization/project scoped, and the client
-rejects rows outside the active scope before merging them. Reconnects trigger a
-fresh RLS-scoped snapshot rather than trusting a partial event stream.
+publication uses the narrowest supported single-column project filter, while the
+client rejects rows outside both the active organization and project before
+merging them. Reconnects trigger a fresh RLS-scoped snapshot rather than
+trusting a partial event stream.
+
+Migration `20261022070000_realtime_detail_tables.sql` adds full replica identity
+and Realtime publication coverage for task events, comments, mentions,
+checklists, attachments, and dependency rows. The task detail route subscribes
+to those tables and reloads its task, history, and collaboration panels after a
+scoped change or reconnect; RLS remains the authoritative boundary.
 
 T032 private Presence channels use `realtime.messages` select/insert policies
 that parse the organization/project IDs from `projectpulse:presence:*` topics and

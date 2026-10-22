@@ -32,6 +32,7 @@ interface TaskCollaborationPanelProps {
   onChanged?: () => void;
   projectArchived: boolean;
   repository?: TaskCollaborationRepository;
+  refreshKey?: string | number;
   scope: TaskScope;
   taskId: string;
 }
@@ -41,6 +42,7 @@ export function TaskCollaborationPanel({
   onChanged,
   projectArchived,
   repository = taskCollaborationRepository,
+  refreshKey,
   scope,
   taskId,
 }: TaskCollaborationPanelProps) {
@@ -96,7 +98,7 @@ export function TaskCollaborationPanel({
     } finally {
       if (mounted.current && request === generation.current) setLoading(false);
     }
-  }, [repository, scope, taskId]);
+  }, [refreshKey, repository, scope, taskId]);
 
   useEffect(() => {
     mounted.current = true;

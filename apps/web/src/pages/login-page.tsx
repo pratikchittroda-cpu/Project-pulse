@@ -14,8 +14,10 @@ export function LoginPage() {
     enterDemoMode,
     error: authError,
     isDemoMode,
+    localTestAccounts,
     requestMagicLink,
     signInWithGithub,
+    signInWithPassword,
   } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,6 +48,16 @@ export function LoginPage() {
     if (!result.error) {
       navigate(destination, { replace: true });
     }
+  }
+
+  async function handleLocalAccountSignIn(
+    account: (typeof localTestAccounts)[number],
+  ) {
+    setIsPending(true);
+    setMessage(null);
+    const result = await signInWithPassword(account.email, account.password);
+    setIsPending(false);
+    if (!result.error) navigate(destination, { replace: true });
   }
 
   function handleDemoMode() {
@@ -140,6 +152,27 @@ export function LoginPage() {
             >
               {isDemoMode ? "Open demo workspace" : "Continue in demo mode"}
             </button>
+          </div>
+        ) : null}
+        {localTestAccounts.length ? (
+          <div className="demo-access-panel">
+            <div>
+              <span className="demo-access-label">Realtime test accounts</span>
+              <p>Use separate browser profiles to test two live users.</p>
+            </div>
+            <div className="project-actions">
+              {localTestAccounts.map((account) => (
+                <button
+                  className="button button-secondary button-small"
+                  disabled={isPending}
+                  key={account.email}
+                  onClick={() => void handleLocalAccountSignIn(account)}
+                  type="button"
+                >
+                  {account.label}
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
         <p className="muted auth-return-link">

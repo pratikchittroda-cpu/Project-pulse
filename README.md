@@ -210,6 +210,35 @@ and `ActiveDevelopers` UI primitive. It expires after 45 seconds without an
 update, redacts file metadata, shares no source content, and remains hidden when
 telemetry is paused.
 
+### Local realtime test workspace
+
+Start Docker and local Supabase, apply migrations, and create a repeatable
+two-user workspace with real tasks, memberships, and local password accounts:
+
+```sh
+corepack pnpm run supabase:start
+corepack pnpm exec supabase migration up --local
+corepack pnpm run realtime:setup
+corepack pnpm run dev
+```
+
+`realtime:setup` writes the local-only `.env.local` and
+`.realtime-test-credentials.json` files, then prints the two test accounts. The
+login page shows **Realtime owner** and **Realtime reviewer** buttons when those
+local credentials are present. Use separate browser profiles or one normal and
+one private window because Supabase stores one session per browser origin.
+
+Use the `LIVE` project to test:
+
+- Move `LIVE-1` on the board in one window and watch the other update.
+- Open the board in both windows and watch the **Active developers** card.
+- Open `LIVE-3`, add a comment, and mention the other tester. Their notification
+  inbox and header badge update through Realtime.
+- Toggle checklist items, add dependencies, upload an allowed attachment, and
+  watch task history and collaboration details refresh in the other window.
+- Disconnect/reconnect a window or stop/start Realtime to verify the documented
+  reload fallback.
+
 ### Task and permission verification
 
 `make test` is the offline command after dependencies are installed. It uses
