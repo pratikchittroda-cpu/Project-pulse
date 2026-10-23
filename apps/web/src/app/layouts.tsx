@@ -60,6 +60,12 @@ export function PublicLayout() {
 }
 
 export function AuthLayout() {
+  const { status } = useAuth();
+
+  if (status === "authenticated") {
+    return <Navigate replace to="/app" />;
+  }
+
   return (
     <div className="auth-layout">
       <header className="auth-header">

@@ -72,7 +72,8 @@ export function LoginPage() {
         <h1 id="login-title">Bring your delivery signal together.</h1>
         <p className="muted">
           Sign in to keep planning, activity, and delivery health in one calm
-          workspace.
+          workspace. There is no separate signup screen; use your work email to
+          receive a secure one-time sign-in link.
         </p>
         <div className="auth-value-list" aria-label="ProjectPulse benefits">
           <span>

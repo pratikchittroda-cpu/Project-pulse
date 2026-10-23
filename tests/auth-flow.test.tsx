@@ -2,7 +2,8 @@
 
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { AuthProvider, useAuth } from "../apps/web/src/app/auth-context.js";
 import { supabaseAuthConfig } from "../apps/web/src/app/auth-client.js";
@@ -60,6 +61,51 @@ describe("authentication flow boundaries", () => {
     );
 
     expect(screen.getByTestId("status").textContent).toBe("loading");
+  });
+
+  it("restores a persisted Supabase session without requesting another OTP", async () => {
+    const session = {
+      access_token: "test-access-token",
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      expires_in: 3600,
+      refresh_token: "test-refresh-token",
+      token_type: "bearer",
+      user: {
+        app_metadata: { provider: "email", providers: ["email"] },
+        aud: "authenticated",
+        created_at: "2026-10-23T00:00:00.000Z",
+        email: "person@example.com",
+        id: "00000000-0000-4000-8000-000000000001",
+        role: "authenticated",
+        updated_at: "2026-10-23T00:00:00.000Z",
+        user_metadata: {},
+      },
+    };
+    const getSession = vi.fn().mockResolvedValue({
+      data: { session },
+      error: null,
+    });
+    const unsubscribe = vi.fn();
+    const client = {
+      auth: {
+        getSession,
+        onAuthStateChange: vi.fn(() => ({
+          data: { subscription: { unsubscribe } },
+        })),
+        signInWithOtp: vi.fn(),
+      },
+    } as unknown as SupabaseClient;
+
+    render(
+      <AuthProvider client={client}>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+
+    await screen.findByText("authenticated");
+    expect(screen.getByTestId("session").textContent).toBe("session");
+    expect(getSession).toHaveBeenCalledOnce();
+    expect(client.auth.signInWithOtp).not.toHaveBeenCalled();
   });
 
   it("can enter local demo mode without a Supabase session", () => {

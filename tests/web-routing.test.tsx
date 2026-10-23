@@ -31,10 +31,12 @@ describe("web route groups", () => {
   });
 
   it("renders the authentication route separately from the app shell", () => {
-    const { markup } = renderRoute("/auth/login");
+    const { markup } = renderRoute("/auth/login", "signed_out");
 
     expect(markup).toContain("Sign in to ProjectPulse");
     expect(markup).toContain("Send magic link");
+    expect(markup).toContain("There is no separate signup screen");
+    expect(markup).not.toContain("Create an account");
     expect(markup).toContain("Continue with GitHub");
     expect(markup).not.toContain("Engineering control plane");
   });

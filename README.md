@@ -380,7 +380,9 @@ the two `VITE_SUPABASE_*` variables in an untracked `.env` file, using the
 publishable key printed by `corepack pnpm run supabase:status` for local work.
 The callback route is `/auth/callback`; sessions persist in browser storage,
 refresh automatically, and are cleared by sign-out. Service-role credentials
-are never exposed to the browser.
+are never exposed to the browser. The web app has no separate signup screen:
+users return to the same browser and are sent directly to the workspace while
+their persisted session remains valid.
 
 When running the Vite development server, the sign-in screen also exposes
 `Continue in demo mode`. It opens the workspace with local preview data without

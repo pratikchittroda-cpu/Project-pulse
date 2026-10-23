@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "../apps/web/src/app/auth-context.js";
-import { PublicLayout } from "../apps/web/src/app/layouts.js";
+import { AuthLayout, PublicLayout } from "../apps/web/src/app/layouts.js";
 
 beforeEach(() => {
   const values = new Map<string, string>();
@@ -47,6 +47,39 @@ describe("authenticated public-root redirects", () => {
               createElement(Route, {
                 element: createElement("div", null, "landing"),
                 index: true,
+              }),
+            ),
+            createElement(Route, {
+              element: createElement("div", null, "dashboard"),
+              path: "/app",
+            }),
+          ),
+        ),
+      ),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("dashboard")).toBeTruthy();
+    });
+  });
+
+  it("redirects authenticated users away from the login route", async () => {
+    render(
+      createElement(
+        AuthProvider,
+        { initialStatus: "authenticated" },
+        createElement(
+          MemoryRouter,
+          { initialEntries: ["/auth/login"] },
+          createElement(
+            Routes,
+            null,
+            createElement(
+              Route,
+              { element: createElement(AuthLayout), path: "/auth" },
+              createElement(Route, {
+                element: createElement("div", null, "login"),
+                path: "login",
               }),
             ),
             createElement(Route, {
