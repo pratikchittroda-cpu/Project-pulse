@@ -16,7 +16,7 @@ import {
 import { supabase } from "../app/auth-client.js";
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
-import { DEFAULT_PROJECT, useProject } from "../app/project-context.js";
+import { useProject } from "../app/project-context.js";
 
 interface TeamSummary {
   id: string;
@@ -106,8 +106,7 @@ export function ProjectsPage() {
   const canAdministerOrganization =
     selectedOrganization?.role === "owner" ||
     selectedOrganization?.role === "admin";
-  const hasRealProject =
-    Boolean(selectedOrganizationId) && project.id !== DEFAULT_PROJECT.id;
+  const hasRealProject = Boolean(selectedOrganizationId) && Boolean(project.id);
   const selectedProject = useMemo(
     () => projects.find(({ id }) => id === project.id),
     [project.id, projects],

@@ -35,10 +35,16 @@ interface ProjectProviderProps {
   initialProject?: ProjectSummary;
 }
 
-export const DEFAULT_PROJECT: ProjectSummary = {
+export const DEMO_PROJECT: ProjectSummary = {
   id: "projectpulse-demo",
   key: "PULSE",
   name: "ProjectPulse",
+};
+
+export const EMPTY_PROJECT: ProjectSummary = {
+  id: "",
+  key: "",
+  name: "No project selected",
 };
 
 const STORAGE_KEY = "projectpulse.selected-project";
@@ -57,13 +63,15 @@ function storedProjectId() {
 
 export function ProjectProvider({
   children,
-  initialProject = DEFAULT_PROJECT,
+  initialProject,
 }: ProjectProviderProps) {
-  const { session, status } = useAuth();
+  const { isDemoMode, session, status } = useAuth();
   const { selectedOrganizationId } = useOrganization();
+  const fallbackProject =
+    initialProject ?? (isDemoMode ? DEMO_PROJECT : EMPTY_PROJECT);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState(storedProjectId);
-  const [project, setProject] = useState(initialProject);
+  const [project, setProject] = useState(fallbackProject);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +79,7 @@ export function ProjectProvider({
     async (preferredProjectId?: string) => {
       if (status !== "authenticated" || !session || !selectedOrganizationId) {
         setProjects([]);
-        setProject(initialProject);
+        setProject(fallbackProject);
         return;
       }
 
@@ -106,7 +114,7 @@ export function ProjectProvider({
         ? requestedProjectId
         : (activeProjects[0]?.id ?? "");
       const nextProject =
-        nextProjects.find(({ id }) => id === nextProjectId) ?? initialProject;
+        nextProjects.find(({ id }) => id === nextProjectId) ?? fallbackProject;
 
       setError(null);
       setProjects(nextProjects);
@@ -121,7 +129,8 @@ export function ProjectProvider({
       }
     },
     [
-      initialProject,
+      fallbackProject,
+      isDemoMode,
       selectedOrganizationId,
       selectedProjectId,
       session,

@@ -44,7 +44,13 @@ describe("web route groups", () => {
   it("renders the protected project workspace with navigation", () => {
     const { markup } = renderRoute("/app");
 
-    expect(markup).toContain("Good morning, team.");
+    expect(markup).toContain("Welcome to ProjectPulse");
+    expect(markup).toContain("Create your first organization.");
+    expect(markup).not.toContain("Delivery health is trending up.");
+    expect(markup).not.toContain("pulse-api");
+    expect(markup).not.toContain("92%");
+    expect(markup).not.toContain("PULSE");
+    expect(markup).not.toContain("ProjectPulse user");
     expect(markup).toContain("Primary navigation");
     expect(markup).toContain("Activity");
   });
@@ -61,7 +67,7 @@ describe("web route groups", () => {
     const { markup } = renderRoute("/app/projects");
 
     expect(markup).toContain("Projects and repositories");
-    expect(markup).toContain("Create a project");
+    expect(markup).toContain("Set up an organization");
     expect(markup).toContain("Select an organization first");
   });
 

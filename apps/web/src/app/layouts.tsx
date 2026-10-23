@@ -104,6 +104,10 @@ export function AppLayout() {
     [selectedOrganizationId, session],
   );
   const { unreadCount } = useNotifications(notificationScope);
+  const hasSelectedProject = Boolean(project.id);
+  const accountLabel = isDemoMode
+    ? "Demo workspace"
+    : (session?.user.email ?? "Signed-in user");
 
   return (
     <div className="app-shell">
@@ -115,10 +119,12 @@ export function AppLayout() {
         <div className="sidebar-workspace-label">Workspace</div>
         <div className="project-switcher" aria-label="Current project">
           <span className="project-switcher-mark" aria-hidden="true">
-            {project.key.slice(0, 1)}
+            {hasSelectedProject ? project.key.slice(0, 1) : "·"}
           </span>
           <div className="project-switcher-copy">
-            <span className="project-key">{project.key}</span>
+            <span className="project-key">
+              {hasSelectedProject ? project.key : "Workspace"}
+            </span>
             <strong>{project.name}</strong>
           </div>
           {projects.length > 0 ? (
@@ -136,8 +142,16 @@ export function AppLayout() {
               ))}
             </select>
           ) : (
-            <Link className="context-link" to="/app/projects">
-              Create a project <span aria-hidden="true">↗</span>
+            <Link
+              className="context-link"
+              to={
+                organizations.length > 0 ? "/app/projects" : "/app/organization"
+              }
+            >
+              {organizations.length > 0
+                ? "Create a project"
+                : "Set up an organization"}
+              <span aria-hidden="true">↗</span>
             </Link>
           )}
         </div>
@@ -205,9 +219,7 @@ export function AppLayout() {
                 : (session?.user.email?.slice(0, 1).toUpperCase() ?? "P")}
             </span>
             <span>
-              <strong>
-                {isDemoMode ? "Demo workspace" : "ProjectPulse user"}
-              </strong>
+              <strong>{accountLabel}</strong>
               <small>{session?.user.email ?? "Preview account"}</small>
             </span>
           </div>

@@ -4,7 +4,7 @@ import { PageLayout } from "@projectpulse/ui";
 
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
-import { DEFAULT_PROJECT, useProject } from "../app/project-context.js";
+import { useProject } from "../app/project-context.js";
 import { RoadmapWorkspace } from "../features/roadmap/roadmap-workspace.js";
 import "../features/roadmap/roadmap.css";
 
@@ -43,7 +43,7 @@ export function RoadmapPage() {
         {organizationError ?? projectError}
       </p>
     );
-  if (!selectedOrganizationId || project.id === DEFAULT_PROJECT.id || !session)
+  if (!selectedOrganizationId || !project.id || !session)
     return (
       <PageLayout
         title="Roadmap"

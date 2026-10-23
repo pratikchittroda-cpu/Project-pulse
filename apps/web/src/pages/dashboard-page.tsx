@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { StatusBadge } from "@projectpulse/ui";
 
+import { useAuth } from "../app/auth-context.js";
 import { useProject } from "../app/project-context.js";
+import { LiveDashboardPage } from "../features/dashboard/live-dashboard.js";
 
 const metrics = [
   ["Active tasks", "24", "+8% this week"],
@@ -16,7 +18,12 @@ const activity = [
 ] as const;
 
 export function DashboardPage() {
+  const { isDemoMode } = useAuth();
   const { project } = useProject();
+
+  if (!isDemoMode) {
+    return <LiveDashboardPage />;
+  }
 
   return (
     <div className="dashboard-page">

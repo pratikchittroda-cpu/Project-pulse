@@ -4,7 +4,7 @@ import { PageLayout } from "@projectpulse/ui";
 
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
-import { DEFAULT_PROJECT, useProject } from "../app/project-context.js";
+import { useProject } from "../app/project-context.js";
 import { KanbanBoard } from "../features/board/kanban-board.js";
 import { DeveloperPresencePanel } from "../features/presence/active-developers.js";
 import { createDeveloperPresence } from "../features/presence/developer-presence.js";
@@ -81,11 +81,7 @@ export function BoardPage() {
     );
   }
 
-  if (
-    !selectedOrganizationId ||
-    project.id === DEFAULT_PROJECT.id ||
-    !session
-  ) {
+  if (!selectedOrganizationId || !project.id || !session) {
     return (
       <PageLayout
         title="Kanban board"

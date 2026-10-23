@@ -3488,6 +3488,18 @@ strong,
   animation-delay: 190ms;
 }
 
+.dashboard-empty-state {
+  margin-top: 0.85rem;
+}
+
+.dashboard-empty-state h3 {
+  margin: 0;
+}
+
+.dashboard-empty-state p:not(.panel-kicker) {
+  max-width: 38rem;
+}
+
 .dashboard-signal-band {
   align-items: center;
   background:
@@ -3568,8 +3580,8 @@ strong,
 .signal-score-ring {
   align-items: center;
   background: conic-gradient(
-    var(--mint) 0 92%,
-    rgb(255 255 255 / 10%) 92% 100%
+    var(--mint) 0 var(--signal-progress, 92%),
+    rgb(255 255 255 / 10%) var(--signal-progress, 92%) 100%
   );
   border-radius: 50%;
   display: flex;
@@ -3633,6 +3645,29 @@ strong,
   height: 7rem;
   overflow: visible;
   width: 100%;
+}
+
+.signal-band-chart-empty {
+  align-items: center;
+  color: #aeb4c7;
+  gap: 0.4rem;
+  justify-content: center;
+  text-align: center;
+}
+
+.signal-band-chart-empty p,
+.signal-band-chart-empty span {
+  margin: 0;
+}
+
+.signal-band-chart-empty p {
+  color: #f5f5fb;
+  font-size: 0.8rem;
+}
+
+.signal-band-chart-empty span {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
 }
 
 .pulse-chart-area {

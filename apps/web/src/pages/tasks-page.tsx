@@ -4,7 +4,7 @@ import { PageLayout } from "@projectpulse/ui";
 
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
-import { DEFAULT_PROJECT, useProject } from "../app/project-context.js";
+import { useProject } from "../app/project-context.js";
 import { TasksWorkspace } from "../features/tasks/tasks-workspace.js";
 
 export function TasksPage() {
@@ -45,11 +45,7 @@ export function TasksPage() {
     );
   }
 
-  if (
-    !selectedOrganizationId ||
-    project.id === DEFAULT_PROJECT.id ||
-    !session
-  ) {
+  if (!selectedOrganizationId || !project.id || !session) {
     return (
       <PageLayout
         title="Tasks"
