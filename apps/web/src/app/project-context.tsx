@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -11,6 +12,12 @@ import {
 import { supabase } from "./auth-client.js";
 import { useAuth } from "./auth-context.js";
 import { useOrganization } from "./organization-context.js";
+import {
+  readProjects,
+  readStoredWorkspaceSelection,
+  storeSelectedProject,
+  writeProjects,
+} from "./workspace-cache.js";
 
 export interface ProjectSummary {
   archivedAt?: string | null;
@@ -47,18 +54,12 @@ export const EMPTY_PROJECT: ProjectSummary = {
   name: "No project selected",
 };
 
-const STORAGE_KEY = "projectpulse.selected-project";
-
 const ProjectContext = createContext<ProjectContextValue | undefined>(
   undefined,
 );
 
 function storedProjectId() {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  return window.localStorage.getItem(STORAGE_KEY) ?? "";
+  return readStoredWorkspaceSelection().projectId;
 }
 
 export function ProjectProvider({
@@ -71,19 +72,29 @@ export function ProjectProvider({
     initialProject ?? (isDemoMode ? DEMO_PROJECT : EMPTY_PROJECT);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState(storedProjectId);
+  const selectedProjectIdRef = useRef(selectedProjectId);
+  const hasProjectData = useRef(false);
   const [project, setProject] = useState(fallbackProject);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshProjects = useCallback(
     async (preferredProjectId?: string) => {
-      if (status !== "authenticated" || !session || !selectedOrganizationId) {
-        setProjects([]);
-        setProject(fallbackProject);
+      if (status === "loading") {
         return;
       }
 
-      setIsLoading(true);
+      if (status !== "authenticated" || !session || !selectedOrganizationId) {
+        hasProjectData.current = false;
+        setProjects([]);
+        setProject(fallbackProject);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!hasProjectData.current) {
+        setIsLoading(true);
+      }
       const { data, error: queryError } = await supabase
         .from("projects")
         .select("id, name, project_key, description, team_id, archived_at")
@@ -107,7 +118,8 @@ export function ProjectProvider({
       const activeProjects = nextProjects.filter(
         ({ archivedAt }) => !archivedAt,
       );
-      const requestedProjectId = preferredProjectId ?? selectedProjectId;
+      const requestedProjectId =
+        preferredProjectId ?? selectedProjectIdRef.current;
       const nextProjectId = nextProjects.some(
         ({ id }) => id === requestedProjectId,
       )
@@ -116,31 +128,71 @@ export function ProjectProvider({
       const nextProject =
         nextProjects.find(({ id }) => id === nextProjectId) ?? fallbackProject;
 
+      hasProjectData.current = true;
       setError(null);
+      writeProjects(session.user.id, selectedOrganizationId, nextProjects);
       setProjects(nextProjects);
       setSelectedProjectId(nextProjectId);
+      selectedProjectIdRef.current = nextProjectId;
       setProject(nextProject);
       if (typeof window !== "undefined") {
         if (nextProjectId) {
-          window.localStorage.setItem(STORAGE_KEY, nextProjectId);
+          storeSelectedProject(nextProjectId);
         } else {
-          window.localStorage.removeItem(STORAGE_KEY);
+          storeSelectedProject("");
         }
       }
     },
-    [
-      fallbackProject,
-      isDemoMode,
-      selectedOrganizationId,
-      selectedProjectId,
-      session,
-      status,
-    ],
+    [fallbackProject, isDemoMode, selectedOrganizationId, session, status],
   );
 
   useEffect(() => {
+    if (status === "loading") {
+      return;
+    }
+
+    if (!session || !selectedOrganizationId || isDemoMode) {
+      hasProjectData.current = false;
+      setProjects([]);
+      setProject(fallbackProject);
+      setIsLoading(false);
+      return;
+    }
+
+    const cachedProjects = readProjects(
+      session.user.id,
+      selectedOrganizationId,
+    );
+    hasProjectData.current = cachedProjects.length > 0;
+    setProjects(cachedProjects);
+    const activeProjects = cachedProjects.filter(
+      ({ archivedAt }) => !archivedAt,
+    );
+    const requestedProjectId = selectedProjectIdRef.current;
+    const nextProjectId = cachedProjects.some(
+      ({ id }) => id === requestedProjectId,
+    )
+      ? requestedProjectId
+      : (activeProjects[0]?.id ?? "");
+    const nextProject =
+      cachedProjects.find(({ id }) => id === nextProjectId) ?? fallbackProject;
+    setSelectedProjectId(nextProjectId);
+    selectedProjectIdRef.current = nextProjectId;
+    setProject(nextProject);
+    setIsLoading(cachedProjects.length === 0);
     void refreshProjects();
-  }, [refreshProjects]);
+  }, [
+    fallbackProject,
+    isDemoMode,
+    refreshProjects,
+    selectedOrganizationId,
+    session,
+    status,
+  ]);
+
+  useEffect(() => {
+    selectedProjectIdRef.current = selectedProjectId;
+  }, [selectedProjectId]);
 
   const selectProject = useCallback(
     (projectId: string) => {
@@ -150,10 +202,9 @@ export function ProjectProvider({
       }
 
       setSelectedProjectId(projectId);
+      selectedProjectIdRef.current = projectId;
       setProject(nextProject);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(STORAGE_KEY, projectId);
-      }
+      storeSelectedProject(projectId);
     },
     [projects],
   );

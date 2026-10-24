@@ -4,12 +4,21 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
 import { supabase } from "./auth-client.js";
 import { useAuth } from "./auth-context.js";
+import {
+  readOrganizations,
+  readStoredWorkspaceSelection,
+  storeSelectedOrganization,
+  writeDashboardSnapshot,
+  writeOrganizations,
+  writeProjects,
+} from "./workspace-cache.js";
 
 export type OrganizationRole = "admin" | "member" | "owner" | "viewer";
 
@@ -30,40 +39,73 @@ interface OrganizationContextValue {
   selectedOrganizationId: string;
 }
 
-const STORAGE_KEY = "projectpulse.selected-organization";
-
 const OrganizationContext = createContext<OrganizationContextValue | undefined>(
   undefined,
 );
 
 function storedOrganizationId() {
-  if (typeof window === "undefined") {
-    return "";
-  }
+  return readStoredWorkspaceSelection().organizationId;
+}
 
-  return window.localStorage.getItem(STORAGE_KEY) ?? "";
+interface WorkspaceBootstrapPayload {
+  dashboard?: unknown;
+  organizations?: Array<{
+    id: string;
+    name: string;
+    role: OrganizationRole;
+    slug: string;
+  }>;
+  projects?: Array<{
+    archived_at: string | null;
+    description: string | null;
+    id: string;
+    name: string;
+    project_key: string;
+    team_id: string | null;
+  }>;
+  selected_organization_id?: string | null;
+  selected_project_id?: string | null;
 }
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const { session, status } = useAuth();
-  const [organizations, setOrganizations] = useState<OrganizationSummary[]>([]);
+  const initialOrganizations = session
+    ? readOrganizations(session.user.id)
+    : [];
+  const [organizations, setOrganizations] =
+    useState<OrganizationSummary[]>(initialOrganizations);
   const [selectedOrganizationId, setSelectedOrganizationId] =
     useState(storedOrganizationId);
-  const [isLoading, setIsLoading] = useState(false);
+  const hasOrganizationData = useRef(initialOrganizations.length > 0);
+  const [isLoading, setIsLoading] = useState(
+    Boolean(session) && initialOrganizations.length === 0,
+  );
   const [error, setError] = useState<string | null>(null);
 
   const refreshOrganizations = useCallback(async () => {
-    if (status !== "authenticated" || !session) {
-      setOrganizations([]);
-      setSelectedOrganizationId("");
+    if (status === "loading") {
       return;
     }
 
-    setIsLoading(true);
-    const { data, error: queryError } = await supabase
-      .from("organization_memberships")
-      .select("role, organization:organizations(id, name, slug)")
-      .eq("user_id", session.user.id);
+    if (status !== "authenticated" || !session) {
+      hasOrganizationData.current = false;
+      setOrganizations([]);
+      setSelectedOrganizationId("");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!hasOrganizationData.current) {
+      setIsLoading(true);
+    }
+    const selection = readStoredWorkspaceSelection();
+    const { data, error: queryError } = await supabase.rpc(
+      "get_workspace_bootstrap",
+      {
+        preferred_organization_id: selection.organizationId || null,
+        preferred_project_id: selection.projectId || null,
+      },
+    );
     setIsLoading(false);
 
     if (queryError) {
@@ -71,52 +113,80 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const nextOrganizations = (data ?? []).flatMap((membership) => {
-      const relatedOrganization = membership.organization as unknown;
-      const organization = Array.isArray(relatedOrganization)
-        ? (relatedOrganization[0] as
-            | { id: string; name: string; slug: string }
-            | undefined)
-        : (relatedOrganization as {
-            id: string;
-            name: string;
-            slug: string;
-          } | null);
-      return organization
-        ? [
-            {
-              ...organization,
-              role: membership.role as OrganizationRole,
-            },
-          ]
-        : [];
-    });
+    const payload = (data ?? {}) as WorkspaceBootstrapPayload;
+    const nextOrganizations = (payload.organizations ?? []).map(
+      (organization) => ({
+        id: organization.id,
+        name: organization.name,
+        role: organization.role,
+        slug: organization.slug,
+      }),
+    );
+    const selectedOrganizationId =
+      payload.selected_organization_id ?? nextOrganizations[0]?.id ?? "";
+    const selectedProjectId = payload.selected_project_id ?? "";
+    const projects = (payload.projects ?? []).map((project) => ({
+      archivedAt: project.archived_at,
+      description: project.description,
+      id: project.id,
+      key: project.project_key,
+      name: project.name,
+      teamId: project.team_id,
+    }));
+    hasOrganizationData.current = true;
     setError(null);
+    writeOrganizations(session.user.id, nextOrganizations);
+    if (selectedOrganizationId) {
+      writeProjects(session.user.id, selectedOrganizationId, projects);
+      if (selectedProjectId && payload.dashboard) {
+        writeDashboardSnapshot(
+          session.user.id,
+          selectedOrganizationId,
+          selectedProjectId,
+          payload.dashboard,
+        );
+      }
+    }
     setOrganizations(nextOrganizations);
     setSelectedOrganizationId((current) => {
       const nextId = nextOrganizations.some(({ id }) => id === current)
         ? current
-        : (nextOrganizations[0]?.id ?? "");
-      if (typeof window !== "undefined") {
-        if (nextId) {
-          window.localStorage.setItem(STORAGE_KEY, nextId);
-        } else {
-          window.localStorage.removeItem(STORAGE_KEY);
-        }
-      }
+        : selectedOrganizationId;
+      storeSelectedOrganization(nextId);
       return nextId;
     });
   }, [session, status]);
 
   useEffect(() => {
+    if (status === "loading") {
+      return;
+    }
+
+    if (!session) {
+      hasOrganizationData.current = false;
+      setOrganizations([]);
+      setSelectedOrganizationId("");
+      setIsLoading(false);
+      return;
+    }
+
+    const cachedOrganizations = readOrganizations(session.user.id);
+    hasOrganizationData.current = cachedOrganizations.length > 0;
+    setOrganizations(cachedOrganizations);
+    setSelectedOrganizationId((current) => {
+      const nextId = cachedOrganizations.some(({ id }) => id === current)
+        ? current
+        : (cachedOrganizations[0]?.id ?? "");
+      storeSelectedOrganization(nextId);
+      return nextId;
+    });
+    setIsLoading(cachedOrganizations.length === 0);
     void refreshOrganizations();
-  }, [refreshOrganizations]);
+  }, [refreshOrganizations, session, status]);
 
   const selectOrganization = useCallback((organizationId: string) => {
     setSelectedOrganizationId(organizationId);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, organizationId);
-    }
+    storeSelectedOrganization(organizationId);
   }, []);
 
   const selectedOrganization = organizations.find(

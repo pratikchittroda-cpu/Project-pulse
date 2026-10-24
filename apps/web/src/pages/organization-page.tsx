@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 
 import {
   Badge,
@@ -19,6 +18,11 @@ import {
   useOrganization,
   type OrganizationRole,
 } from "../app/organization-context.js";
+import {
+  isValidTeamKey,
+  normalizeTeamKey,
+  teamKeyValidationMessage,
+} from "../app/organization-keys.js";
 
 interface OrganizationSummary {
   id: string;
@@ -53,7 +57,51 @@ interface MemberSummary {
   userId: string;
 }
 
+interface OrganizationOverviewPayload {
+  members?: Array<{ id: string; role: string; user_id: string }>;
+  projects?: Array<{
+    id: string;
+    name: string;
+    project_key: string;
+    team_id: string | null;
+  }>;
+  tasks?: Array<{
+    id: string;
+    title: string;
+    task_number: number;
+    team_id: string | null;
+  }>;
+  team_memberships?: Array<{ team_id: string; user_id: string }>;
+  teams?: Array<{ id: string; name: string; team_key: string }>;
+}
+
 const emptyOrganization = { name: "", slug: "" };
+
+function invitationErrorMessage(error: { message: string } | null) {
+  if (!error) {
+    return null;
+  }
+  if (error.message.toLowerCase().includes("invalid or expired")) {
+    return "That invitation code is invalid or expired.";
+  }
+  return error.message || "Could not process the invitation code.";
+}
+
+function teamErrorMessage(error: { code?: string; message: string } | null) {
+  if (!error) {
+    return null;
+  }
+  if (error.code === "23505") {
+    return "That team key is already used in this organization.";
+  }
+  if (error.code === "23514") {
+    return teamKeyValidationMessage;
+  }
+  if (error.code === "42501") {
+    return "You do not have permission to create a team.";
+  }
+  return error.message || "Could not create team.";
+}
 
 function toSlug(value: string) {
   return value
@@ -73,7 +121,6 @@ export function OrganizationPage() {
     selectedOrganization,
     selectedOrganizationId,
   } = useOrganization();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [teams, setTeams] = useState<TeamSummary[]>([]);
   const [members, setMembers] = useState<MemberSummary[]>([]);
   const [teamMembers, setTeamMembers] = useState<Record<string, string[]>>({});
@@ -81,12 +128,13 @@ export function OrganizationPage() {
   const [tasks, setTasks] = useState<TaskSummary[]>([]);
   const [organizationForm, setOrganizationForm] = useState(emptyOrganization);
   const [teamForm, setTeamForm] = useState({ key: "", name: "" });
-  const [inviteForm, setInviteForm] = useState({ email: "", role: "member" });
+  const [inviteForm, setInviteForm] = useState({ role: "member" });
+  const [joinCode, setJoinCode] = useState("");
   const [teamMemberForm, setTeamMemberForm] = useState({
     teamId: "",
     userId: "",
   });
-  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -94,81 +142,38 @@ export function OrganizationPage() {
   const canAdminister =
     selectedOrganization?.role === "owner" ||
     selectedOrganization?.role === "admin";
-  const invitationLink = inviteToken
-    ? `${typeof window === "undefined" ? "" : window.location.origin}/app/organization?invite=${inviteToken}`
-    : null;
 
   async function loadOrganizationDetails(organizationId: string) {
-    const [
-      { data: teamData, error: teamError },
-      { data: memberData, error: memberError },
-      { data: teamMemberData, error: teamMemberError },
-      { data: projectData, error: projectError },
-      { data: taskData, error: taskError },
-    ] = await Promise.all([
-      supabase
-        .from("teams")
-        .select("id, name, team_key")
-        .eq("organization_id", organizationId)
-        .order("name"),
-      supabase
-        .from("organization_memberships")
-        .select("id, role, user_id")
-        .eq("organization_id", organizationId)
-        .order("created_at"),
-      supabase
-        .from("team_memberships")
-        .select("team_id, user_id")
-        .eq("organization_id", organizationId),
-      supabase
-        .from("projects")
-        .select("id, name, project_key, team_id")
-        .eq("organization_id", organizationId)
-        .order("name"),
-      supabase
-        .from("tasks")
-        .select("id, title, task_number, team_id")
-        .eq("organization_id", organizationId)
-        .order("task_number"),
-    ]);
+    const { data, error: overviewError } = await supabase.rpc(
+      "get_organization_overview",
+      { target_organization_id: organizationId },
+    );
 
-    if (
-      teamError ||
-      memberError ||
-      teamMemberError ||
-      projectError ||
-      taskError
-    ) {
-      setError(
-        teamError?.message ??
-          memberError?.message ??
-          teamMemberError?.message ??
-          projectError?.message ??
-          taskError?.message ??
-          "Could not load organization details",
-      );
+    if (overviewError) {
+      setError(overviewError.message || "Could not load organization details");
       return;
     }
 
+    const overview = (data ?? {}) as OrganizationOverviewPayload;
     setTeams(
-      (teamData ?? []).map((team) => ({
-        id: team.id as string,
-        name: team.name as string,
-        teamKey: team.team_key as string,
+      (overview.teams ?? []).map((team) => ({
+        id: team.id,
+        name: team.name,
+        teamKey: team.team_key,
       })),
     );
     setMembers(
-      (memberData ?? []).map((member) => ({
-        id: member.id as string,
+      (overview.members ?? []).map((member) => ({
+        id: member.id,
         role: member.role as OrganizationSummary["role"],
-        userId: member.user_id as string,
+        userId: member.user_id,
       })),
     );
     setTeamMembers(
-      (teamMemberData ?? []).reduce<Record<string, string[]>>(
+      (overview.team_memberships ?? []).reduce<Record<string, string[]>>(
         (result, membership) => {
-          const teamId = membership.team_id as string;
-          const userId = membership.user_id as string;
+          const teamId = membership.team_id;
+          const userId = membership.user_id;
           result[teamId] = [...(result[teamId] ?? []), userId];
           return result;
         },
@@ -176,19 +181,19 @@ export function OrganizationPage() {
       ),
     );
     setProjects(
-      (projectData ?? []).map((project) => ({
-        id: project.id as string,
-        name: project.name as string,
-        projectKey: project.project_key as string,
-        teamId: (project.team_id as string | null) ?? null,
+      (overview.projects ?? []).map((project) => ({
+        id: project.id,
+        name: project.name,
+        projectKey: project.project_key,
+        teamId: project.team_id ?? null,
       })),
     );
     setTasks(
-      (taskData ?? []).map((task) => ({
-        id: task.id as string,
-        title: task.title as string,
-        taskNumber: task.task_number as number,
-        teamId: (task.team_id as string | null) ?? null,
+      (overview.tasks ?? []).map((task) => ({
+        id: task.id,
+        title: task.title,
+        taskNumber: task.task_number,
+        teamId: task.team_id ?? null,
       })),
     );
   }
@@ -198,28 +203,6 @@ export function OrganizationPage() {
       void loadOrganizationDetails(selectedOrganizationId);
     }
   }, [selectedOrganizationId]);
-
-  useEffect(() => {
-    const token = searchParams.get("invite");
-    if (!token || status !== "authenticated") {
-      return;
-    }
-
-    setIsBusy(true);
-    void supabase
-      .rpc("accept_organization_invitation", { invitation_token: token })
-      .then(({ error: acceptError }) => {
-        setIsBusy(false);
-        if (acceptError) {
-          setError(acceptError.message);
-          return;
-        }
-
-        setMessage("Invitation accepted. Your organization access is ready.");
-        setSearchParams({}, { replace: true });
-        void refreshOrganizations();
-      });
-  }, [refreshOrganizations, searchParams, setSearchParams, status]);
 
   async function createOrganization() {
     setIsBusy(true);
@@ -252,16 +235,28 @@ export function OrganizationPage() {
       return;
     }
 
+    const name = teamForm.name.trim();
+    const key = normalizeTeamKey(teamForm.key);
+    if (!name) {
+      setError("Team name is required.");
+      return;
+    }
+    if (!isValidTeamKey(key)) {
+      setError(teamKeyValidationMessage);
+      return;
+    }
+
     setIsBusy(true);
+    setError(null);
     const { error: createError } = await supabase.from("teams").insert({
       organization_id: selectedOrganizationId,
-      name: teamForm.name,
-      team_key: teamForm.key.toUpperCase(),
+      name,
+      team_key: key,
     });
     setIsBusy(false);
 
     if (createError) {
-      setError(createError.message);
+      setError(teamErrorMessage(createError));
       return;
     }
 
@@ -276,10 +271,10 @@ export function OrganizationPage() {
     }
 
     setIsBusy(true);
+    setError(null);
     const { data, error: inviteError } = await supabase.rpc(
       "invite_organization_member",
       {
-        invitee_email: inviteForm.email,
         invitee_role: inviteForm.role,
         target_organization_id: selectedOrganizationId,
       },
@@ -292,9 +287,34 @@ export function OrganizationPage() {
     }
 
     const invitation = Array.isArray(data) ? data[0] : data;
-    setInviteToken(invitation?.invitation_token ?? null);
-    setInviteForm({ email: "", role: "member" });
-    setMessage("Invitation created. Share the one-time link with the invitee.");
+    setInviteCode(invitation?.invitation_code ?? null);
+    setInviteForm({ role: "member" });
+    setMessage("Invitation code created. Share it with the person joining.");
+  }
+
+  async function joinOrganization() {
+    const code = joinCode.trim().toUpperCase();
+    if (!code) {
+      setError("Enter an invitation code first.");
+      return;
+    }
+
+    setIsBusy(true);
+    setError(null);
+    const { error: acceptError } = await supabase.rpc(
+      "accept_organization_invitation",
+      { invitation_code: code },
+    );
+    setIsBusy(false);
+
+    if (acceptError) {
+      setError(invitationErrorMessage(acceptError));
+      return;
+    }
+
+    setJoinCode("");
+    setMessage("You joined the organization. Your workspace access is ready.");
+    await refreshOrganizations();
   }
 
   async function changeRole(member: MemberSummary, role: string) {
@@ -445,17 +465,44 @@ export function OrganizationPage() {
           {organizationContextError}
         </p>
       ) : null}
-      {inviteToken ? (
+      <Card>
+        <CardHeader>
+          <CardTitle>Join an organization</CardTitle>
+          <CardDescription>
+            Paste an invitation code from an organization administrator to join
+            their workspace.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="organization-form compact-form">
+            <Input
+              hint="Invitation codes start with PP-"
+              label="Invitation code"
+              onChange={(event) =>
+                setJoinCode(event.target.value.toUpperCase())
+              }
+              value={joinCode}
+            />
+            <Button
+              disabled={isBusy || !joinCode.trim()}
+              onClick={() => void joinOrganization()}
+            >
+              Join organization
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      {inviteCode ? (
         <Card>
           <CardHeader>
-            <CardTitle>Invitation link ready</CardTitle>
+            <CardTitle>Invitation code ready</CardTitle>
             <CardDescription>
-              This token is shown once so an administrator can deliver it
-              through an approved channel.
+              This code is shown once so an administrator can deliver it through
+              an approved channel.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <code className="invite-token">{invitationLink}</code>
+            <code className="invite-token">{inviteCode}</code>
           </CardContent>
         </Card>
       ) : null}
@@ -566,9 +613,14 @@ export function OrganizationPage() {
                     value={teamForm.name}
                   />
                   <Input
+                    hint={teamKeyValidationMessage}
                     label="Team key"
+                    maxLength={20}
                     onChange={(event) =>
-                      setTeamForm({ ...teamForm, key: event.target.value })
+                      setTeamForm({
+                        ...teamForm,
+                        key: event.target.value.toUpperCase(),
+                      })
                     }
                     value={teamForm.key}
                   />
@@ -723,17 +775,6 @@ export function OrganizationPage() {
               </ul>
               {canAdminister ? (
                 <div className="organization-form compact-form">
-                  <Input
-                    label="Invite email"
-                    onChange={(event) =>
-                      setInviteForm({
-                        ...inviteForm,
-                        email: event.target.value,
-                      })
-                    }
-                    type="email"
-                    value={inviteForm.email}
-                  />
                   <label className="field">
                     <span className="pp-field-label">Role</span>
                     <select
@@ -752,11 +793,11 @@ export function OrganizationPage() {
                     </select>
                   </label>
                   <Button
-                    disabled={isBusy || !inviteForm.email}
+                    disabled={isBusy}
                     onClick={() => void inviteMember()}
                     size="sm"
                   >
-                    Create invite
+                    Create invitation code
                   </Button>
                 </div>
               ) : (

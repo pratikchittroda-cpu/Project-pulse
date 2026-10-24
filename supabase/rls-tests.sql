@@ -19,7 +19,7 @@ declare
   task_id uuid := '30000000-0000-0000-0000-000000000001';
   assigned_team_id uuid := '40000000-0000-0000-0000-000000000001';
   visible_count integer;
-  invitation_token text;
+  invitation_code text;
   invitation_succeeded boolean;
   operation_succeeded boolean;
   affected_count integer;
@@ -510,17 +510,17 @@ begin
   end if;
 
   perform set_config('request.jwt.claim.sub', owner_id::text, true);
-  select result.invitation_token into invitation_token
-  from public.invite_organization_member(organization_id, 'invitee@example.test', 'viewer')
+  select result.invitation_code into invitation_code
+  from public.invite_organization_member(organization_id, 'viewer')
     as result;
-  if invitation_token is null then
-    raise exception 'owner invitation did not return a token';
+  if invitation_code is null then
+    raise exception 'owner invitation did not return a code';
   end if;
 
   perform set_config('request.jwt.claim.sub', member_id::text, true);
   invitation_succeeded := false;
   begin
-    perform public.invite_organization_member(organization_id, 'blocked@example.test', 'member');
+    perform public.invite_organization_member(organization_id, 'member');
     invitation_succeeded := true;
   exception when others then
     null;
@@ -535,7 +535,7 @@ begin
     json_build_object('sub', invitee_id::text, 'email', 'invitee@example.test')::text,
     true
   );
-  perform public.accept_organization_invitation(invitation_token);
+  perform public.accept_organization_invitation(invitation_code);
   if not exists (
     select 1
     from public.organization_memberships membership
@@ -544,6 +544,17 @@ begin
       and membership.role = 'viewer'
   ) then
     raise exception 'invitee membership was not created';
+  end if;
+
+  invitation_succeeded := false;
+  begin
+    perform public.accept_organization_invitation(invitation_code);
+    invitation_succeeded := true;
+  exception when others then
+    null;
+  end;
+  if invitation_succeeded then
+    raise exception 'accepted invitation code was reusable';
   end if;
 
   perform set_config('request.jwt.claim.sub', owner_id::text, true);

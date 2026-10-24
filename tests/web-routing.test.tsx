@@ -60,6 +60,9 @@ describe("web route groups", () => {
 
     expect(markup).toContain("Organizations and teams");
     expect(markup).toContain("Create your first organization");
+    expect(markup).toContain("Join an organization");
+    expect(markup).toContain("Invitation code");
+    expect(markup).not.toContain("Invitation link ready");
     expect(markup).toContain("Organization context");
   });
 

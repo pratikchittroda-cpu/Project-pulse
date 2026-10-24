@@ -9,6 +9,22 @@ const organizationManagementMigration = readFileSync(
   "supabase/migrations/20261017020000_organization_management.sql",
   "utf8",
 );
+const codeInvitationMigration = readFileSync(
+  "supabase/migrations/20261023000000_code_based_organization_invitations.sql",
+  "utf8",
+);
+const workspaceReadModelsMigration = readFileSync(
+  "supabase/migrations/20261023010000_workspace_read_models.sql",
+  "utf8",
+);
+const legacyInvitationMigration = readFileSync(
+  "supabase/migrations/20261023020000_revoke_legacy_email_invitations.sql",
+  "utf8",
+);
+const workspaceBootstrapMigration = readFileSync(
+  "supabase/migrations/20261023030000_workspace_bootstrap.sql",
+  "utf8",
+);
 const taskCrudMigration = readFileSync(
   "supabase/migrations/20261018000000_task_crud_validation.sql",
   "utf8",
@@ -65,6 +81,57 @@ describe("RLS policy contract", () => {
     expect(organizationManagementMigration).toContain("role <> 'owner'");
     expect(tests).toContain("removed member should read zero tasks");
     expect(tests).toContain("member invitation unexpectedly succeeded");
+  });
+
+  it("keeps organization invitations code-based and one-use", () => {
+    expect(codeInvitationMigration).toContain(
+      "invite_organization_member(uuid, text)",
+    );
+    expect(codeInvitationMigration).toContain("invitation_code text");
+    expect(codeInvitationMigration).toContain(
+      "Invitation code is invalid or expired",
+    );
+    expect(codeInvitationMigration).toContain("status = 'pending'");
+    expect(codeInvitationMigration).toContain("status = 'accepted'");
+    expect(codeInvitationMigration).toContain("email drop not null");
+  });
+
+  it("keeps workspace reads scoped and aggregate-friendly", () => {
+    expect(workspaceReadModelsMigration).toContain(
+      "create or replace function public.get_organization_overview",
+    );
+    expect(workspaceReadModelsMigration).toContain(
+      "create or replace function public.get_project_dashboard_snapshot",
+    );
+    expect(workspaceReadModelsMigration).toContain("security invoker");
+    expect(workspaceReadModelsMigration).toContain(
+      "tasks_project_active_updated_idx",
+    );
+  });
+
+  it("does not keep legacy email-bound invitations active", () => {
+    expect(legacyInvitationMigration).toContain("where status = 'pending'");
+    expect(legacyInvitationMigration).toContain("and email is not null");
+    expect(legacyInvitationMigration).toContain("status = 'revoked'");
+  });
+
+  it("bootstraps the workspace in one scoped read", () => {
+    expect(workspaceBootstrapMigration).toContain(
+      "create or replace function public.get_workspace_bootstrap",
+    );
+    expect(workspaceBootstrapMigration).toContain(
+      "preferred_organization_id uuid default null",
+    );
+    expect(workspaceBootstrapMigration).toContain(
+      "preferred_project_id uuid default null",
+    );
+    expect(workspaceBootstrapMigration).toContain(
+      "get_project_dashboard_snapshot",
+    );
+    expect(workspaceBootstrapMigration).toContain(
+      "task_events_project_occurred_scope_idx",
+    );
+    expect(workspaceBootstrapMigration).toContain("security invoker");
   });
 
   it("keeps task mutations constrained to valid project members", () => {

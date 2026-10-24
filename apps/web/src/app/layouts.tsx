@@ -1,5 +1,18 @@
 import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
 import { useMemo } from "react";
+import {
+  Activity,
+  Bell,
+  Building2,
+  Columns3,
+  ExternalLink,
+  FolderKanban,
+  LayoutDashboard,
+  ListChecks,
+  ListTodo,
+  LogOut,
+  Map,
+} from "lucide-react";
 
 import { ProjectPulseMark } from "./brand.js";
 import { useAuth } from "./auth-context.js";
@@ -9,15 +22,20 @@ import { useNotifications } from "../features/notifications/use-notifications.js
 import { NotificationHeaderLink } from "../pages/notifications-page.js";
 
 const navigationItems = [
-  { icon: "◌", label: "Overview", to: "/app", end: true },
-  { icon: "⌁", label: "Activity", to: "/app/activity", end: false },
-  { icon: "♢", label: "Notifications", to: "/app/notifications", end: false },
-  { icon: "✓", label: "Tasks", to: "/app/tasks", end: false },
-  { icon: "▤", label: "Board", to: "/app/board", end: false },
-  { icon: "◫", label: "Backlog", to: "/app/backlog", end: false },
-  { icon: "⌗", label: "Roadmap", to: "/app/roadmap", end: false },
-  { icon: "▦", label: "Projects", to: "/app/projects", end: false },
-  { icon: "◎", label: "Organization", to: "/app/organization", end: false },
+  { icon: LayoutDashboard, label: "Overview", to: "/app", end: true },
+  { icon: Activity, label: "Activity", to: "/app/activity", end: false },
+  { icon: Bell, label: "Notifications", to: "/app/notifications", end: false },
+  { icon: ListTodo, label: "Tasks", to: "/app/tasks", end: false },
+  { icon: Columns3, label: "Board", to: "/app/board", end: false },
+  { icon: ListChecks, label: "Backlog", to: "/app/backlog", end: false },
+  { icon: Map, label: "Roadmap", to: "/app/roadmap", end: false },
+  { icon: FolderKanban, label: "Projects", to: "/app/projects", end: false },
+  {
+    icon: Building2,
+    label: "Organization",
+    to: "/app/organization",
+    end: false,
+  },
 ] as const;
 
 function Brand() {
@@ -95,9 +113,9 @@ export function AppLayout() {
   } = useOrganization();
   const notificationScope = useMemo(
     () =>
-      session
+      session && selectedOrganizationId
         ? {
-            organizationId: selectedOrganizationId || undefined,
+            organizationId: selectedOrganizationId,
             userId: session.user.id,
           }
         : null,
@@ -119,7 +137,7 @@ export function AppLayout() {
         <div className="sidebar-workspace-label">Workspace</div>
         <div className="project-switcher" aria-label="Current project">
           <span className="project-switcher-mark" aria-hidden="true">
-            {hasSelectedProject ? project.key.slice(0, 1) : "·"}
+            {hasSelectedProject ? project.key.slice(0, 1) : "—"}
           </span>
           <div className="project-switcher-copy">
             <span className="project-key">
@@ -151,7 +169,7 @@ export function AppLayout() {
               {organizations.length > 0
                 ? "Create a project"
                 : "Set up an organization"}
-              <span aria-hidden="true">↗</span>
+              <ExternalLink aria-hidden="true" size={14} strokeWidth={2} />
             </Link>
           )}
         </div>
@@ -194,7 +212,7 @@ export function AppLayout() {
               to={item.to}
             >
               <span aria-hidden="true" className="nav-link-icon">
-                {item.icon}
+                <item.icon size={17} strokeWidth={1.8} />
               </span>
               <span>{item.label}</span>
             </NavLink>
@@ -228,7 +246,7 @@ export function AppLayout() {
             type="button"
             onClick={() => void signOut()}
           >
-            <span aria-hidden="true">↪</span> Sign out
+            <LogOut aria-hidden="true" size={15} strokeWidth={1.9} /> Sign out
           </button>
         </div>
       </aside>
@@ -241,7 +259,8 @@ export function AppLayout() {
           </div>
           <div className="app-header-actions">
             <Link className="header-quick-link" to="/app/activity">
-              <span aria-hidden="true">⌁</span> Activity
+              <Activity aria-hidden="true" size={16} strokeWidth={1.9} />{" "}
+              Activity
             </Link>
             <NotificationHeaderLink unreadCount={unreadCount} />
             <div className="header-status" aria-label="Workspace status">
