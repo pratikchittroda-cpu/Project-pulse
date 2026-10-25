@@ -74,6 +74,7 @@ export function ProjectProvider({
   const [selectedProjectId, setSelectedProjectId] = useState(storedProjectId);
   const selectedProjectIdRef = useRef(selectedProjectId);
   const hasProjectData = useRef(false);
+  const refreshSequence = useRef(0);
   const [project, setProject] = useState(fallbackProject);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +84,8 @@ export function ProjectProvider({
       if (status === "loading") {
         return;
       }
+
+      const requestId = ++refreshSequence.current;
 
       if (status !== "authenticated" || !session || !selectedOrganizationId) {
         hasProjectData.current = false;
@@ -100,6 +103,9 @@ export function ProjectProvider({
         .select("id, name, project_key, description, team_id, archived_at")
         .eq("organization_id", selectedOrganizationId)
         .order("name");
+      if (requestId !== refreshSequence.current) {
+        return;
+      }
       setIsLoading(false);
 
       if (queryError) {
@@ -152,6 +158,7 @@ export function ProjectProvider({
     }
 
     if (!session || !selectedOrganizationId || isDemoMode) {
+      refreshSequence.current += 1;
       hasProjectData.current = false;
       setProjects([]);
       setProject(fallbackProject);

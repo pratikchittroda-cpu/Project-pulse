@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -102,6 +102,7 @@ export function ProjectsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const detailsSequence = useRef(0);
 
   const canAdministerOrganization =
     selectedOrganization?.role === "owner" ||
@@ -113,6 +114,7 @@ export function ProjectsPage() {
   );
 
   async function loadProjectDetails(projectId: string) {
+    const requestId = ++detailsSequence.current;
     if (!selectedOrganizationId) {
       setTeams([]);
       setRepositories([]);
@@ -126,6 +128,9 @@ export function ProjectsPage() {
       .select("id, name, team_key")
       .eq("organization_id", selectedOrganizationId)
       .order("name");
+    if (requestId !== detailsSequence.current) {
+      return;
+    }
     if (teamError) {
       setError(teamError.message);
       return;
@@ -168,6 +173,10 @@ export function ProjectsPage() {
         .eq("organization_id", selectedOrganizationId)
         .order("created_at"),
     ]);
+
+    if (requestId !== detailsSequence.current) {
+      return;
+    }
 
     const firstError =
       repositoryError ?? memberError ?? organizationMemberError;

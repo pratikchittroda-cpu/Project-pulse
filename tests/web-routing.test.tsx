@@ -44,6 +44,8 @@ describe("web route groups", () => {
   it("renders the protected project workspace with navigation", () => {
     const { markup } = renderRoute("/app");
 
+    expect(markup).toContain('aria-label="Open navigation"');
+    expect(markup).toContain('aria-controls="app-sidebar"');
     expect(markup).toContain("Welcome to ProjectPulse");
     expect(markup).toContain("Create your first organization.");
     expect(markup).not.toContain("Delivery health is trending up.");

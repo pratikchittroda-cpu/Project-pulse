@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
 :root {
   color: #172033;
   background: #f5f7fb;
@@ -2077,6 +2079,18 @@ body {
   justify-content: space-between;
 }
 
+.sidebar-brand-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mobile-nav-toggle,
+.mobile-nav-close,
+.app-sidebar-backdrop {
+  display: none;
+}
+
 .app-sidebar .brand {
   color: white;
 }
@@ -4134,10 +4148,8 @@ strong,
   --navy: #23152f;
   --navy-soft: #39204b;
   --royal-gold: #c49a57;
-  --font-display:
-    "Iowan Old Style", "Baskerville", "Palatino Linotype", "Book Antiqua",
-    Georgia, serif;
-  --font-body: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
 }
 
 body {
@@ -6964,6 +6976,204 @@ h4,
 
   .dashboard-activity-item time {
     grid-column: 2;
+  }
+}
+
+/* Compact workspace shell for phones and narrow tablets. */
+@media (max-width: 860px) {
+  .app-shell {
+    display: block;
+    min-height: 100dvh;
+  }
+
+  .app-sidebar {
+    height: 100dvh;
+    inset: 0 auto 0 0;
+    max-width: 21rem;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: fixed;
+    transform: translateX(-105%);
+    transition: transform 220ms ease;
+    width: min(88vw, 21rem);
+    z-index: 30;
+  }
+
+  .app-sidebar-mobile-open {
+    box-shadow: 1.25rem 0 3rem rgb(35 21 47 / 28%);
+    transform: translateX(0);
+  }
+
+  .mobile-nav-close {
+    align-items: center;
+    background: rgb(255 255 255 / 7%);
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 0.55rem;
+    color: #d8c2ed;
+    cursor: pointer;
+    display: inline-flex;
+    height: 2.15rem;
+    justify-content: center;
+    padding: 0;
+    width: 2.15rem;
+  }
+
+  .app-sidebar-backdrop-visible {
+    background: rgb(35 21 47 / 56%);
+    display: block;
+    inset: 0;
+    position: fixed;
+    z-index: 20;
+  }
+
+  .app-main {
+    min-height: 100dvh;
+    width: 100%;
+  }
+
+  .app-header {
+    gap: 0.7rem;
+    min-height: 4rem;
+    padding: 0.8rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 12;
+  }
+
+  .mobile-nav-toggle {
+    align-items: center;
+    background: var(--violet-soft);
+    border: 1px solid rgb(112 71 168 / 18%);
+    border-radius: 0.6rem;
+    color: var(--violet-dark);
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 2.35rem;
+    justify-content: center;
+    padding: 0;
+    width: 2.35rem;
+  }
+
+  .app-breadcrumbs {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .app-breadcrumbs span,
+  .app-breadcrumbs strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-breadcrumbs strong {
+    min-width: 0;
+  }
+
+  .app-header-actions {
+    flex: 0 0 auto;
+  }
+
+  .app-header-title {
+    padding: 1rem 1rem 0.9rem;
+  }
+
+  .app-header-title .eyebrow {
+    font-size: 0.58rem;
+  }
+
+  .app-header-title h1 {
+    font-size: 1rem;
+  }
+
+  .app-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-header-actions {
+    gap: 0.45rem;
+  }
+
+  .header-avatar {
+    height: 1.7rem;
+    width: 1.7rem;
+  }
+
+  .dashboard-page-v2 {
+    gap: 0.75rem;
+  }
+
+  .dashboard-hero-v2 {
+    border-radius: 1rem;
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .dashboard-hero-copy h2 {
+    font-size: clamp(1.8rem, 10vw, 2.45rem);
+    margin-top: 0.9rem;
+  }
+
+  .dashboard-hero-copy p {
+    font-size: 0.74rem;
+    line-height: 1.55;
+  }
+
+  .dashboard-hero-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboard-metric-grid-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-metric-card {
+    min-height: 7.5rem;
+    padding: 0.8rem;
+  }
+
+  .dashboard-metric-detail {
+    font-size: 0.5rem;
+    max-width: 5.5rem;
+  }
+
+  .dashboard-metric-value {
+    font-size: 2rem;
+    margin: 0.85rem 0 0.6rem;
+  }
+
+  .dashboard-metric-label-row > span {
+    font-size: 0.64rem;
+  }
+
+  .dashboard-metric-label-row .pp-badge {
+    font-size: 0.52rem;
+  }
+
+  .dashboard-pulse-card,
+  .dashboard-focus-card,
+  .dashboard-activity-card,
+  .dashboard-snapshot-card {
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  .dashboard-section-heading {
+    gap: 0.6rem;
+  }
+
+  .dashboard-section-heading h3 {
+    font-size: 0.95rem;
+  }
+
+  .dashboard-section-status {
+    font-size: 0.5rem;
+    text-align: right;
+    white-space: normal;
   }
 }
 

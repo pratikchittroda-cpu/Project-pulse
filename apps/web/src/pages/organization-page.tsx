@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Badge,
@@ -138,16 +138,22 @@ export function OrganizationPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const detailsSequence = useRef(0);
 
   const canAdminister =
     selectedOrganization?.role === "owner" ||
     selectedOrganization?.role === "admin";
 
   async function loadOrganizationDetails(organizationId: string) {
+    const requestId = ++detailsSequence.current;
     const { data, error: overviewError } = await supabase.rpc(
       "get_organization_overview",
       { target_organization_id: organizationId },
     );
+
+    if (requestId !== detailsSequence.current) {
+      return;
+    }
 
     if (overviewError) {
       setError(overviewError.message || "Could not load organization details");
@@ -201,6 +207,13 @@ export function OrganizationPage() {
   useEffect(() => {
     if (selectedOrganizationId) {
       void loadOrganizationDetails(selectedOrganizationId);
+    } else {
+      detailsSequence.current += 1;
+      setTeams([]);
+      setMembers([]);
+      setTeamMembers({});
+      setProjects([]);
+      setTasks([]);
     }
   }, [selectedOrganizationId]);
 

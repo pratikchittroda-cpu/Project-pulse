@@ -77,6 +77,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [selectedOrganizationId, setSelectedOrganizationId] =
     useState(storedOrganizationId);
   const hasOrganizationData = useRef(initialOrganizations.length > 0);
+  const refreshSequence = useRef(0);
   const [isLoading, setIsLoading] = useState(
     Boolean(session) && initialOrganizations.length === 0,
   );
@@ -86,6 +87,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     if (status === "loading") {
       return;
     }
+
+    const requestId = ++refreshSequence.current;
 
     if (status !== "authenticated" || !session) {
       hasOrganizationData.current = false;
@@ -106,6 +109,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         preferred_project_id: selection.projectId || null,
       },
     );
+    if (requestId !== refreshSequence.current) {
+      return;
+    }
     setIsLoading(false);
 
     if (queryError) {
@@ -163,6 +169,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     }
 
     if (!session) {
+      refreshSequence.current += 1;
       hasOrganizationData.current = false;
       setOrganizations([]);
       setSelectedOrganizationId("");

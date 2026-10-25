@@ -1,5 +1,5 @@
-import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Activity,
   Bell,
@@ -11,7 +11,9 @@ import {
   ListChecks,
   ListTodo,
   LogOut,
+  Menu,
   Map,
+  X,
 } from "lucide-react";
 
 import { ProjectPulseMark } from "./brand.js";
@@ -97,6 +99,8 @@ export function AuthLayout() {
 }
 
 export function AppLayout() {
+  const location = useLocation();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const {
     isLoading: isLoadingProjects,
     project,
@@ -127,12 +131,35 @@ export function AppLayout() {
     ? "Demo workspace"
     : (session?.user.email ?? "Signed-in user");
 
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
+
+  function closeMobileNavigation() {
+    setIsMobileNavOpen(false);
+  }
+
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
+      <aside
+        className={`app-sidebar${
+          isMobileNavOpen ? " app-sidebar-mobile-open" : ""
+        }`}
+        id="app-sidebar"
+      >
         <div className="sidebar-brand-row">
           <Brand />
-          <span className="sidebar-version">BETA</span>
+          <div className="sidebar-brand-actions">
+            <span className="sidebar-version">BETA</span>
+            <button
+              aria-label="Close navigation"
+              className="mobile-nav-close"
+              onClick={closeMobileNavigation}
+              type="button"
+            >
+              <X aria-hidden="true" size={18} strokeWidth={2} />
+            </button>
+          </div>
         </div>
         <div className="sidebar-workspace-label">Workspace</div>
         <div className="project-switcher" aria-label="Current project">
@@ -209,6 +236,7 @@ export function AppLayout() {
               }
               end={item.end}
               key={item.to}
+              onClick={closeMobileNavigation}
               to={item.to}
             >
               <span aria-hidden="true" className="nav-link-icon">
@@ -250,8 +278,26 @@ export function AppLayout() {
           </button>
         </div>
       </aside>
+      <button
+        aria-label="Close navigation"
+        className={`app-sidebar-backdrop${
+          isMobileNavOpen ? " app-sidebar-backdrop-visible" : ""
+        }`}
+        onClick={closeMobileNavigation}
+        type="button"
+      />
       <div className="app-main">
         <header className="app-header">
+          <button
+            aria-controls="app-sidebar"
+            aria-expanded={isMobileNavOpen}
+            aria-label="Open navigation"
+            className="mobile-nav-toggle"
+            onClick={() => setIsMobileNavOpen(true)}
+            type="button"
+          >
+            <Menu aria-hidden="true" size={18} strokeWidth={2} />
+          </button>
           <div className="app-breadcrumbs">
             <span>ProjectPulse</span>
             <span aria-hidden="true">/</span>
