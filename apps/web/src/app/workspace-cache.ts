@@ -23,6 +23,15 @@ export interface CachedDashboardSnapshot {
     taskId: string;
   }>;
   inReviewTaskCount: number;
+  risks: Array<{
+    id: string;
+    nextMove: string;
+    reason: string;
+    severity: "high" | "medium";
+    taskId: string;
+    taskNumber: number;
+    title: string;
+  }>;
   tasks: Array<{
     id: string;
     status: string;
@@ -32,6 +41,8 @@ export interface CachedDashboardSnapshot {
   totalTaskCount: number;
 }
 
+// Keep the original storage namespace so existing browser workspaces survive
+// the public rebrand without losing their selected organization or project.
 const SELECTED_ORGANIZATION_KEY = "projectpulse.selected-organization";
 const SELECTED_PROJECT_KEY = "projectpulse.selected-project";
 const ORGANIZATIONS_KEY_PREFIX = "projectpulse.organizations.";
@@ -181,6 +192,28 @@ export function readDashboardSnapshot(
       ? [{ id, status, taskNumber, title }]
       : [];
   });
+  const risks = Array.isArray(value.risks) ? value.risks : [];
+  const normalizedRisks = risks.flatMap(
+    (risk): CachedDashboardSnapshot["risks"] => {
+      if (!isRecord(risk)) return [];
+      const id = risk.id;
+      const nextMove = risk.nextMove ?? risk.next_move;
+      const reason = risk.reason;
+      const severity = risk.severity;
+      const taskId = risk.taskId ?? risk.task_id;
+      const taskNumber = risk.taskNumber ?? risk.task_number;
+      const title = risk.title;
+      return typeof id === "string" &&
+        typeof nextMove === "string" &&
+        typeof reason === "string" &&
+        (severity === "high" || severity === "medium") &&
+        typeof taskId === "string" &&
+        typeof taskNumber === "number" &&
+        typeof title === "string"
+        ? [{ id, nextMove, reason, severity, taskId, taskNumber, title }]
+        : [];
+    },
+  );
   const activeTaskCount = value.activeTaskCount ?? value.active_task_count;
   const completedTaskCount =
     value.completedTaskCount ?? value.completed_task_count;
@@ -197,6 +230,7 @@ export function readDashboardSnapshot(
         completedTaskCount,
         events: normalizedEvents,
         inReviewTaskCount,
+        risks: normalizedRisks,
         tasks: normalizedTasks,
         totalTaskCount,
       }

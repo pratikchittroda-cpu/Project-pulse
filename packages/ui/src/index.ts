@@ -1,5 +1,5 @@
 export interface UiPackageBoundary {
-  packageName: "@projectpulse/ui";
+  packageName: "@releasearc/ui";
   accessibilityBaseline: "keyboard-first";
 }
 

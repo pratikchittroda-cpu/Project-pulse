@@ -35,7 +35,7 @@ Provide useful, source-linked summaries without allowing unreviewed destructive 
 
 ## Acceptance criteria
 
-- [ ] Answers are grounded in accessible ProjectPulse records.
+- [ ] Answers are grounded in accessible ReleaseArc records.
 - [ ] Unsupported claims are identified as unknown.
 - [ ] Mutations require explicit confirmation.
 - [ ] Users can disable AI per organization or project.

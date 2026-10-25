@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { PageLayout } from "@projectpulse/ui";
+import { PageLayout } from "@releasearc/ui";
 import { useAuth } from "../app/auth-context.js";
 import { TaskDetailWorkspace } from "../features/tasks/task-detail-workspace.js";
 import { taskCollaborationRepository } from "../features/tasks/task-collaboration-repository.js";

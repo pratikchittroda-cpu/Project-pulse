@@ -1,9 +1,9 @@
-import { type TaskStatus } from "@projectpulse/domain";
+import { type TaskStatus } from "@releasearc/domain";
 
 export * from "./config.js";
 
 export const extensionWorkspace = {
-  name: "projectpulse-vscode-extension",
+  name: "releasearc-vscode-extension",
   hostCompatibility: ["vscode", "cursor"] as const,
 };
 

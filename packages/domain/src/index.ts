@@ -1,4 +1,4 @@
-export const PROJECT_NAME = "ProjectPulse" as const;
+export const PROJECT_NAME = "ReleaseArc" as const;
 
 export interface WorkspacePackage {
   name: string;

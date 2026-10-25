@@ -44,7 +44,7 @@ Build organization onboarding and membership management.
 - `corepack pnpm run supabase:reset` applied the append-only organization
   management migration to a clean local database.
 - `docker exec --interactive supabase_db_projectpulse psql -U postgres -d
-  postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
+postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
   PostgreSQL assertions for owner invitations, blocked member invitations,
   invitation acceptance, team assignment, owner protection, and removed-member
   access/cascade behavior.

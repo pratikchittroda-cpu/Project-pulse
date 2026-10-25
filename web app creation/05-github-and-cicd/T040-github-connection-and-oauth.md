@@ -28,7 +28,7 @@ Connect an organization or project to GitHub with least-privilege access.
 1. Add OAuth start and callback handling.
 2. Store provider account metadata without exposing tokens.
 3. List repositories available to the authorized user.
-4. Connect a repository to a ProjectPulse project.
+4. Connect a repository to a ReleaseArc project.
 5. Detect and store the default branch.
 6. Show connection health and disconnect behavior.
 

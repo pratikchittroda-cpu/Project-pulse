@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
+  AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
   Clock,
@@ -17,12 +18,14 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { PageLayout, StatusBadge, type TaskStatus } from "@projectpulse/ui";
+import type { DeliveryRisk } from "@releasearc/integrations";
+import { PageLayout, StatusBadge, type TaskStatus } from "@releasearc/ui";
 
 import { supabase } from "../../app/auth-client.js";
 import { useAuth } from "../../app/auth-context.js";
 import { useOrganization } from "../../app/organization-context.js";
 import { useProject } from "../../app/project-context.js";
+import { taskDetailPath } from "../tasks/task-detail-repository.js";
 import {
   readDashboardSnapshot,
   writeDashboardSnapshot,
@@ -46,6 +49,7 @@ interface DashboardSnapshot {
   completedTaskCount: number;
   events: DashboardEvent[];
   inReviewTaskCount: number;
+  risks: DeliveryRisk[];
   tasks: DashboardTask[];
   totalTaskCount: number;
 }
@@ -68,6 +72,15 @@ interface DashboardSnapshotRow {
   completed_task_count: number;
   events: DashboardEventRow[];
   in_review_task_count: number;
+  risks?: Array<{
+    id: string;
+    next_move: string;
+    reason: string;
+    severity: "high" | "medium";
+    task_id: string;
+    task_number: number;
+    title: string;
+  }>;
   tasks: DashboardTaskRow[];
   total_task_count: number;
 }
@@ -82,10 +95,17 @@ async function loadDashboardSnapshot(
   organizationId: string,
   projectId: string,
 ): Promise<DashboardSnapshot> {
-  const { data, error } = await supabase.rpc("get_project_dashboard_snapshot", {
-    target_organization_id: organizationId,
-    target_project_id: projectId,
-  });
+  const [{ data, error }, { data: riskData, error: riskError }] =
+    await Promise.all([
+      supabase.rpc("get_project_dashboard_snapshot", {
+        target_organization_id: organizationId,
+        target_project_id: projectId,
+      }),
+      supabase.rpc("get_project_delivery_risks", {
+        target_organization_id: organizationId,
+        target_project_id: projectId,
+      }),
+    ]);
   const firstError = dashboardError(error);
   if (firstError) {
     throw firstError;
@@ -97,6 +117,10 @@ async function loadDashboardSnapshot(
   if (!row) {
     throw new Error("Could not load dashboard data.");
   }
+
+  const riskRow = (Array.isArray(riskData) ? riskData[0] : riskData) as {
+    risks?: DashboardSnapshotRow["risks"];
+  } | null;
 
   const tasks = (row.tasks ?? []).map((task) => ({
     id: task.id,
@@ -114,6 +138,18 @@ async function loadDashboardSnapshot(
       taskId: event.task_id,
     })),
     inReviewTaskCount: Number(row.in_review_task_count),
+    risks:
+      riskError || !riskRow?.risks
+        ? []
+        : riskRow.risks.map((risk) => ({
+            id: risk.id,
+            nextMove: risk.next_move,
+            reason: risk.reason,
+            severity: risk.severity,
+            taskId: risk.task_id,
+            taskNumber: risk.task_number,
+            title: risk.title,
+          })),
     tasks,
     totalTaskCount: Number(row.total_task_count),
   };
@@ -168,7 +204,7 @@ function EmptyDashboard({ needsOrganization }: { needsOrganization: boolean }) {
           : "Create a project to start seeing live tasks, events, and delivery signals."
       }
       eyebrow="Workspace setup"
-      title="Welcome to ProjectPulse"
+      title="Welcome to ReleaseArc"
     >
       <section className="activity-panel dashboard-empty-state">
         <p className="panel-kicker">Live workspace</p>
@@ -206,7 +242,7 @@ function DashboardLoadingState() {
         <div className="dashboard-skeleton dashboard-skeleton-copy" />
       </div>
       <div className="dashboard-loading-metrics">
-        {["one", "two", "three", "four"].map((item) => (
+        {["one", "two", "three", "four", "five"].map((item) => (
           <div className="dashboard-skeleton-card" key={item}>
             <div className="dashboard-skeleton dashboard-skeleton-icon" />
             <div className="dashboard-skeleton dashboard-skeleton-number" />
@@ -225,12 +261,16 @@ function DashboardLoadingState() {
 function LiveDashboard({
   isRefreshing,
   onRefresh,
+  organizationId,
   project,
+  projectId,
   snapshot,
 }: {
   isRefreshing: boolean;
   onRefresh: () => void;
+  organizationId: string;
   project: { key: string; name: string };
+  projectId: string;
   snapshot: DashboardSnapshot;
 }) {
   const completionPercentage = snapshot.totalTaskCount
@@ -284,6 +324,17 @@ function LiveDashboard({
       status: snapshot.completedTaskCount > 0 ? "completed" : "backlog",
       value: `${completionPercentage}%`,
       tone: "gold",
+    },
+    {
+      detail:
+        snapshot.risks.length > 0
+          ? `${snapshot.risks.length} signal${snapshot.risks.length === 1 ? "" : "s"} to inspect`
+          : "No active risk signals",
+      icon: AlertTriangle,
+      label: "At risk",
+      status: snapshot.risks.length > 0 ? "blocked" : "completed",
+      value: String(snapshot.risks.length),
+      tone: "coral",
     },
   ];
   const progressRows = [
@@ -374,7 +425,13 @@ function LiveDashboard({
             <div className="dashboard-metric-label-row">
               <span>{label}</span>
               <StatusBadge
-                label={status === "completed" ? "On track" : "Active"}
+                label={
+                  status === "blocked"
+                    ? "Review now"
+                    : status === "completed"
+                      ? "On track"
+                      : "Active"
+                }
                 status={status}
               />
             </div>
@@ -480,6 +537,57 @@ function LiveDashboard({
           </div>
         </aside>
       </div>
+      <section className="dashboard-risk-card" aria-labelledby="risk-title">
+        <div className="dashboard-section-heading">
+          <div>
+            <span className="dashboard-section-label">
+              At risk / why / next move
+            </span>
+            <h3 id="risk-title">Delivery risks worth acting on</h3>
+          </div>
+          <span className="dashboard-section-status">
+            <AlertTriangle aria-hidden="true" size={14} strokeWidth={2} />
+            {snapshot.risks.length > 0
+              ? `${snapshot.risks.length} active`
+              : "No active risks"}
+          </span>
+        </div>
+        {snapshot.risks.length > 0 ? (
+          <ul className="dashboard-risk-list">
+            {snapshot.risks.slice(0, 5).map((risk) => (
+              <li className="dashboard-risk-item" key={risk.id}>
+                <span
+                  className={`dashboard-risk-severity dashboard-risk-severity-${risk.severity}`}
+                >
+                  {risk.severity}
+                </span>
+                <div className="dashboard-risk-copy">
+                  <strong>
+                    {project.key}-{risk.taskNumber} · {risk.title}
+                  </strong>
+                  <span>{risk.reason}</span>
+                  <small>Next move: {risk.nextMove}</small>
+                </div>
+                <Link
+                  className="dashboard-text-link"
+                  to={taskDetailPath(
+                    { organizationId, projectId },
+                    risk.taskId,
+                  )}
+                >
+                  Open task{" "}
+                  <ArrowUpRight aria-hidden="true" size={14} strokeWidth={2} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="dashboard-risk-empty">
+            No blocked, unassigned priority, or stale-review work is visible in
+            this project right now.
+          </p>
+        )}
+      </section>
       <div className="dashboard-lower-grid-v2">
         <section
           className="dashboard-activity-card"
@@ -708,7 +816,9 @@ export function LiveDashboardPage() {
     <LiveDashboard
       isRefreshing={isRefreshing}
       onRefresh={() => setRefreshSequence((current) => current + 1)}
+      organizationId={selectedOrganizationId}
       project={project}
+      projectId={project.id}
       snapshot={snapshot}
     />
   );

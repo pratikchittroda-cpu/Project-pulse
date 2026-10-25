@@ -7,7 +7,7 @@ import {
   formatTaskKey,
   isProjectKey,
   isTaskKey,
-} from "@projectpulse/domain";
+} from "@releasearc/domain";
 
 const migration = readFileSync(
   "supabase/migrations/20261017030000_task_domain_and_workflow.sql",

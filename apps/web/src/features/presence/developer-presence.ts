@@ -29,6 +29,9 @@ type LiveDeveloperPresenceActivity = Exclude<
 
 export const DEFAULT_DEVELOPER_PRESENCE_EXPIRY_MS = 45_000;
 
+// Realtime topic names are protocol identifiers shared with the existing RLS
+// policies; changing the public brand must not strand active clients.
+
 export interface DeveloperPresenceScope {
   organizationId: string;
   projectId: string;

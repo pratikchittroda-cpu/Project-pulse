@@ -53,16 +53,16 @@ Completed verification:
   TypeScript project references.
 - `corepack pnpm run build` passed for all workspaces.
 - `corepack pnpm run test`, `corepack pnpm run lint`, and `make test` passed.
-- The compiled web entry point imported `@projectpulse/domain` and produced
-  `ProjectPulse web workspace` without copied domain source.
+- The compiled web entry point imported `@releasearc/domain` and produced
+  `ReleaseArc web workspace` without copied domain source.
 
 ## Handoff
 
-- Workspace names are `@projectpulse/web`, `projectpulse-vscode-extension`,
-  `@projectpulse/domain`, `@projectpulse/integrations`, and `@projectpulse/ui`.
+- Workspace names are `@releasearc/web`, `releasearc-vscode-extension`,
+  `@releasearc/domain`, `@releasearc/integrations`, and `@releasearc/ui`.
 - Every workspace exposes `build`, `test`, `lint`, and `typecheck`; the root
   exposes the same commands plus `dev`, all through `corepack pnpm`.
-- `@projectpulse/web` depends on `@projectpulse/domain` with a `workspace:*`
+- `@releasearc/web` depends on `@releasearc/domain` with a `workspace:*`
   reference. TypeScript project references and `tsconfig.base.json` provide the
   shared strict compiler configuration; build output is written to ignored
   `dist/` directories.

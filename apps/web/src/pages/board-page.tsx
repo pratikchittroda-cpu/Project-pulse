@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { PageLayout } from "@projectpulse/ui";
+import { PageLayout } from "@releasearc/ui";
 
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";

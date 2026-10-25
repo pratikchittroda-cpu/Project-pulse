@@ -7,7 +7,7 @@ import {
   toIsoDateTime,
   type ApiResponse,
   type ProviderEvent,
-} from "@projectpulse/domain";
+} from "@releasearc/domain";
 
 const validEnvelope = {
   entityId: "task-42",

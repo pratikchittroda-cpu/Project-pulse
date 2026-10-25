@@ -3,7 +3,7 @@ import {
   DEFAULT_TASK_PRIORITIES,
   formatTaskKey,
   type TaskPriority,
-} from "@projectpulse/domain";
+} from "@releasearc/domain";
 
 import { supabase } from "../../app/auth-client.js";
 

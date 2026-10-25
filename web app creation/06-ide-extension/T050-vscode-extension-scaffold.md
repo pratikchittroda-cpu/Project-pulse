@@ -45,10 +45,10 @@ Completed verification:
 
 - `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
   completed successfully from the committed lockfile.
-- `corepack pnpm --filter projectpulse-vscode-extension build` completed the
+- `corepack pnpm --filter releasearc-vscode-extension build` completed the
   CommonJS TypeScript extension build.
-- `corepack pnpm --filter projectpulse-vscode-extension package` produced
-  `projectpulse.vsix` with the manifest, compiled activation entry point, and
+- `corepack pnpm --filter releasearc-vscode-extension package` produced
+  `releasearc.vsix` with the manifest, compiled activation entry point, and
   README.
 - `make test` passed all workspace checks and sixteen Vitest tests, including
   manifest command contributions and the authentication-plus-consent telemetry
@@ -59,19 +59,19 @@ Completed verification:
 
 ## Handoff
 
-- Marketplace manifest name is `projectpulse-vscode-extension` because VSCE
+- Marketplace manifest name is `releasearc-vscode-extension` because VSCE
   rejects scoped npm names; the workspace remains under `apps/vscode-extension`.
   It targets VS Code `^1.96.0` and Cursor hosts implementing the VS Code API.
 - Activation entry point: `dist/extension.js`. Activation events are
   `onStartupFinished` plus the three command IDs:
-  `projectpulse.openWorkspace`, `projectpulse.linkWorkspace`, and
-  `projectpulse.setTelemetryConsent`.
-- Settings are `projectpulse.workspaceUrl` (defaulting to local Vite) and
-  `projectpulse.telemetry.enabled` (default `false`). Telemetry is allowed only
+  `releasearc.openWorkspace`, `releasearc.linkWorkspace`, and
+  `releasearc.setTelemetryConsent`.
+- Settings are `releasearc.workspaceUrl` (defaulting to local Vite) and
+  `releasearc.telemetry.enabled` (default `false`). Telemetry is allowed only
   when both authenticated identity and explicit consent are true; the scaffold
   sends no events.
-- `ProjectPulse: Link Workspace` validates and stores an HTTP(S) URL, while
-  `ProjectPulse: Open Workspace` opens it through the host. The status bar
+- `ReleaseArc: Link Workspace` validates and stores an HTTP(S) URL, while
+  `ReleaseArc: Open Workspace` opens it through the host. The status bar
   displays linked/not-linked placeholder state.
 - `.vscode/launch.json` and `.vscode/tasks.json` launch the extension host and
   build with Corepack. T051 owns real extension authentication; T052 owns

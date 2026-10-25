@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 
-import { ProjectPulseMark } from "./brand.js";
+import { ReleaseArcMark } from "./brand.js";
 import { useAuth } from "./auth-context.js";
 import { useOrganization } from "./organization-context.js";
 import { useProject } from "./project-context.js";
@@ -43,10 +43,10 @@ const navigationItems = [
 function Brand() {
   return (
     <Link className="brand" to="/">
-      <ProjectPulseMark size={36} />
+      <ReleaseArcMark size={36} />
       <span className="brand-copy">
-        <span className="brand-name">ProjectPulse</span>
-        <span className="brand-tagline">Engineering intelligence</span>
+        <span className="brand-name">ReleaseArc</span>
+        <span className="brand-tagline">Delivery intelligence</span>
       </span>
     </Link>
   );
@@ -299,7 +299,7 @@ export function AppLayout() {
             <Menu aria-hidden="true" size={18} strokeWidth={2} />
           </button>
           <div className="app-breadcrumbs">
-            <span>ProjectPulse</span>
+            <span>ReleaseArc</span>
             <span aria-hidden="true">/</span>
             <strong>{project.name}</strong>
           </div>

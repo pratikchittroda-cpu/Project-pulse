@@ -2,7 +2,7 @@
 
 ## Product outcome
 
-ProjectPulse is a live engineering control plane. It connects planned work with developer activity, source-control events, CI/CD results, and delivery analytics.
+ReleaseArc is a live engineering delivery intelligence platform. It connects planned work with developer activity, source-control events, CI/CD results, and delivery analytics.
 
 ## Release sequence
 

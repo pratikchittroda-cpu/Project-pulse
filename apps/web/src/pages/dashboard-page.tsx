@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { StatusBadge } from "@projectpulse/ui";
+import { StatusBadge } from "@releasearc/ui";
 
 import { useAuth } from "../app/auth-context.js";
 import { useProject } from "../app/project-context.js";

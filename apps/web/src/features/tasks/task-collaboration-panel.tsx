@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
 import type { TaskScope } from "./task-repository.js";
 import {

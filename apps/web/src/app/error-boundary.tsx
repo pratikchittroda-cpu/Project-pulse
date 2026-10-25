@@ -19,7 +19,7 @@ export class AppErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("ProjectPulse application error", error, info);
+    console.error("ReleaseArc application error", error, info);
   }
 
   render() {
@@ -28,7 +28,7 @@ export class AppErrorBoundary extends Component<
         <main className="standalone-state">
           <section className="state-card" role="alert">
             <p className="eyebrow">Application error</p>
-            <h1>ProjectPulse needs a refresh</h1>
+            <h1>ReleaseArc needs a refresh</h1>
             <p className="muted">
               The application could not render this screen. Refresh the page to
               try again.
@@ -38,7 +38,7 @@ export class AppErrorBoundary extends Component<
               type="button"
               onClick={() => window.location.reload()}
             >
-              Refresh ProjectPulse
+              Refresh ReleaseArc
             </button>
           </section>
         </main>

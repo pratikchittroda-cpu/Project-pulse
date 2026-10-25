@@ -7,8 +7,8 @@ import {
   CardContent,
   PageLayout,
   PriorityBadge,
-} from "@projectpulse/ui";
-import type { TaskPriority } from "@projectpulse/domain";
+} from "@releasearc/ui";
+import type { TaskPriority } from "@releasearc/domain";
 
 import { taskDetailPath } from "../tasks/task-detail-repository.js";
 import {

@@ -33,7 +33,7 @@ describe("web route groups", () => {
   it("renders the authentication route separately from the app shell", () => {
     const { markup } = renderRoute("/auth/login", "signed_out");
 
-    expect(markup).toContain("Sign in to ProjectPulse");
+    expect(markup).toContain("Sign in to ReleaseArc");
     expect(markup).toContain("Send magic link");
     expect(markup).toContain("There is no separate signup screen");
     expect(markup).not.toContain("Create an account");
@@ -46,13 +46,13 @@ describe("web route groups", () => {
 
     expect(markup).toContain('aria-label="Open navigation"');
     expect(markup).toContain('aria-controls="app-sidebar"');
-    expect(markup).toContain("Welcome to ProjectPulse");
+    expect(markup).toContain("Welcome to ReleaseArc");
     expect(markup).toContain("Create your first organization.");
     expect(markup).not.toContain("Delivery health is trending up.");
     expect(markup).not.toContain("pulse-api");
     expect(markup).not.toContain("92%");
     expect(markup).not.toContain("PULSE");
-    expect(markup).not.toContain("ProjectPulse user");
+    expect(markup).not.toContain("ReleaseArc user");
     expect(markup).toContain("Primary navigation");
     expect(markup).toContain("Activity");
   });

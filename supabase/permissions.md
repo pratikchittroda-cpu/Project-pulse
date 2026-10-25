@@ -1,4 +1,4 @@
-# ProjectPulse RLS permissions
+# ReleaseArc RLS permissions
 
 Migration `20261017010000_add_rls_policies.sql` adds the membership-aware RLS
 boundary for the schema created by T011. Helper functions are `security

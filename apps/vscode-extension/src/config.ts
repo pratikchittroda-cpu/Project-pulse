@@ -1,12 +1,12 @@
 export const extensionCommands = {
-  linkWorkspace: "projectpulse.linkWorkspace",
-  manageTelemetryConsent: "projectpulse.setTelemetryConsent",
-  openWorkspace: "projectpulse.openWorkspace",
+  linkWorkspace: "releasearc.linkWorkspace",
+  manageTelemetryConsent: "releasearc.setTelemetryConsent",
+  openWorkspace: "releasearc.openWorkspace",
 } as const;
 
 export const extensionConfiguration = {
-  telemetryEnabled: "projectpulse.telemetry.enabled",
-  workspaceUrl: "projectpulse.workspaceUrl",
+  telemetryEnabled: "releasearc.telemetry.enabled",
+  workspaceUrl: "releasearc.workspaceUrl",
 } as const;
 
 export interface ExtensionSettings {

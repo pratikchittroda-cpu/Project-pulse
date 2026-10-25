@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
   PageLayout,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";

@@ -6,8 +6,8 @@ import {
   isTelemetryAllowed,
 } from "./config.js";
 
-const CONSENT_STATE_KEY = "projectpulse.telemetryConsent";
-const AUTH_STATE_KEY = "projectpulse.authenticated";
+const CONSENT_STATE_KEY = "releasearc.telemetryConsent";
+const AUTH_STATE_KEY = "releasearc.authenticated";
 
 function workspaceUrl() {
   return vscode.workspace
@@ -33,9 +33,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.StatusBarAlignment.Left,
     100,
   );
-  statusBar.name = "ProjectPulse";
-  statusBar.text = "$(pulse) ProjectPulse: not linked";
-  statusBar.tooltip = "Open ProjectPulse workspace";
+  statusBar.name = "ReleaseArc";
+  statusBar.text = "$(pulse) ReleaseArc: not linked";
+  statusBar.tooltip = "Open ReleaseArc workspace";
   statusBar.command = extensionCommands.openWorkspace;
   statusBar.show();
 
@@ -50,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
     async () => {
       const url = await vscode.window.showInputBox({
         ignoreFocusOut: true,
-        prompt: "Enter the ProjectPulse workspace URL",
+        prompt: "Enter the ReleaseArc workspace URL",
         value: workspaceUrl(),
         validateInput: (value) => {
           try {
@@ -72,9 +72,9 @@ export function activate(context: vscode.ExtensionContext) {
             url,
             vscode.ConfigurationTarget.Global,
           );
-        statusBar.text = "$(pulse) ProjectPulse: linked";
+        statusBar.text = "$(pulse) ReleaseArc: linked";
         void vscode.window.showInformationMessage(
-          "ProjectPulse workspace linked.",
+          "ReleaseArc workspace linked.",
         );
       }
     },
@@ -83,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     extensionCommands.manageTelemetryConsent,
     async () => {
       const choice = await vscode.window.showInformationMessage(
-        "ProjectPulse activity telemetry is off by default. It never collects source code, keystrokes, screenshots, terminal contents, or secrets.",
+        "ReleaseArc activity telemetry is off by default. It never collects source code, keystrokes, screenshots, terminal contents, or secrets.",
         "Allow privacy-aware activity telemetry",
         "Keep telemetry off",
       );
@@ -99,8 +99,8 @@ export function activate(context: vscode.ExtensionContext) {
       const telemetryEnabled = telemetryIsEnabled(context);
       void vscode.window.showInformationMessage(
         telemetryEnabled
-          ? "ProjectPulse telemetry consent saved. Authentication is still required before events are sent."
-          : "ProjectPulse telemetry remains off.",
+          ? "ReleaseArc telemetry consent saved. Authentication is still required before events are sent."
+          : "ReleaseArc telemetry remains off.",
       );
     },
   );

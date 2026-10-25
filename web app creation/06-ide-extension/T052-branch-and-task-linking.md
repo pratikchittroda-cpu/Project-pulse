@@ -14,7 +14,7 @@ Planned
 
 ## Goal
 
-Map the current local Git branch to a ProjectPulse task.
+Map the current local Git branch to a ReleaseArc task.
 
 ## Owned paths
 

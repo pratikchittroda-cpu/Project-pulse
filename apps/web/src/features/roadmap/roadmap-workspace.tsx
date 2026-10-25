@@ -10,7 +10,7 @@ import {
   CardTitle,
   Input,
   PageLayout,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
 import { taskDetailPath } from "../tasks/task-detail-repository.js";
 import type {

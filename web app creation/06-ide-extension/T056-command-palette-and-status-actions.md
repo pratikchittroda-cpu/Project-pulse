@@ -14,7 +14,7 @@ Fast developer workflows and extension polish.
 
 ## Goal
 
-Let developers perform common ProjectPulse actions without leaving the IDE.
+Let developers perform common ReleaseArc actions without leaving the IDE.
 
 ## Commands
 

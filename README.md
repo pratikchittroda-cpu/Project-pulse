@@ -1,8 +1,7 @@
-# ProjectPulse
+# ReleaseArc
 
-ProjectPulse is a real-time engineering operations platform that connects agile
-planning, developer activity, source-control events, CI/CD signals, analytics,
-and delivery health.
+ReleaseArc is an engineering delivery intelligence platform that connects agile
+planning, GitHub activity, review, CI/CD signals, analytics, and release health.
 
 The implementation backlog lives in [`web app creation/`](web%20app%20creation/).
 Read [`web app creation/00-project-control/00-START-HERE.md`](web%20app%20creation/00-project-control/00-START-HERE.md)
@@ -12,19 +11,19 @@ before starting a task.
 
 ```text
 apps/
-  web/                  Web application workspace (@projectpulse/web)
-  vscode-extension/     VS Code/Cursor extension workspace (projectpulse-vscode-extension)
+  web/                  Web application workspace (@releasearc/web)
+  vscode-extension/     VS Code/Cursor extension workspace (releasearc-vscode-extension)
 packages/
-  domain/               Shared domain types and contracts (@projectpulse/domain)
-  integrations/         External provider adapters (@projectpulse/integrations)
-  ui/                   Shared UI primitives (@projectpulse/ui)
+  domain/               Shared domain types and contracts (@releasearc/domain)
+  integrations/         External provider adapters (@releasearc/integrations)
+  ui/                   Shared UI primitives (@releasearc/ui)
 scripts/                Repository validation scripts
 web app creation/       Dependency-aware implementation backlog
 ```
 
 Each workspace has a private package manifest, a strict TypeScript configuration,
 and build, test, lint, and typecheck scripts. The web workspace imports the
-shared `@projectpulse/domain` package through the pnpm workspace reference.
+shared `@releasearc/domain` package through the pnpm workspace reference.
 
 ## Prerequisites
 
@@ -84,20 +83,20 @@ corepack pnpm run format:check
 To target one workspace, use its package name with pnpm's filter syntax:
 
 ```sh
-corepack pnpm --filter @projectpulse/web build
-corepack pnpm --filter @projectpulse/domain typecheck
+corepack pnpm --filter @releasearc/web build
+corepack pnpm --filter @releasearc/domain typecheck
 ```
 
 The web development entry point is the React/Vite shell on the Vite default
-port (`5173`). Use `corepack pnpm --filter @projectpulse/web preview` to serve
+port (`5173`). Use `corepack pnpm --filter @releasearc/web preview` to serve
 the production build locally.
 
-Shared interface primitives live in `@projectpulse/ui`. Import components such
+Shared interface primitives live in `@releasearc/ui`. Import components such
 as `Button`, `Input`, `Card`, `Dialog`, `Tabs`, `StatusBadge`, `PriorityBadge`,
 `Menu`, `DataTable`, `Toast`, and `PageLayout` from that package. Its design
-tokens and responsive styles are available through `@projectpulse/ui/styles.css`.
+tokens and responsive styles are available through `@releasearc/ui/styles.css`.
 
-Shared domain contracts live in `@projectpulse/domain`. Use its entity types,
+Shared domain contracts live in `@releasearc/domain`. Use its entity types,
 workflow unions, API envelopes, pagination types, ISO date helpers, and
 `parseEventEnvelope` validator at external event boundaries.
 
@@ -305,6 +304,54 @@ The Vite server listens on `http://localhost:5173`. The browser configuration
 uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`; the local Supabase
 defaults point to `http://127.0.0.1:54321`.
 
+The offline quality checks do not require Docker:
+
+```sh
+pnpm run typecheck
+pnpm run lint
+pnpm test
+```
+
+Docker is only needed for the optional local Supabase integration environment
+and container-image verification described below.
+
+### GitHub delivery webhooks
+
+ReleaseArc's first GitHub integration uses a public Supabase Edge Function and
+does not require Docker. The hosted migration and function are deployed with:
+
+```sh
+corepack pnpm exec supabase db push --linked --yes
+corepack pnpm exec supabase functions deploy github-webhook \
+  --project-ref lpjloicqfekgtwqzzdow \
+  --use-api --no-verify-jwt --yes
+```
+
+For a new project setup, configure the webhook secret without writing it to the
+repository or chat. Do not rerun this for an existing GitHub hook unless you
+intend to rotate both sides together:
+
+```sh
+GITHUB_WEBHOOK_SECRET="$(openssl rand -hex 32)"
+corepack pnpm exec supabase secrets set \
+  --project-ref lpjloicqfekgtwqzzdow \
+  GITHUB_WEBHOOK_SECRET="$GITHUB_WEBHOOK_SECRET"
+```
+
+Then register a GitHub webhook for the repository shown in **Projects → GitHub
+delivery signals**:
+
+1. Use the displayed `/functions/v1/github-webhook` endpoint.
+2. Set content type to `application/json`.
+3. Use the same `GITHUB_WEBHOOK_SECRET` value.
+4. Enable pull requests, pull-request reviews, pushes, check runs, deployment
+   statuses, and releases.
+
+The endpoint verifies `x-hub-signature-256`, deduplicates `x-github-delivery`,
+stores provider events server-side, links task keys such as `RA-42`, and updates
+delivery health used by the dashboard. Raw payloads are never returned to the
+browser or included in UI diagnostics.
+
 ### Docker
 
 Build and run the production web container with no global project dependency.
@@ -312,19 +359,20 @@ For a connected app, export `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
 in the shell before this direct Docker build:
 
 ```sh
-docker build --tag projectpulse:local \
+docker build --tag releasearc:local \
   --build-arg VITE_SUPABASE_URL \
   --build-arg VITE_SUPABASE_ANON_KEY .
-docker run --rm --publish 8080:8080 projectpulse:local
+docker run --rm --publish 8080:8080 releasearc:local
 ```
 
 Open `http://localhost:8080`. The container serves the Vite build through
 nginx, supports client-side route fallback, and exposes `GET /healthz` with an
 `ok` response. Docker Compose reads the public values from the root `.env` as
-build arguments and allows the host port to be changed with `PROJECTPULSE_PORT`:
+build arguments and allows the host port to be changed with `RELEASEARC_PORT`
+(or the legacy `PROJECTPULSE_PORT` name):
 
 ```sh
-PROJECTPULSE_PORT=8080 docker compose up --build
+RELEASEARC_PORT=8080 docker compose up --build
 ```
 
 Vite embeds these public settings at build time; rebuild when they change. Use
@@ -337,8 +385,8 @@ To verify the pinned Node 22/Linux toolchain with networking disabled after the
 image has installed its dependencies:
 
 ```sh
-docker build --target build --tag projectpulse:check .
-docker run --rm --network none projectpulse:check pnpm test
+docker build --target build --tag releasearc:check .
+docker run --rm --network none releasearc:check pnpm test
 ```
 
 ### Local Supabase prerequisites

@@ -11,7 +11,7 @@ import {
   Input,
   PageLayout,
   PriorityBadge,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 import { taskDetailPath } from "../tasks/task-detail-repository.js";
 import {
   buildTaskFilterOptions,

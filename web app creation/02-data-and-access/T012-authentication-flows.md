@@ -55,7 +55,7 @@ Completed verification:
 - The local callback route is `/auth/callback`; magic-link and GitHub OAuth
   redirects use the current origin and this path. No access token or session
   object is written to logs.
-- `corepack pnpm --filter @projectpulse/web build` completed with the real
+- `corepack pnpm --filter @releasearc/web build` completed with the real
   Supabase client bundled into the Vite application.
 
 ## Handoff
@@ -69,7 +69,7 @@ Completed verification:
   and redirects signed-out or expired sessions to login with a safe message.
 - `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are the only browser auth
   variables. Copy the local publishable key from `corepack pnpm run
-  supabase:status` into an untracked `.env`; never use or expose
+supabase:status` into an untracked `.env`; never use or expose
   `SUPABASE_SERVICE_ROLE_KEY` in the web bundle.
 - Session state is owned by Supabase Auth's browser storage and event listener;
   sign-out calls `auth.signOut()` and clears provider state. Auth errors are

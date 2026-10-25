@@ -32,7 +32,7 @@ describe("workspace cache", () => {
       { id: "org-1", name: "Pulse", role: "owner", slug: "pulse" },
     ]);
     writeProjects("user-1", "org-1", [
-      { id: "project-1", key: "PULSE", name: "ProjectPulse" },
+      { id: "project-1", key: "PULSE", name: "ReleaseArc" },
     ]);
     storeSelectedOrganization("org-1");
     storeSelectedProject("project-1");
@@ -79,6 +79,7 @@ describe("workspace cache", () => {
         },
       ],
       inReviewTaskCount: 1,
+      risks: [],
       tasks: [
         {
           id: "task-1",

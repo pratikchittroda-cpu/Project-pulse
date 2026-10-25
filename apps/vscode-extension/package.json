@@ -1,10 +1,10 @@
 {
-  "name": "projectpulse-vscode-extension",
+  "name": "releasearc-vscode-extension",
   "version": "0.0.0",
   "private": true,
-  "displayName": "ProjectPulse",
-  "description": "Privacy-aware ProjectPulse workspace companion for VS Code and Cursor.",
-  "publisher": "projectpulse",
+  "displayName": "ReleaseArc",
+  "description": "Privacy-aware ReleaseArc delivery workspace companion for VS Code and Cursor.",
+  "publisher": "releasearc",
   "type": "commonjs",
   "main": "./dist/extension.js",
   "engines": {
@@ -15,37 +15,37 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:projectpulse.openWorkspace",
-    "onCommand:projectpulse.linkWorkspace",
-    "onCommand:projectpulse.setTelemetryConsent"
+    "onCommand:releasearc.openWorkspace",
+    "onCommand:releasearc.linkWorkspace",
+    "onCommand:releasearc.setTelemetryConsent"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "projectpulse.openWorkspace",
-        "title": "ProjectPulse: Open Workspace",
-        "category": "ProjectPulse"
+        "command": "releasearc.openWorkspace",
+        "title": "ReleaseArc: Open Workspace",
+        "category": "ReleaseArc"
       },
       {
-        "command": "projectpulse.linkWorkspace",
-        "title": "ProjectPulse: Link Workspace",
-        "category": "ProjectPulse"
+        "command": "releasearc.linkWorkspace",
+        "title": "ReleaseArc: Link Workspace",
+        "category": "ReleaseArc"
       },
       {
-        "command": "projectpulse.setTelemetryConsent",
-        "title": "ProjectPulse: Manage Activity Consent",
-        "category": "ProjectPulse"
+        "command": "releasearc.setTelemetryConsent",
+        "title": "ReleaseArc: Manage Activity Consent",
+        "category": "ReleaseArc"
       }
     ],
     "configuration": {
-      "title": "ProjectPulse",
+      "title": "ReleaseArc",
       "properties": {
-        "projectpulse.workspaceUrl": {
+        "releasearc.workspaceUrl": {
           "type": "string",
           "default": "http://localhost:5173",
-          "description": "ProjectPulse web workspace URL."
+          "description": "ReleaseArc web workspace URL."
         },
-        "projectpulse.telemetry.enabled": {
+        "releasearc.telemetry.enabled": {
           "type": "boolean",
           "default": false,
           "description": "Allow privacy-aware activity telemetry after authentication and explicit consent."
@@ -58,15 +58,15 @@
     "README.md"
   ],
   "scripts": {
-    "dev": "node ../../scripts/workspace-dev.mjs projectpulse-vscode-extension",
+    "dev": "node ../../scripts/workspace-dev.mjs releasearc-vscode-extension",
     "build": "tsc -p tsconfig.json",
-    "package": "corepack pnpm run build && corepack pnpm exec vsce package --no-dependencies --out projectpulse.vsix",
-    "test": "node ../../scripts/check-workspace-package.mjs projectpulse-vscode-extension",
-    "lint": "node ../../scripts/check-workspace-package.mjs projectpulse-vscode-extension lint",
+    "package": "corepack pnpm run build && corepack pnpm exec vsce package --no-dependencies --out releasearc.vsix",
+    "test": "node ../../scripts/check-workspace-package.mjs releasearc-vscode-extension",
+    "lint": "node ../../scripts/check-workspace-package.mjs releasearc-vscode-extension lint",
     "typecheck": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@projectpulse/domain": "workspace:*"
+    "@releasearc/domain": "workspace:*"
   },
   "devDependencies": {
     "@types/vscode": "1.96.0",

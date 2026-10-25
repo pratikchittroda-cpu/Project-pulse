@@ -1138,6 +1138,91 @@ input:focus-visible {
   font-size: 0.75rem;
 }
 
+.integration-card-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.github-setup-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.github-setup-copy {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.github-setup-copy strong {
+  color: var(--ink);
+}
+
+.github-setup-copy span {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.github-webhook-row {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.github-webhook-row .pp-input {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.github-setup-steps {
+  color: var(--ink-soft);
+  display: grid;
+  font-size: 0.78rem;
+  gap: 0.55rem;
+  line-height: 1.55;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.github-setup-steps code {
+  background: #f1f5f9;
+  border-radius: 0.3rem;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 0.15rem 0.3rem;
+}
+
+.github-delivery-metrics {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding-top: 1rem;
+}
+
+.github-delivery-metrics div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.github-delivery-metrics span {
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+}
+
+.github-delivery-metrics strong {
+  color: var(--ink);
+  font-size: 1.1rem;
+  letter-spacing: -0.04em;
+}
+
+.github-last-delivery {
+  margin: 0;
+}
+
 .standalone-state {
   align-items: center;
   background: #f8fafc;
@@ -1321,9 +1406,18 @@ input:focus-visible {
   .saved-view-actions {
     width: 100%;
   }
+
+  .integration-card-heading {
+    display: grid;
+  }
+
+  .github-webhook-row,
+  .github-delivery-metrics {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* ProjectPulse visual refresh */
+/* ReleaseArc visual refresh */
 :root {
   --ink: #1f2430;
   --ink-soft: #687080;
@@ -4031,7 +4125,7 @@ strong,
   position: relative;
 }
 
-.projectpulse-mark {
+.releasearc-mark {
   border-radius: 0.88rem;
   box-shadow:
     0 0.55rem 1rem rgb(101 87 245 / 17%),
@@ -4069,7 +4163,7 @@ strong,
   text-transform: uppercase;
 }
 
-.brand:hover .projectpulse-mark {
+.brand:hover .releasearc-mark {
   filter: saturate(1.18) brightness(1.04);
   transform: rotate(-6deg) scale(1.05);
 }
@@ -4084,7 +4178,7 @@ strong,
   color: #858ca2;
 }
 
-.app-sidebar .projectpulse-mark {
+.app-sidebar .releasearc-mark {
   box-shadow:
     0 0.55rem 1.15rem rgb(101 87 245 / 28%),
     0 0 0 1px rgb(255 255 255 / 20%) inset;
@@ -4346,7 +4440,7 @@ h4,
   color: #a99775;
 }
 
-.app-sidebar .projectpulse-mark {
+.app-sidebar .releasearc-mark {
   box-shadow:
     0 0.55rem 1.15rem rgb(75 40 109 / 32%),
     0 0 0 1px rgb(227 201 143 / 32%) inset;
@@ -6231,7 +6325,7 @@ h4,
 .dashboard-metric-grid-v2 {
   display: grid;
   gap: 0.85rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .dashboard-metric-card {
@@ -6257,6 +6351,93 @@ h4,
 
 .dashboard-metric-card-gold {
   background: linear-gradient(145deg, #fbfbf9, #fff7df);
+}
+
+.dashboard-risk-card {
+  background: #fbfbf9;
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  box-shadow: 0 0.8rem 2rem rgb(31 36 48 / 4%);
+  min-width: 0;
+  padding: 1.3rem;
+}
+
+.dashboard-risk-card .dashboard-section-status svg {
+  color: #bd6a4e;
+  margin-right: 0.25rem;
+  vertical-align: -0.15rem;
+}
+
+.dashboard-risk-list {
+  display: grid;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 1.2rem 0 0;
+  padding: 0;
+}
+
+.dashboard-risk-item {
+  align-items: flex-start;
+  border-top: 1px solid #eceeeb;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.85rem 0 0;
+}
+
+.dashboard-risk-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dashboard-risk-severity {
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.34rem 0.48rem;
+  text-transform: uppercase;
+}
+
+.dashboard-risk-severity-high {
+  background: #fff0e9;
+  color: #b85c42;
+}
+
+.dashboard-risk-severity-medium {
+  background: #fff7df;
+  color: #9a731b;
+}
+
+.dashboard-risk-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.dashboard-risk-copy strong {
+  color: var(--ink);
+  font-size: 0.76rem;
+}
+
+.dashboard-risk-copy span,
+.dashboard-risk-copy small {
+  color: #737b88;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.dashboard-risk-copy small {
+  color: var(--violet-dark);
+  font-weight: 700;
+}
+
+.dashboard-risk-empty {
+  color: #737b88;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  margin: 1.25rem 0 0;
 }
 
 .dashboard-metric-top,
@@ -6840,7 +7021,7 @@ h4,
 .dashboard-loading-metrics {
   display: grid;
   gap: 0.85rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .dashboard-skeleton-card {
@@ -6975,6 +7156,14 @@ h4,
   }
 
   .dashboard-activity-item time {
+    grid-column: 2;
+  }
+
+  .dashboard-risk-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .dashboard-risk-item .dashboard-text-link {
     grid-column: 2;
   }
 }

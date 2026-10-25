@@ -34,7 +34,7 @@ Display current developer activity without persisting every heartbeat.
 ## Acceptance criteria
 
 - [x] Active users appear on the correct project/task through the reusable
-  presence controller and UI primitive.
+      presence controller and UI primitive.
 - [x] Stale presence expires automatically.
 - [x] No source content is exposed.
 - [x] Presence is hidden when telemetry is paused.

@@ -1,5 +1,5 @@
 {
-  "name": "@projectpulse/integrations",
+  "name": "@releasearc/integrations",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,10 +13,10 @@
     }
   },
   "scripts": {
-    "dev": "node ../../scripts/workspace-dev.mjs @projectpulse/integrations",
+    "dev": "node ../../scripts/workspace-dev.mjs @releasearc/integrations",
     "build": "tsc -p tsconfig.json",
-    "test": "node ../../scripts/check-workspace-package.mjs @projectpulse/integrations",
-    "lint": "node ../../scripts/check-workspace-package.mjs @projectpulse/integrations lint",
+    "test": "node ../../scripts/check-workspace-package.mjs @releasearc/integrations",
+    "lint": "node ../../scripts/check-workspace-package.mjs @releasearc/integrations lint",
     "typecheck": "tsc -b tsconfig.json"
   },
   "devDependencies": {

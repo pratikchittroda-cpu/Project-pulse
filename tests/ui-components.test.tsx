@@ -4,7 +4,7 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Dialog, Input, StatusBadge, Tabs } from "@projectpulse/ui";
+import { Dialog, Input, StatusBadge, Tabs } from "@releasearc/ui";
 
 describe("shared UI primitives", () => {
   it("exposes input errors to assistive technology", () => {

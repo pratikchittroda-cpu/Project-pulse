@@ -10,7 +10,7 @@ import {
   CardTitle,
   Input,
   PageLayout,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
 import { supabase } from "../app/auth-client.js";
 import { useAuth } from "../app/auth-context.js";

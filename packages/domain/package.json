@@ -1,5 +1,5 @@
 {
-  "name": "@projectpulse/domain",
+  "name": "@releasearc/domain",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,10 +13,10 @@
     }
   },
   "scripts": {
-    "dev": "node ../../scripts/workspace-dev.mjs @projectpulse/domain",
+    "dev": "node ../../scripts/workspace-dev.mjs @releasearc/domain",
     "build": "tsc -p tsconfig.json",
-    "test": "node ../../scripts/check-workspace-package.mjs @projectpulse/domain",
-    "lint": "node ../../scripts/check-workspace-package.mjs @projectpulse/domain lint",
+    "test": "node ../../scripts/check-workspace-package.mjs @releasearc/domain",
+    "lint": "node ../../scripts/check-workspace-package.mjs @releasearc/domain lint",
     "typecheck": "tsc -b tsconfig.json"
   },
   "devDependencies": {

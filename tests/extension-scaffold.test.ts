@@ -21,14 +21,12 @@ describe("VS Code extension scaffold", () => {
     expect(extensionWorkspace.hostCompatibility).toEqual(["vscode", "cursor"]);
     expect(manifest.main).toBe("./dist/extension.js");
     expect(manifest.activationEvents).toContain(
-      "onCommand:projectpulse.openWorkspace",
+      "onCommand:releasearc.openWorkspace",
     );
     expect(manifest.contributes.commands.map(({ command }) => command)).toEqual(
       expect.arrayContaining(Object.values(extensionCommands)),
     );
-    expect(extensionConfiguration.workspaceUrl).toBe(
-      "projectpulse.workspaceUrl",
-    );
+    expect(extensionConfiguration.workspaceUrl).toBe("releasearc.workspaceUrl");
   });
 
   it("requires authentication and consent before telemetry is allowed", () => {

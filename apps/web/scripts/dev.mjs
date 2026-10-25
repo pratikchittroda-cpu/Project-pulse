@@ -6,11 +6,11 @@ const html = `<!doctype html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ProjectPulse</title>
+    <title>ReleaseArc</title>
   </head>
   <body>
     <main>
-      <h1>ProjectPulse web workspace</h1>
+      <h1>ReleaseArc web workspace</h1>
       <p>The React application shell is introduced by T005.</p>
     </main>
   </body>
@@ -22,7 +22,5 @@ const server = createServer((_request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(
-    `ProjectPulse web workspace listening on http://localhost:${port}`,
-  );
+  console.log(`ReleaseArc web workspace listening on http://localhost:${port}`);
 });

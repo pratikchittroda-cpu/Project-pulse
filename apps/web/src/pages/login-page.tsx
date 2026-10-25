@@ -35,7 +35,7 @@ export function LoginPage() {
     setIsPending(false);
 
     if (!result.error) {
-      setMessage("Check your email for a secure ProjectPulse sign-in link.");
+      setMessage("Check your email for a secure ReleaseArc sign-in link.");
     }
   }
 
@@ -75,7 +75,7 @@ export function LoginPage() {
           workspace. There is no separate signup screen; use your work email to
           receive a secure one-time sign-in link.
         </p>
-        <div className="auth-value-list" aria-label="ProjectPulse benefits">
+        <div className="auth-value-list" aria-label="ReleaseArc benefits">
           <span>
             <i aria-hidden="true">01</i>Plan work with context
           </span>
@@ -90,7 +90,7 @@ export function LoginPage() {
       <div className="auth-card-form">
         <div className="auth-form-heading">
           <span className="auth-form-kicker">Workspace access</span>
-          <strong>Sign in to ProjectPulse</strong>
+          <strong>Sign in to ReleaseArc</strong>
         </div>
         {state?.error || authError ? (
           <p className="auth-error" role="alert">

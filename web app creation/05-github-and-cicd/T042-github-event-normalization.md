@@ -14,7 +14,7 @@ Planned
 
 ## Goal
 
-Convert provider-specific GitHub payloads into stable ProjectPulse domain events.
+Convert provider-specific GitHub payloads into stable ReleaseArc domain events.
 
 ## Owned paths
 

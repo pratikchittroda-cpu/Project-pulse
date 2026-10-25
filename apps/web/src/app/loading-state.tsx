@@ -4,7 +4,7 @@ interface LoadingStateProps {
 }
 
 export function LoadingState({
-  message = "ProjectPulse is preparing your workspace.",
+  message = "ReleaseArc is preparing your workspace.",
   title = "Loading workspace",
 }: LoadingStateProps) {
   return (

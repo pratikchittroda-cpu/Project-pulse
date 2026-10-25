@@ -341,12 +341,13 @@ export function LandingPage() {
         <div className="hero-copy-column">
           <div className="hero-kicker">
             <span className="hero-kicker-dot" aria-hidden="true" />
-            Engineering control plane
+            GitHub delivery intelligence
           </div>
           <h1 id="hero-title">Make delivery feel visible.</h1>
           <p className="hero-copy">
-            ProjectPulse turns scattered engineering signals into one clear
-            picture of what is moving, what is stuck, and what needs attention.
+            ReleaseArc connects GitHub activity, planning, review, CI, and
+            releases into one clear picture of what is moving, what is stuck,
+            and what needs attention next.
           </p>
           <div className="hero-actions">
             <Link
@@ -391,14 +392,14 @@ export function LandingPage() {
               <b>Delivery</b>
             </span>
             <span className="signal-core">
-              <span>LIVE PULSE</span>
+              <span>LIVE RELEASE</span>
               <strong>92</strong>
               <small>delivery health</small>
             </span>
           </div>
           <aside
             className="hero-card hero-dashboard-card"
-            aria-label="ProjectPulse workspace preview"
+            aria-label="ReleaseArc workspace preview"
           >
             <div className="hero-card-topline">
               <span className="preview-window-dots" aria-hidden="true">
@@ -406,7 +407,7 @@ export function LandingPage() {
                 <i />
                 <i />
               </span>
-              <span className="preview-window-label">PULSE / OVERVIEW</span>
+              <span className="preview-window-label">RELEASE / OVERVIEW</span>
               <span className="preview-live-label">
                 <span className="signal-dot" aria-hidden="true" /> Live
               </span>
@@ -468,7 +469,7 @@ export function LandingPage() {
       <Reveal className="landing-ticker-reveal">
         <section
           className="landing-signal-ticker"
-          aria-label="ProjectPulse signal highlights"
+          aria-label="ReleaseArc signal highlights"
         >
           <div className="landing-ticker-edge" aria-hidden="true" />
           <div className="landing-ticker-viewport">
@@ -482,15 +483,12 @@ export function LandingPage() {
             </div>
           </div>
           <span className="landing-ticker-caption">
-            ProjectPulse / live system
+            ReleaseArc / live system
           </span>
         </section>
       </Reveal>
       <Reveal>
-        <section
-          className="landing-proof"
-          aria-label="ProjectPulse capabilities"
-        >
+        <section className="landing-proof" aria-label="ReleaseArc capabilities">
           <div className="landing-proof-heading">
             <span className="eyebrow">A clearer operating rhythm</span>
             <p>One system for the questions that slow delivery down.</p>
@@ -517,9 +515,9 @@ export function LandingPage() {
             </h2>
           </div>
           <p>
-            ProjectPulse gives engineering teams a shared operating layer for
-            planning, collaboration, and delivery health — without asking them
-            to live in another reporting ritual.
+            ReleaseArc gives engineering teams a shared operating layer for
+            planning, GitHub delivery signals, and release health — without
+            asking them to live in another reporting ritual.
           </p>
         </Reveal>
         <div className="landing-workflow-grid" aria-labelledby="product-title">
@@ -548,9 +546,9 @@ export function LandingPage() {
           <span className="eyebrow">The signal, not the noise</span>
           <h2>See how work moves without turning work into surveillance.</h2>
           <p>
-            ProjectPulse is built around permission-aware, team-level context.
-            It helps leaders spot drift and helps teams protect their focus —
-            while keeping the details of how people work private.
+            ReleaseArc is built around permission-aware, team-level context. It
+            helps leaders spot drift and helps teams protect their focus — while
+            keeping the details of how people work private.
           </p>
           <ul className="landing-principle-list">
             <li>
@@ -630,8 +628,8 @@ export function LandingPage() {
             <h2>Less status theater. More useful movement.</h2>
           </div>
           <p>
-            Keep your existing tools. ProjectPulse adds the connective tissue
-            that makes the full delivery picture easier to read.
+            Keep your existing tools. ReleaseArc adds the connective tissue that
+            makes the full delivery picture easier to read.
           </p>
         </Reveal>
         <div className="landing-capability-grid">
@@ -674,7 +672,7 @@ export function LandingPage() {
             <span />
             <span />
             <span />
-            <strong>PP</strong>
+            <strong>RA</strong>
           </div>
         </section>
       </Reveal>

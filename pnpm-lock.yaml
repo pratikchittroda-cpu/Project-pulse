@@ -50,7 +50,7 @@ importers:
 
   apps/vscode-extension:
     dependencies:
-      '@projectpulse/domain':
+      '@releasearc/domain':
         specifier: workspace:*
         version: link:../../packages/domain
     devDependencies:
@@ -66,10 +66,13 @@ importers:
 
   apps/web:
     dependencies:
-      '@projectpulse/domain':
+      '@releasearc/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@projectpulse/ui':
+      '@releasearc/integrations':
+        specifier: workspace:*
+        version: link:../../packages/integrations
+      '@releasearc/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@supabase/supabase-js':

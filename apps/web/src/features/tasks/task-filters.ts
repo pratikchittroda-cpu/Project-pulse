@@ -1,4 +1,4 @@
-import type { TaskPriority } from "@projectpulse/domain";
+import type { TaskPriority } from "@releasearc/domain";
 
 import type { TaskOptions, TaskRecord } from "./task-repository.js";
 

@@ -119,13 +119,13 @@ Allow teams to plan work into cycles and compare commitment with completion.
   Auth/PostgREST. Covers lifecycle/edit/cancel, commitment/readback, scope totals,
   carryover, permissions, bigint task identity/history, and pagination beyond
   200 tasks / 100 sprints. Fixtures are isolated and cleaned up without a reset.
-- Clean-source Linux build: `docker build --target build --tag projectpulse:t024-check .`.
+- Clean-source Linux build: `docker build --target build --tag releasearc:t024-check .`.
   Each requested check passed with networking disabled and a five-minute timeout:
-  `docker run --rm --network none projectpulse:t024-check pnpm run typecheck`,
-  `docker run --rm --network none projectpulse:t024-check pnpm run lint`, and
-  `docker run --rm --network none projectpulse:t024-check pnpm test`.
+  `docker run --rm --network none releasearc:t024-check pnpm run typecheck`,
+  `docker run --rm --network none releasearc:t024-check pnpm run lint`, and
+  `docker run --rm --network none releasearc:t024-check pnpm test`.
   Runtime pins remain Node `22.14.0` / pnpm `10.12.1`.
-- Production image built as `projectpulse:t024` using a dummy public smoke key.
+- Production image built as `releasearc:t024` using a dummy public smoke key.
   An isolated non-root nginx container returned `ok` from `/healthz`, served the
   same app entry at `/app/backlog` and `/`, and passed `nginx -t`. The temporary
   smoke container was stopped. `docker compose config --quiet` also passed.

@@ -46,7 +46,7 @@ Completed verification:
 - `corepack pnpm run supabase:reset` applied the RLS policy migration to a
   clean local database.
 - `docker exec --interactive supabase_db_projectpulse psql ... <
-  supabase/rls-tests.sql` passed direct PostgreSQL permission assertions for
+supabase/rls-tests.sql` passed direct PostgreSQL permission assertions for
   owner, member, viewer, and cross-organization users.
 - The permission script verified positive project reads, cross-organization
   denial, viewer write denial, and client webhook write denial in one
@@ -61,7 +61,7 @@ Completed verification:
   append-only and follows the T011 schema migration.
 - Helpers are `is_org_member`, `has_org_role`, `can_access_project`, and
   `can_write_project`. They are `security definer`, use `search_path = public,
-  auth`, and are executable only by `authenticated` and `service_role`.
+auth`, and are executable only by `authenticated` and `service_role`.
 - Roles are owner/admin, member, viewer, removed member, anon, and service
   role. Organization admins can administer projects and memberships; members
   can write assigned projects; viewers are read-only; cross-organization rows

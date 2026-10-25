@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { JsonValue } from "@projectpulse/domain";
+import type { JsonValue } from "@releasearc/domain";
 
 import { supabase } from "../../app/auth-client.js";
 import { taskDetailPath } from "../tasks/task-detail-repository.js";

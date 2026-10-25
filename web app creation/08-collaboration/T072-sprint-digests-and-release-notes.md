@@ -14,7 +14,7 @@ Team review workflows.
 
 ## Goal
 
-Turn verified ProjectPulse events into useful sprint and release summaries.
+Turn verified ReleaseArc events into useful sprint and release summaries.
 
 ## Implementation steps
 

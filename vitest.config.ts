@@ -4,11 +4,14 @@ import { fileURLToPath, URL } from "node:url";
 export default defineConfig({
   resolve: {
     alias: {
-      "@projectpulse/domain": fileURLToPath(
+      "@releasearc/domain": fileURLToPath(
         new URL("./packages/domain/src/index.ts", import.meta.url),
       ),
-      "@projectpulse/ui": fileURLToPath(
+      "@releasearc/ui": fileURLToPath(
         new URL("./packages/ui/src/index.ts", import.meta.url),
+      ),
+      "@releasearc/integrations": fileURLToPath(
+        new URL("./packages/integrations/src/index.ts", import.meta.url),
       ),
     },
   },

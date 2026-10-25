@@ -42,7 +42,7 @@ Allow teams to create project spaces and register repository metadata.
 ## Verification
 
 - `docker exec --interactive supabase_db_projectpulse psql -U postgres -d
-  postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
+postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
   PostgreSQL assertions for project visibility, invalid and duplicate keys,
   archive/edit operations, member/viewer writes, and repository access.
 - `make test` passed workspace checks, typechecking, lint, formatting, build, 30

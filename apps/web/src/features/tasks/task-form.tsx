@@ -1,9 +1,6 @@
 import { useState, type FormEvent } from "react";
-import {
-  DEFAULT_TASK_PRIORITIES,
-  type TaskPriority,
-} from "@projectpulse/domain";
-import { Button, Input } from "@projectpulse/ui";
+import { DEFAULT_TASK_PRIORITIES, type TaskPriority } from "@releasearc/domain";
+import { Button, Input } from "@releasearc/ui";
 
 import {
   TaskValidationError,

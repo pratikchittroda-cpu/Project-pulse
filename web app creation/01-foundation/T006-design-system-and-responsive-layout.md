@@ -14,7 +14,7 @@ All feature UI tasks.
 
 ## Goal
 
-Create consistent, accessible UI primitives for the ProjectPulse dashboard.
+Create consistent, accessible UI primitives for the ReleaseArc dashboard.
 
 ## Owned paths
 
@@ -51,12 +51,12 @@ Completed verification:
   status/icon pairing, keyboard tab movement, and Escape-key dialog dismissal
   in a jsdom accessibility-focused test environment.
 - `corepack pnpm run build` completed the shared UI package build and the web
-  Vite production bundle using the shared `@projectpulse/ui` package.
+  Vite production bundle using the shared `@releasearc/ui` package.
 
 ## Handoff
 
-- Import reusable primitives and tokens from `@projectpulse/ui`; import its
-  shared stylesheet with `@projectpulse/ui/styles.css` before app-specific
+- Import reusable primitives and tokens from `@releasearc/ui`; import its
+  shared stylesheet with `@releasearc/ui/styles.css` before app-specific
   styles. The web dashboard consumes `StatusBadge` as the first integration
   point.
 - Exported primitives are `Button`, `Input`, `Card`, `CardHeader`,

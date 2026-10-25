@@ -1,4 +1,4 @@
-# ProjectPulse database schema
+# ReleaseArc database schema
 
 Migration `20261017000000_initial_schema.sql` establishes the durable model
 used by the dashboard, extension, integrations, and event pipeline.

@@ -11,9 +11,9 @@ import {
   CardTitle,
   Input,
   PageLayout,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
-import { supabase } from "../app/auth-client.js";
+import { supabase, supabaseAuthConfig } from "../app/auth-client.js";
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
 import { useProject } from "../app/project-context.js";
@@ -41,6 +41,14 @@ interface ProjectMemberSummary {
 interface OrganizationMemberSummary {
   role: string;
   userId: string;
+}
+
+interface DeliverySummary {
+  failedCheckCount: number;
+  failedDeploymentCount: number;
+  githubDeliveryCount: number;
+  lastGithubDeliveryAt: string | null;
+  openPullRequestCount: number;
 }
 
 const emptyProject = {
@@ -91,6 +99,8 @@ export function ProjectsPage() {
   } = useProject();
   const [teams, setTeams] = useState<TeamSummary[]>([]);
   const [repositories, setRepositories] = useState<RepositorySummary[]>([]);
+  const [deliverySummary, setDeliverySummary] =
+    useState<DeliverySummary | null>(null);
   const [members, setMembers] = useState<ProjectMemberSummary[]>([]);
   const [organizationMembers, setOrganizationMembers] = useState<
     OrganizationMemberSummary[]
@@ -112,12 +122,17 @@ export function ProjectsPage() {
     () => projects.find(({ id }) => id === project.id),
     [project.id, projects],
   );
+  const githubRepository = repositories.find(
+    (repository) => repository.provider === "github",
+  );
+  const githubWebhookEndpoint = `${supabaseAuthConfig.url}/functions/v1/github-webhook`;
 
   async function loadProjectDetails(projectId: string) {
     const requestId = ++detailsSequence.current;
     if (!selectedOrganizationId) {
       setTeams([]);
       setRepositories([]);
+      setDeliverySummary(null);
       setMembers([]);
       setOrganizationMembers([]);
       return;
@@ -145,6 +160,7 @@ export function ProjectsPage() {
 
     if (!hasRealProject) {
       setRepositories([]);
+      setDeliverySummary(null);
       setMembers([]);
       setOrganizationMembers([]);
       return;
@@ -154,6 +170,7 @@ export function ProjectsPage() {
       { data: repositoryData, error: repositoryError },
       { data: memberData, error: memberError },
       { data: organizationMemberData, error: organizationMemberError },
+      { data: deliverySummaryData },
     ] = await Promise.all([
       supabase
         .from("repositories")
@@ -172,6 +189,10 @@ export function ProjectsPage() {
         .select("user_id, role")
         .eq("organization_id", selectedOrganizationId)
         .order("created_at"),
+      supabase.rpc("get_project_delivery_summary", {
+        target_organization_id: selectedOrganizationId,
+        target_project_id: projectId,
+      }),
     ]);
 
     if (requestId !== detailsSequence.current) {
@@ -193,6 +214,32 @@ export function ProjectsPage() {
         provider: repository.provider as RepositorySummary["provider"],
         url: repository.url as string,
       })),
+    );
+    const deliveryRow = (
+      Array.isArray(deliverySummaryData)
+        ? deliverySummaryData[0]
+        : deliverySummaryData
+    ) as {
+      failed_check_count?: number;
+      failed_deployment_count?: number;
+      github_delivery_count?: number;
+      last_github_delivery_at?: string | null;
+      open_pull_request_count?: number;
+    } | null;
+    setDeliverySummary(
+      deliveryRow
+        ? {
+            failedCheckCount: Number(deliveryRow.failed_check_count ?? 0),
+            failedDeploymentCount: Number(
+              deliveryRow.failed_deployment_count ?? 0,
+            ),
+            githubDeliveryCount: Number(deliveryRow.github_delivery_count ?? 0),
+            lastGithubDeliveryAt: deliveryRow.last_github_delivery_at ?? null,
+            openPullRequestCount: Number(
+              deliveryRow.open_pull_request_count ?? 0,
+            ),
+          }
+        : null,
     );
     setMembers(
       (memberData ?? []).map((member) => ({
@@ -384,6 +431,24 @@ export function ProjectsPage() {
 
     setMessage("Repository record removed.");
     await loadProjectDetails(project.id);
+  }
+
+  async function copyWebhookEndpoint() {
+    const endpoint = `${supabaseAuthConfig.url}/functions/v1/github-webhook`;
+    if (!navigator.clipboard) {
+      setError("Clipboard access is unavailable. Copy the endpoint manually.");
+      return;
+    }
+    await navigator.clipboard.writeText(endpoint);
+    setMessage("GitHub webhook endpoint copied.");
+  }
+
+  function formatDeliveryTime(timestamp: string | null) {
+    if (!timestamp) return "No delivery received yet";
+    const date = new Date(timestamp);
+    return Number.isNaN(date.getTime())
+      ? "Delivery time unavailable"
+      : `Last delivery ${date.toLocaleString()}`;
   }
 
   async function addProjectMember() {
@@ -680,10 +745,110 @@ export function ProjectsPage() {
 
               <Card>
                 <CardHeader>
+                  <div className="integration-card-heading">
+                    <div>
+                      <CardTitle>GitHub delivery signals</CardTitle>
+                      <CardDescription>
+                        Connect repository webhooks to turn pull requests, CI,
+                        reviews, deployments, and releases into delivery
+                        context.
+                      </CardDescription>
+                    </div>
+                    <Badge tone={githubRepository ? "success" : "warning"}>
+                      {githubRepository
+                        ? "Repository ready"
+                        : "Needs repository"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {githubRepository ? (
+                    <div className="github-setup-panel">
+                      <div className="github-setup-copy">
+                        <strong>{githubRepository.name}</strong>
+                        <span>
+                          Add this endpoint as a GitHub webhook for the
+                          registered repository.
+                        </span>
+                      </div>
+                      <div className="github-webhook-row">
+                        <Input
+                          label="Webhook endpoint"
+                          readOnly
+                          value={githubWebhookEndpoint}
+                        />
+                        <Button
+                          onClick={() => void copyWebhookEndpoint()}
+                          size="sm"
+                        >
+                          Copy endpoint
+                        </Button>
+                      </div>
+                      <ol className="github-setup-steps">
+                        <li>
+                          In GitHub, open{" "}
+                          <strong>Settings → Webhooks → Add webhook</strong>.
+                        </li>
+                        <li>
+                          Use <strong>application/json</strong> and configure
+                          the same secret as <code>GITHUB_WEBHOOK_SECRET</code>{" "}
+                          in the webhook function environment.
+                        </li>
+                        <li>
+                          Enable pull requests, reviews, pushes, check runs,
+                          deployment statuses, and releases.
+                        </li>
+                      </ol>
+                      <div
+                        className="github-delivery-metrics"
+                        aria-label="GitHub delivery health"
+                      >
+                        <div>
+                          <span>Deliveries</span>
+                          <strong>
+                            {deliverySummary?.githubDeliveryCount ?? 0}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Open PRs</span>
+                          <strong>
+                            {deliverySummary?.openPullRequestCount ?? 0}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Failed checks</span>
+                          <strong>
+                            {deliverySummary?.failedCheckCount ?? 0}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Deploy failures</span>
+                          <strong>
+                            {deliverySummary?.failedDeploymentCount ?? 0}
+                          </strong>
+                        </div>
+                      </div>
+                      <p className="muted github-last-delivery">
+                        {formatDeliveryTime(
+                          deliverySummary?.lastGithubDeliveryAt ?? null,
+                        )}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="muted">
+                      Register a GitHub repository in the Repositories card to
+                      receive the webhook endpoint and delivery health checks.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
                   <CardTitle>Repositories</CardTitle>
                   <CardDescription>
-                    Store repository metadata now; provider OAuth and
-                    synchronization can connect later.
+                    Register the repository that supplies delivery signals to
+                    this project, then connect its GitHub webhook below.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

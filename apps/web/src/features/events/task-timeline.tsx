@@ -5,8 +5,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@projectpulse/ui";
-import type { JsonValue } from "@projectpulse/domain";
+} from "@releasearc/ui";
+import type { JsonValue } from "@releasearc/domain";
 import { useTaskEvents } from "./use-task-events.js";
 import type {
   TaskEventRecord,

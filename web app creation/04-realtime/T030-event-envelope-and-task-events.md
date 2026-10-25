@@ -43,12 +43,12 @@ Create a durable, provider-neutral event history for task and engineering activi
 
 - `corepack pnpm run supabase:reset` applied the append-only event migration.
 - `docker exec --interactive supabase_db_projectpulse psql -U postgres -d
-  postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed duplicate-event
+postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed duplicate-event
   idempotency, chronological event fixtures, malformed event rejection,
   provider-source spoof rejection, viewer denial, and cross-organization read
   isolation.
 - `VITE_SUPABASE_URL=http://127.0.0.1:54321
-  VITE_SUPABASE_ANON_KEY=replace-with-local-anon-key make test` passed all
+VITE_SUPABASE_ANON_KEY=replace-with-local-anon-key make test` passed all
   workspace checks, typechecking, lint, formatting, build, 42 Vitest tests,
   and workspace smoke checks.
 

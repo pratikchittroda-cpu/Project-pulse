@@ -44,7 +44,7 @@ Completed verification:
 - `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
   completed successfully from the committed lockfile.
 - `corepack pnpm run typecheck` passed all workspace TypeScript projects,
-  including the web and VS Code extension imports from `@projectpulse/domain`.
+  including the web and VS Code extension imports from `@releasearc/domain`.
 - `tests/domain-contracts.test.ts` covers valid event parsing, typed field
   validation failures, strict ISO date serialization, event naming, provider
   payload separation, and API response typing.
@@ -52,7 +52,7 @@ Completed verification:
 
 ## Handoff
 
-- `@projectpulse/domain` exports entity contracts for `Organization`, `Team`,
+- `@releasearc/domain` exports entity contracts for `Organization`, `Team`,
   `Member`, `Project`, `Repository`, `Task`, and `Integration`, plus
   `TaskStatus`, `TaskPriority`, `MemberRole`, and provider/status unions.
 - Event contracts are `EventEnvelope`, `ProviderEvent`, `EventName`,

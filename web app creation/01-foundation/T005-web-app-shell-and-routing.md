@@ -45,7 +45,7 @@ Completed verification:
 
 - `corepack pnpm install --frozen-lockfile --offline --ignore-scripts`
   completed successfully from the committed lockfile.
-- `corepack pnpm --filter @projectpulse/web build` completed the TypeScript and
+- `corepack pnpm --filter @releasearc/web build` completed the TypeScript and
   Vite production build.
 - `make test` passed workspace validation, typechecking, linting, formatting,
   all workspace builds, and six Vitest assertions across public, auth,
@@ -54,7 +54,7 @@ Completed verification:
 ## Handoff
 
 - Vite starts the web workspace with `corepack pnpm --filter
-  @projectpulse/web dev`; the production command runs strict TypeScript before
+@releasearc/web dev`; the production command runs strict TypeScript before
   `vite build`.
 - Public routes are `/` and `/auth/login`; application routes are `/app` and
   `/app/activity`. Unknown paths render the `NotFoundPage` response.

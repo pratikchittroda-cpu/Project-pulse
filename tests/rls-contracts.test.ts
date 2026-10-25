@@ -25,6 +25,14 @@ const workspaceBootstrapMigration = readFileSync(
   "supabase/migrations/20261023030000_workspace_bootstrap.sql",
   "utf8",
 );
+const deliveryRiskMigration = readFileSync(
+  "supabase/migrations/20261025000000_delivery_risk_read_model.sql",
+  "utf8",
+);
+const githubDeliveryMigration = readFileSync(
+  "supabase/migrations/20261026000000_github_delivery_pipeline.sql",
+  "utf8",
+);
 const taskCrudMigration = readFileSync(
   "supabase/migrations/20261018000000_task_crud_validation.sql",
   "utf8",
@@ -132,6 +140,39 @@ describe("RLS policy contract", () => {
       "task_events_project_occurred_scope_idx",
     );
     expect(workspaceBootstrapMigration).toContain("security invoker");
+  });
+
+  it("keeps delivery risks scoped and explainable", () => {
+    expect(deliveryRiskMigration).toContain(
+      "create or replace function public.get_project_delivery_risks",
+    );
+    expect(deliveryRiskMigration).toContain("can_access_project");
+    expect(deliveryRiskMigration).toContain("task.status = 'blocked'");
+    expect(deliveryRiskMigration).toContain("task.assignee_id is null");
+    expect(deliveryRiskMigration).toContain("interval '48 hours'");
+    expect(deliveryRiskMigration).toContain("'next_move'");
+    expect(deliveryRiskMigration).toContain("security invoker");
+  });
+
+  it("keeps GitHub delivery ingestion service-only and task-linked", () => {
+    expect(githubDeliveryMigration).toContain(
+      "create table public.delivery_objects",
+    );
+    expect(githubDeliveryMigration).toContain(
+      "create table public.delivery_task_links",
+    );
+    expect(githubDeliveryMigration).toContain(
+      "create or replace function public.ingest_github_delivery",
+    );
+    expect(githubDeliveryMigration).toContain(
+      "grant execute on function public.ingest_github_delivery",
+    );
+    expect(githubDeliveryMigration).toContain("to service_role");
+    expect(githubDeliveryMigration).not.toContain(
+      "create policy delivery_objects_insert",
+    );
+    expect(githubDeliveryMigration).toContain("record_task_event");
+    expect(githubDeliveryMigration).toContain("provider_event_id");
   });
 
   it("keeps task mutations constrained to valid project members", () => {

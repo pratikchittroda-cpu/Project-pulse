@@ -14,7 +14,7 @@ None.
 
 ## Goal
 
-Create the reproducible Node.js/TypeScript workspace foundation for ProjectPulse.
+Create the reproducible Node.js/TypeScript workspace foundation for ReleaseArc.
 
 ## Owned paths
 

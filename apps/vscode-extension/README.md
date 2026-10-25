@@ -1,14 +1,14 @@
-# ProjectPulse VS Code/Cursor extension
+# ReleaseArc VS Code/Cursor extension
 
 The extension scaffold targets VS Code `^1.96.0` and Cursor-compatible hosts
 that implement the VS Code extension API.
 
 ## Commands
 
-- `ProjectPulse: Open Workspace` opens the configured `projectpulse.workspaceUrl`.
-- `ProjectPulse: Link Workspace` stores a validated web workspace URL in the
+- `ReleaseArc: Open Workspace` opens the configured `releasearc.workspaceUrl`.
+- `ReleaseArc: Link Workspace` stores a validated web workspace URL in the
   global editor configuration.
-- `ProjectPulse: Manage Activity Consent` records explicit telemetry consent.
+- `ReleaseArc: Manage Activity Consent` records explicit telemetry consent.
 
 The status-bar item is a placeholder until workspace authentication and branch
 linking are implemented by T051 and T052. No telemetry is sent by this
@@ -19,8 +19,8 @@ and the explicit consent state; it must remain within the privacy contract in
 ## Development
 
 ```sh
-corepack pnpm --filter projectpulse-vscode-extension build
-corepack pnpm --filter projectpulse-vscode-extension package
+corepack pnpm --filter releasearc-vscode-extension build
+corepack pnpm --filter releasearc-vscode-extension package
 ```
 
 Use the checked-in launch configuration in `.vscode/launch.json` to launch an

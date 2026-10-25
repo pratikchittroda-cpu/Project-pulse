@@ -45,7 +45,7 @@ Define the canonical task identity and workflow model used by the board, GitHub 
 - `corepack pnpm run supabase:reset` applied the append-only task-domain
   migration successfully.
 - `docker exec --interactive supabase_db_projectpulse psql -U postgres -d
-  postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed generated task
+postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed generated task
   numbering, explicit-number advancement, custom workflow status, invalid
   status/priority/estimate, immutable task identity, project-key stability,
   project access, viewer restrictions, and repository assertions.

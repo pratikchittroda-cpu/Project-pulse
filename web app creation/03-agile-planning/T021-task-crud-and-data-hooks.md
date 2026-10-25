@@ -44,7 +44,7 @@ Implement secure task creation, reading, updating, archiving, and assignment.
 - `corepack pnpm run supabase:reset` applied the append-only task CRUD
   validation migration successfully.
 - `docker exec --interactive supabase_db_projectpulse psql -U postgres -d
-  postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
+postgres -v ON_ERROR_STOP=1 < supabase/rls-tests.sql` passed direct
   PostgreSQL assertions for member task edits, assignment boundaries, labels,
   archive behavior, invalid status/priority/estimate input, viewer mutation
   denial, cross-organization isolation, archived-task active filtering, and
@@ -61,13 +61,13 @@ Implement secure task creation, reading, updating, archiving, and assignment.
 - The repository layer lives in
   `apps/web/src/features/tasks/task-repository.ts`. Its scoped operations are
   `list(scope, includeArchived)`, `options(scope)`, `save(scope, draft,
-  previous?)`, and `setArchived(scope, task, archived)`. Every query carries
+previous?)`, and `setArchived(scope, task, archived)`. Every query carries
   both organization and project IDs; updates use `updated_at` as a lightweight
   conflict guard and then reload from the server rather than applying an
   optimistic mutation.
 - `useTasks` owns loading/error/saving state, reloads after successful writes,
   and prevents overlapping mutations. Active queries filter `archived_at is
-  null`; the archive toggle explicitly includes archived rows.
+null`; the archive toggle explicitly includes archived rows.
 - The route is `/app/tasks`. Task forms support title, description, configured
   status, priority, assignee, comma-separated labels, estimate, and due date.
   Task keys use the T020 `formatTaskKey` contract and are displayed on every

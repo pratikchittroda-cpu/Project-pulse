@@ -1,6 +1,6 @@
-# ProjectPulse Web App Creation Plan
+# ReleaseArc Web App Creation Plan
 
-This folder is the implementation backlog for ProjectPulse, a real-time engineering operations platform that connects agile planning, developer activity, GitHub events, CI/CD signals, analytics, and delivery health.
+This folder is the implementation backlog for ReleaseArc, an engineering delivery intelligence platform that connects agile planning, developer activity, GitHub events, CI/CD signals, analytics, and delivery health.
 
 The backlog is deliberately split into small, dependency-aware task files so separate sessions can work safely in parallel.
 

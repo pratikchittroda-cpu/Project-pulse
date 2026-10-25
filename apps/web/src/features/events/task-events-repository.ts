@@ -7,7 +7,7 @@ import {
   type EventEnvelope,
   type EventSource,
   type JsonValue,
-} from "@projectpulse/domain";
+} from "@releasearc/domain";
 
 import { supabase } from "../../app/auth-client.js";
 

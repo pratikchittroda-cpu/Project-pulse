@@ -14,7 +14,7 @@ Planned
 
 ## Goal
 
-Connect an IDE workspace to an authenticated ProjectPulse project.
+Connect an IDE workspace to an authenticated ReleaseArc project.
 
 ## Owned paths
 

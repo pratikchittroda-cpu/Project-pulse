@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc">
+  <title id="title">ReleaseArc mark</title>
+  <desc id="desc">An engineering delivery arc connecting work to release.</desc>
+  <defs>
+    <linearGradient id="releasearc-favicon-gradient" x1="6" x2="42" y1="5" y2="43" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9fb4ff"/>
+      <stop offset=".55" stop-color="#5c5fe8"/>
+      <stop offset="1" stop-color="#62d2b5"/>
+    </linearGradient>
+  </defs>
+  <rect width="44" height="44" x="2" y="2" rx="14" fill="url(#releasearc-favicon-gradient)"/>
+  <path d="M10.5 29c4.2 0 4-11 8-11 4.1 0 3.7 14.8 7.8 14.8 4.2 0 3.7-12.4 7.8-12.4 3.9 0 3.7 4.8 7.4 4.8" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"/>
+  <circle cx="10.5" cy="29" r="2.1" fill="#fff"/>
+  <circle cx="41.5" cy="25.2" r="2.1" fill="#a7f3d0"/>
+  <path d="M15.5 12.2A15.6 15.6 0 0 1 36.7 12" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="1.4" opacity=".5"/>
+</svg>

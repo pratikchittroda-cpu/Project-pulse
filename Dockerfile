@@ -25,7 +25,7 @@ COPY . .
 # These are public browser values embedded by Vite, not server credentials.
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
-RUN pnpm --filter @projectpulse/web build
+RUN pnpm --filter @releasearc/web build
 
 FROM nginx:1.27.4-alpine AS runtime
 

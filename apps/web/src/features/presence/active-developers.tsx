@@ -5,7 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
 import type {
   ActiveDeveloperPresence,

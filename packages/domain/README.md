@@ -1,4 +1,4 @@
-# `@projectpulse/domain`
+# `@releasearc/domain`
 
 The domain package is the dependency-free contract layer shared by the web
 application, Edge Functions, IDE extension, integrations, and analytics.

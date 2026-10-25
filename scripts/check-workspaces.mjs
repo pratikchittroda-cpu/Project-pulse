@@ -3,17 +3,17 @@ import { resolve } from "node:path";
 
 const workspaceRoot = resolve(process.cwd());
 const expectedWorkspaces = [
-  { directory: "apps/web", name: "@projectpulse/web" },
+  { directory: "apps/web", name: "@releasearc/web" },
   {
     directory: "apps/vscode-extension",
-    name: "projectpulse-vscode-extension",
+    name: "releasearc-vscode-extension",
   },
-  { directory: "packages/domain", name: "@projectpulse/domain" },
+  { directory: "packages/domain", name: "@releasearc/domain" },
   {
     directory: "packages/integrations",
-    name: "@projectpulse/integrations",
+    name: "@releasearc/integrations",
   },
-  { directory: "packages/ui", name: "@projectpulse/ui" },
+  { directory: "packages/ui", name: "@releasearc/ui" },
 ];
 
 const missingDirectories = [];
@@ -91,6 +91,6 @@ if (
   process.exitCode = 1;
 } else {
   console.log(
-    `Validated ${expectedWorkspaces.length} ProjectPulse workspaces and shared scripts.`,
+    `Validated ${expectedWorkspaces.length} ReleaseArc workspaces and shared scripts.`,
   );
 }

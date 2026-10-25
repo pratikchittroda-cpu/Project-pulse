@@ -10,7 +10,7 @@ import {
   CardTitle,
   PageLayout,
   PriorityBadge,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 
 import { TaskForm } from "./task-form.js";
 import {

@@ -1,5 +1,5 @@
 {
-  "name": "@projectpulse/web",
+  "name": "@releasearc/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,13 +10,14 @@
     "dev": "vite",
     "build": "tsc -b tsconfig.json && vite build",
     "preview": "vite preview",
-    "test": "node ../../scripts/check-workspace-package.mjs @projectpulse/web",
-    "lint": "node ../../scripts/check-workspace-package.mjs @projectpulse/web lint",
+    "test": "node ../../scripts/check-workspace-package.mjs @releasearc/web",
+    "lint": "node ../../scripts/check-workspace-package.mjs @releasearc/web lint",
     "typecheck": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@projectpulse/domain": "workspace:*",
-    "@projectpulse/ui": "workspace:*",
+    "@releasearc/integrations": "workspace:*",
+    "@releasearc/domain": "workspace:*",
+    "@releasearc/ui": "workspace:*",
     "@supabase/supabase-js": "2.118.0",
     "lucide-react": "0.468.0",
     "react": "19.1.0",

@@ -23,7 +23,10 @@ export interface LocalRealtimeTestAccount {
   password: string;
 }
 
-const DEMO_AUTH_STORAGE_KEY = "projectpulse.demo-auth";
+const DEMO_AUTH_STORAGE_KEY = "releasearc.demo-auth";
+// Read the old local-demo flag once so development browsers are not reset by
+// the public rebrand.
+const LEGACY_DEMO_AUTH_STORAGE_KEY = "projectpulse.demo-auth";
 
 export const demoModeEnabled = import.meta.env.DEV;
 
@@ -112,7 +115,10 @@ function hasStoredDemoMode() {
   }
 
   try {
-    return window.localStorage.getItem(DEMO_AUTH_STORAGE_KEY) === "true";
+    return (
+      window.localStorage.getItem(DEMO_AUTH_STORAGE_KEY) === "true" ||
+      window.localStorage.getItem(LEGACY_DEMO_AUTH_STORAGE_KEY) === "true"
+    );
   } catch {
     return false;
   }
@@ -126,8 +132,10 @@ function storeDemoMode(enabled: boolean) {
   try {
     if (enabled) {
       window.localStorage.setItem(DEMO_AUTH_STORAGE_KEY, "true");
+      window.localStorage.removeItem(LEGACY_DEMO_AUTH_STORAGE_KEY);
     } else {
       window.localStorage.removeItem(DEMO_AUTH_STORAGE_KEY);
+      window.localStorage.removeItem(LEGACY_DEMO_AUTH_STORAGE_KEY);
     }
   } catch {
     // Demo mode is a convenience for local development. Ignore storage errors.

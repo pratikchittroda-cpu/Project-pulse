@@ -16,7 +16,7 @@ import {
   Input,
   PageLayout,
   PriorityBadge,
-} from "@projectpulse/ui";
+} from "@releasearc/ui";
 import { TaskTimeline } from "../events/task-timeline.js";
 import type { TaskEventRepository } from "../events/task-events-repository.js";
 import { TaskCollaborationPanel } from "./task-collaboration-panel.js";

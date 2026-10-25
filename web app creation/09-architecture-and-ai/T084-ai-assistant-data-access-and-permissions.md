@@ -18,7 +18,7 @@ Create permission-aware context retrieval before adding AI features.
 
 ## Implementation steps
 
-1. Define allowed ProjectPulse data sources.
+1. Define allowed ReleaseArc data sources.
 2. Apply organization and project permissions before retrieval.
 3. Create context builders for tasks, PRs, events, metrics, and health.
 4. Define provider configuration and opt-out behavior.

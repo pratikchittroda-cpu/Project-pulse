@@ -45,7 +45,7 @@ interface ProjectProviderProps {
 export const DEMO_PROJECT: ProjectSummary = {
   id: "projectpulse-demo",
   key: "PULSE",
-  name: "ProjectPulse",
+  name: "ReleaseArc",
 };
 
 export const EMPTY_PROJECT: ProjectSummary = {

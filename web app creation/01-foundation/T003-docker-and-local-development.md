@@ -49,12 +49,12 @@ Completed verification:
 - `corepack pnpm install --frozen-lockfile --offline --ignore-scripts` passed
   from the committed lockfile.
 - `make test` passed all project quality gates and fourteen Vitest tests.
-- `docker build --tag projectpulse:local .` completed successfully after
+- `docker build --tag releasearc:local .` completed successfully after
   starting Docker Desktop. The first container smoke run exposed nginx's
   default root-only cache paths; the runtime config now uses writable `/tmp`
   paths for the non-root process.
-- `docker run --rm --detach --name projectpulse-t003 --publish 18080:8080
-  projectpulse:local` started successfully; `curl /healthz` returned `ok`, the
+- `docker run --rm --detach --name releasearc-t003 --publish 18080:8080
+releasearc:local` started successfully; `curl /healthz` returned `ok`, the
   `/app` client-route fallback served `index.html`, and Docker reported the
   container healthcheck as `healthy`. The test container was stopped after
   verification.
@@ -62,13 +62,13 @@ Completed verification:
 ## Handoff
 
 - `Dockerfile` uses `node:22.14.0-bookworm-slim`, activates pnpm `10.12.1`
-  through Corepack, installs from `pnpm-lock.yaml`, builds `@projectpulse/web`,
+  through Corepack, installs from `pnpm-lock.yaml`, builds `@releasearc/web`,
   and copies the Vite output into `nginx:1.27.4-alpine`.
 - Runtime listens on port `8080` as the non-root `nginx` user. Nginx serves
   `/healthz` with `ok` and falls back to `index.html` for client-side routes.
-- Build command: `docker build --tag projectpulse:local .`; run command:
-  `docker run --rm --publish 8080:8080 projectpulse:local`. Compose equivalent:
-  `PROJECTPULSE_PORT=8080 docker compose up --build`.
+- Build command: `docker build --tag releasearc:local .`; run command:
+  `docker run --rm --publish 8080:8080 releasearc:local`. Compose equivalent:
+  `RELEASEARC_PORT=8080 docker compose up --build`.
 - `.env.example` documents `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
   `SUPABASE_SERVICE_ROLE_KEY`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, and
   `GITHUB_WEBHOOK_SECRET`; all values are non-secret placeholders.

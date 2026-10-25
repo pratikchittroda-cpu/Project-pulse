@@ -74,11 +74,11 @@ if (failures.length === 0) {
 }
 
 if (failures.length > 0) {
-  console.error("ProjectPulse bootstrap checks failed:");
+  console.error("ReleaseArc bootstrap checks failed:");
   for (const failure of failures) {
     console.error(`  - ${failure}`);
   }
   process.exitCode = 1;
 } else {
-  console.log("ProjectPulse bootstrap checks passed.");
+  console.log("ReleaseArc bootstrap checks passed.");
 }

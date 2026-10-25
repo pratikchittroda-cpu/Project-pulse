@@ -14,7 +14,7 @@ Planned
 
 ## Goal
 
-Prove the complete ProjectPulse task-to-merge-to-analytics lifecycle.
+Prove the complete ReleaseArc task-to-merge-to-analytics lifecycle.
 
 ## Scenario
 

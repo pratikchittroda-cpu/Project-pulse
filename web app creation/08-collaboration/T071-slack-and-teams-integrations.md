@@ -14,7 +14,7 @@ External team notifications.
 
 ## Goal
 
-Send selected ProjectPulse events to approved Slack or Microsoft Teams destinations.
+Send selected ReleaseArc events to approved Slack or Microsoft Teams destinations.
 
 ## Implementation steps
 
@@ -28,7 +28,7 @@ Send selected ProjectPulse events to approved Slack or Microsoft Teams destinati
 ## Acceptance criteria
 
 - [ ] Administrators control destination mapping.
-- [ ] Messages link back to authorized ProjectPulse pages.
+- [ ] Messages link back to authorized ReleaseArc pages.
 - [ ] Secrets are never exposed in UI or logs.
 - [ ] Duplicate source events are deduplicated.
 - [ ] Provider failure is visible to administrators.
