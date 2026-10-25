@@ -9,6 +9,7 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
   "references": [
     { "path": "../../packages/domain" },
+    { "path": "../../packages/integrations" },
     { "path": "../../packages/ui" }
   ]
 }
