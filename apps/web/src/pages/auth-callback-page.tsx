@@ -11,6 +11,11 @@ export function AuthCallbackPage() {
 
   useEffect(() => {
     const code = searchParams.get("code");
+    const requestedNextPath = searchParams.get("next");
+    const nextPath =
+      requestedNextPath?.startsWith("/") && !requestedNextPath.startsWith("//")
+        ? requestedNextPath
+        : "/app";
 
     if (!code) {
       navigate("/app", { replace: true });
@@ -30,7 +35,7 @@ export function AuthCallbackPage() {
           return;
         }
 
-        navigate("/app", { replace: true });
+        navigate(nextPath, { replace: true });
       });
 
     return () => {

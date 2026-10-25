@@ -1164,6 +1164,49 @@ input:focus-visible {
   font-size: 0.8rem;
 }
 
+.github-auto-connect {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+}
+
+.github-auto-connect-copy {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.github-auto-connect-copy strong {
+  color: var(--ink);
+}
+
+.github-auto-connect-copy span {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.github-manual-fallback {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+
+.github-manual-fallback summary {
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.github-manual-fallback[open] {
+  display: grid;
+  gap: 0.85rem;
+}
+
 .github-webhook-row {
   align-items: end;
   display: grid;
@@ -1414,6 +1457,11 @@ input:focus-visible {
   .github-webhook-row,
   .github-delivery-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .github-auto-connect {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

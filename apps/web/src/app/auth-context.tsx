@@ -66,6 +66,7 @@ interface AuthContextValue {
   isConfigured: boolean;
   isDemoMode: boolean;
   localTestAccounts: readonly LocalRealtimeTestAccount[];
+  linkGithubIdentity: () => Promise<{ error: string | null }>;
   requestMagicLink: (email: string) => Promise<{ error: string | null }>;
   session: Session | null;
   signInWithGithub: () => Promise<{ error: string | null }>;
@@ -90,12 +91,13 @@ function authErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Authentication failed";
 }
 
-function callbackUrl() {
-  if (typeof window === "undefined") {
-    return "http://127.0.0.1:5173/auth/callback";
-  }
+function callbackUrl(nextPath?: string) {
+  const base =
+    typeof window === "undefined"
+      ? "http://127.0.0.1:5173/auth/callback"
+      : `${window.location.origin}/auth/callback`;
 
-  return `${window.location.origin}/auth/callback`;
+  return nextPath ? `${base}?next=${encodeURIComponent(nextPath)}` : base;
 }
 
 function nextStatus(
@@ -262,6 +264,33 @@ export function AuthProvider({
     return { error: null };
   }, [client]);
 
+  const linkGithubIdentity = useCallback(async () => {
+    setError(null);
+
+    if (!supabaseAuthConfig.isConfigured) {
+      const message =
+        "Supabase Auth is not configured. Set the project variables first.";
+      setError(message);
+      return { error: message };
+    }
+
+    const { error: authError } = await client.auth.linkIdentity({
+      options: {
+        redirectTo: callbackUrl("/app/projects"),
+        scopes: "repo",
+      },
+      provider: "github",
+    });
+
+    if (authError) {
+      const message = authErrorMessage(authError);
+      setError(message);
+      return { error: message };
+    }
+
+    return { error: null };
+  }, [client]);
+
   const signInWithPassword = useCallback(
     async (email: string, password: string) => {
       setError(null);
@@ -324,6 +353,7 @@ export function AuthProvider({
       isConfigured: supabaseAuthConfig.isConfigured,
       isDemoMode,
       localTestAccounts: localRealtimeTestAccounts,
+      linkGithubIdentity,
       requestMagicLink,
       session,
       signInWithGithub,
@@ -336,6 +366,7 @@ export function AuthProvider({
       enterDemoMode,
       error,
       isDemoMode,
+      linkGithubIdentity,
       localRealtimeTestAccounts,
       requestMagicLink,
       session,

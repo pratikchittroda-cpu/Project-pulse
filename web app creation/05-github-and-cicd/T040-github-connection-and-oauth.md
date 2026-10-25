@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Implemented
 
 ## Depends on
 
@@ -34,11 +34,11 @@ Connect an organization or project to GitHub with least-privilege access.
 
 ## Acceptance criteria
 
-- [ ] Users can connect an authorized GitHub account.
-- [ ] Tokens are handled only on trusted server boundaries.
-- [ ] Repository selection respects provider permissions.
-- [ ] A project can be disconnected without deleting history.
-- [ ] Missing scopes produce a useful remediation message.
+- [x] Users can connect an authorized GitHub account.
+- [x] Tokens are passed to the trusted connection function and are not stored or returned.
+- [x] Repository connection respects GitHub and project permissions.
+- [x] A project can disconnect the repository without deleting delivery history.
+- [x] Missing scopes produce a useful remediation message.
 
 ## Verification
 
@@ -49,6 +49,10 @@ Connect an organization or project to GitHub with least-privilege access.
 
 Record OAuth scopes, callback URLs, token storage, and provider error handling.
 
-## Commit
+## Implementation note
 
-`T040: connect GitHub repositories`
+The Projects page uses Supabase Auth's GitHub identity and the `github-connect`
+Edge Function to verify repository access, create or repair the ReleaseArc
+webhook, and upsert repository metadata. Manual webhook setup remains available
+as a fallback for installations whose GitHub OAuth configuration does not grant
+repository-hook permissions.

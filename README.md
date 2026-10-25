@@ -12,6 +12,7 @@ before starting a task.
 ```text
 apps/
   web/                  Web application workspace (@releasearc/web)
+  video/                Remotion launch-video workspace (@releasearc/video)
   vscode-extension/     VS Code/Cursor extension workspace (releasearc-vscode-extension)
 packages/
   domain/               Shared domain types and contracts (@releasearc/domain)
@@ -325,6 +326,9 @@ corepack pnpm exec supabase db push --linked --yes
 corepack pnpm exec supabase functions deploy github-webhook \
   --project-ref lpjloicqfekgtwqzzdow \
   --use-api --no-verify-jwt --yes
+corepack pnpm exec supabase functions deploy github-connect \
+  --project-ref lpjloicqfekgtwqzzdow \
+  --use-api --yes
 ```
 
 For a new project setup, configure the webhook secret without writing it to the
@@ -338,8 +342,13 @@ corepack pnpm exec supabase secrets set \
   GITHUB_WEBHOOK_SECRET="$GITHUB_WEBHOOK_SECRET"
 ```
 
-Then register a GitHub webhook for the repository shown in **Projects → GitHub
-delivery signals**:
+In **Projects → GitHub delivery signals**, choose **Connect automatically**.
+ReleaseArc uses the connected GitHub identity to verify the repository, create or
+repair the webhook, register the repository, and configure the delivery events
+without exposing the webhook secret to the browser. If the account was signed in
+with a magic link, ReleaseArc first offers to connect the GitHub identity.
+
+If the automatic connection is unavailable, the manual fallback is:
 
 1. Use the displayed `/functions/v1/github-webhook` endpoint.
 2. Set content type to `application/json`.

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import type { Session } from "@supabase/supabase-js";
 
 import {
   Badge,
@@ -67,6 +68,11 @@ const emptyRepository = {
 
 const projectKeyPattern = /^[A-Z][A-Z0-9]{1,9}$/;
 
+function githubProviderToken(session: Session | null) {
+  return (session as (Session & { provider_token?: string }) | null)
+    ?.provider_token;
+}
+
 function errorMessage(
   error: { code?: string; message: string } | null,
   fallback: string,
@@ -86,8 +92,31 @@ function errorMessage(
   return error.message || fallback;
 }
 
+async function edgeFunctionErrorMessage(
+  error: { context?: unknown; message?: string },
+  fallback: string,
+) {
+  const context = error.context;
+  if (context instanceof Response) {
+    try {
+      const body = (await context.clone().json()) as unknown;
+      if (
+        typeof body === "object" &&
+        body !== null &&
+        "error" in body &&
+        typeof body.error === "string"
+      ) {
+        return body.error;
+      }
+    } catch {
+      // Fall back to the SDK error message when the response is not JSON.
+    }
+  }
+  return error.message || fallback;
+}
+
 export function ProjectsPage() {
-  const { status } = useAuth();
+  const { linkGithubIdentity, session, status } = useAuth();
   const { selectedOrganization, selectedOrganizationId } = useOrganization();
   const {
     error: projectContextError,
@@ -112,6 +141,9 @@ export function ProjectsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [githubConnectionState, setGithubConnectionState] = useState<
+    "idle" | "connecting" | "connected"
+  >("idle");
   const detailsSequence = useRef(0);
 
   const canAdministerOrganization =
@@ -270,6 +302,10 @@ export function ProjectsPage() {
   }, [hasRealProject, project]);
 
   useEffect(() => {
+    setGithubConnectionState("idle");
+  }, [project.id]);
+
+  useEffect(() => {
     void loadProjectDetails(project.id);
   }, [project.id, selectedOrganizationId]);
 
@@ -410,6 +446,70 @@ export function ProjectsPage() {
 
     setRepositoryForm(emptyRepository);
     setMessage("Repository record registered.");
+    await loadProjectDetails(project.id);
+  }
+
+  async function connectGithubRepository(repositoryUrl: string) {
+    if (!selectedOrganizationId || !hasRealProject) {
+      return;
+    }
+    if (!repositoryUrl.trim()) {
+      setError("Enter a GitHub repository URL first.");
+      return;
+    }
+
+    setIsBusy(true);
+    setGithubConnectionState("connecting");
+    setError(null);
+
+    const {
+      data: { session: currentSession },
+    } = await supabase.auth.getSession();
+    const providerToken = githubProviderToken(currentSession ?? session);
+    if (!providerToken) {
+      const result = await linkGithubIdentity();
+      setIsBusy(false);
+      setGithubConnectionState("idle");
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setMessage(
+          "Connect GitHub in the browser, then return to Projects to finish the automatic setup.",
+        );
+      }
+      return;
+    }
+
+    const { data, error: connectionError } = await supabase.functions.invoke(
+      "github-connect",
+      {
+        body: {
+          github_access_token: providerToken,
+          project_id: project.id,
+          repository_url: repositoryUrl.trim(),
+        },
+      },
+    );
+    setIsBusy(false);
+
+    if (connectionError) {
+      setGithubConnectionState("idle");
+      setError(
+        await edgeFunctionErrorMessage(
+          connectionError,
+          "GitHub could not be connected automatically. Use the manual setup below.",
+        ),
+      );
+      return;
+    }
+
+    setGithubConnectionState("connected");
+    setRepositoryForm(emptyRepository);
+    setMessage(
+      data?.webhook?.created
+        ? "GitHub connected and webhook created automatically."
+        : "GitHub connected and webhook configuration refreshed.",
+    );
     await loadProjectDetails(project.id);
   }
 
@@ -767,38 +867,70 @@ export function ProjectsPage() {
                       <div className="github-setup-copy">
                         <strong>{githubRepository.name}</strong>
                         <span>
-                          Add this endpoint as a GitHub webhook for the
-                          registered repository.
+                          ReleaseArc can register this repository and create or
+                          repair its GitHub webhook automatically.
                         </span>
                       </div>
-                      <div className="github-webhook-row">
-                        <Input
-                          label="Webhook endpoint"
-                          readOnly
-                          value={githubWebhookEndpoint}
-                        />
+                      <div className="github-auto-connect">
+                        <div className="github-auto-connect-copy">
+                          <strong>
+                            {githubConnectionState === "connected"
+                              ? "Webhook connected"
+                              : "Automatic setup"}
+                          </strong>
+                          <span>
+                            {githubConnectionState === "connected"
+                              ? "Future pull requests, reviews, checks, deployments, and releases will be delivered here."
+                              : "Use your connected GitHub account to finish this setup without copying secrets or opening repository settings."}
+                          </span>
+                        </div>
                         <Button
-                          onClick={() => void copyWebhookEndpoint()}
+                          disabled={isBusy}
+                          onClick={() =>
+                            void connectGithubRepository(githubRepository.url)
+                          }
                           size="sm"
                         >
-                          Copy endpoint
+                          {githubConnectionState === "connecting"
+                            ? "Connecting…"
+                            : githubConnectionState === "connected"
+                              ? "Refresh connection"
+                              : "Connect automatically"}
                         </Button>
                       </div>
-                      <ol className="github-setup-steps">
-                        <li>
-                          In GitHub, open{" "}
-                          <strong>Settings → Webhooks → Add webhook</strong>.
-                        </li>
-                        <li>
-                          Use <strong>application/json</strong> and configure
-                          the same secret as <code>GITHUB_WEBHOOK_SECRET</code>{" "}
-                          in the webhook function environment.
-                        </li>
-                        <li>
-                          Enable pull requests, reviews, pushes, check runs,
-                          deployment statuses, and releases.
-                        </li>
-                      </ol>
+                      <details className="github-manual-fallback">
+                        <summary>Show manual webhook setup</summary>
+                        <div className="github-webhook-row">
+                          <Input
+                            label="Webhook endpoint"
+                            readOnly
+                            value={githubWebhookEndpoint}
+                          />
+                          <Button
+                            onClick={() => void copyWebhookEndpoint()}
+                            size="sm"
+                            variant="secondary"
+                          >
+                            Copy endpoint
+                          </Button>
+                        </div>
+                        <ol className="github-setup-steps">
+                          <li>
+                            In GitHub, open{" "}
+                            <strong>Settings → Webhooks → Add webhook</strong>.
+                          </li>
+                          <li>
+                            Use <strong>application/json</strong> and configure
+                            the same secret as{" "}
+                            <code>GITHUB_WEBHOOK_SECRET</code> in the webhook
+                            function environment.
+                          </li>
+                          <li>
+                            Enable pull requests, reviews, pushes, check runs,
+                            deployment statuses, and releases.
+                          </li>
+                        </ol>
+                      </details>
                       <div
                         className="github-delivery-metrics"
                         aria-label="GitHub delivery health"
@@ -936,13 +1068,27 @@ export function ProjectsPage() {
                         value={repositoryForm.defaultBranch}
                       />
                     </div>
-                    <Button
-                      disabled={isBusy}
-                      onClick={() => void addRepository()}
-                      size="sm"
-                    >
-                      Register repository
-                    </Button>
+                    <div className="project-actions">
+                      <Button
+                        disabled={isBusy}
+                        onClick={() => void addRepository()}
+                        size="sm"
+                      >
+                        Register repository
+                      </Button>
+                      {repositoryForm.provider === "github" ? (
+                        <Button
+                          disabled={isBusy || !repositoryForm.url.trim()}
+                          onClick={() =>
+                            void connectGithubRepository(repositoryForm.url)
+                          }
+                          size="sm"
+                          variant="secondary"
+                        >
+                          Connect GitHub + webhook
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
