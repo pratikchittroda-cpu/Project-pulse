@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Bell } from "lucide-react";
 import {
   Badge,
   Button,
@@ -196,7 +197,8 @@ export function NotificationHeaderLink({
       className="header-quick-link notification-header-link"
       to="/app/notifications"
     >
-      <span aria-hidden="true">♢</span> {children ?? "Notifications"}
+      <Bell aria-hidden="true" size={16} strokeWidth={1.9} />
+      {children ?? "Notifications"}
       {unreadCount ? (
         <span
           className="notification-count"

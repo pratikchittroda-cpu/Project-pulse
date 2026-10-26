@@ -2497,12 +2497,6 @@ body {
   font-weight: 700;
 }
 
-.header-quick-link span {
-  color: var(--violet);
-  font-size: 1rem;
-  margin-right: 0.25rem;
-}
-
 .header-status {
   color: #737a87;
   font-size: 0.68rem;
