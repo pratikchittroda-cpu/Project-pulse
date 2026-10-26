@@ -443,6 +443,10 @@ are never exposed to the browser. The web app has no separate signup screen:
 users return to the same browser and are sent directly to the workspace while
 their persisted session remains valid.
 
+Authenticated member and activity views use privacy-scoped display profiles, so
+people are shown by name instead of internal user IDs. Names come from account
+Auth metadata and remain readable only to users who share an organization.
+
 When running the Vite development server, the sign-in screen also exposes
 `Continue in demo mode`. It opens the workspace with local preview data without
 creating a Supabase session, and the choice is remembered in that browser. The

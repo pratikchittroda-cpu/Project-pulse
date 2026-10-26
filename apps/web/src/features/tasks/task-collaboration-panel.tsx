@@ -17,6 +17,11 @@ import {
 
 import type { TaskScope } from "./task-repository.js";
 import {
+  displayNameFor,
+  loadUserDirectory,
+  type UserDirectory,
+} from "../../app/user-directory.js";
+import {
   ALLOWED_ATTACHMENT_TYPES,
   MAX_ATTACHMENT_BYTES,
   type MentionCandidate,
@@ -52,6 +57,9 @@ export function TaskCollaborationPanel({
   const [mentionCandidates, setMentionCandidates] = useState<
     MentionCandidate[]
   >([]);
+  const [userDirectory, setUserDirectory] = useState<UserDirectory>(
+    () => new Map(),
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -87,6 +95,11 @@ export function TaskCollaborationPanel({
         setAttachments(nextAttachments);
         setChecklist(nextChecklist);
         setMentionCandidates(candidates);
+        void loadUserDirectory([
+          ...nextComments.flatMap((comment) => [comment.authorId ?? ""]),
+          ...nextComments.flatMap((comment) => comment.mentionedUserIds),
+          ...candidates.map((candidate) => candidate.userId),
+        ]).then(setUserDirectory, () => setUserDirectory(new Map()));
       }
     } catch (cause) {
       if (mounted.current && request === generation.current)
@@ -288,6 +301,7 @@ export function TaskCollaborationPanel({
             onSubmitEdit={submitEdit}
             scopeUserId={scope.userId}
             toggleMention={toggleMention}
+            userDirectory={userDirectory}
           />
           <ChecklistCard
             canWrite={canWrite}
@@ -353,6 +367,7 @@ function CommentsCard({
   pending,
   scopeUserId,
   toggleMention,
+  userDirectory,
 }: {
   canWrite: boolean;
   commentBody: string;
@@ -378,6 +393,7 @@ function CommentsCard({
     selected: string[],
     setSelected: (value: string[]) => void,
   ) => void;
+  userDirectory: UserDirectory;
 }) {
   return (
     <Card aria-label="Task comments">
@@ -397,7 +413,11 @@ function CommentsCard({
                     <span>
                       {isAuthor
                         ? "You"
-                        : (comment.authorId ?? "Unknown member")}
+                        : displayNameFor(
+                            comment.authorId,
+                            userDirectory,
+                            "Unknown member",
+                          )}
                     </span>
                     <time dateTime={comment.updatedAt}>
                       {new Date(comment.updatedAt).toLocaleString()}
@@ -425,6 +445,7 @@ function CommentsCard({
                         selected={editingMentions}
                         setSelected={onChangeEditingMentions}
                         toggleMention={toggleMention}
+                        userDirectory={userDirectory}
                       />
                       <div className="project-actions">
                         <Button
@@ -457,7 +478,9 @@ function CommentsCard({
                           aria-label="Mentioned members"
                         >
                           {comment.mentionedUserIds.map((userId) => (
-                            <Badge key={userId}>@{userId}</Badge>
+                            <Badge key={userId}>
+                              @{displayNameFor(userId, userDirectory)}
+                            </Badge>
                           ))}
                         </div>
                       ) : null}
@@ -508,6 +531,7 @@ function CommentsCard({
               selected={commentMentions}
               setSelected={onChangeCommentMentions}
               toggleMention={toggleMention}
+              userDirectory={userDirectory}
             />
             <Button disabled={pending || !commentBody.trim()} type="submit">
               Add comment
@@ -524,6 +548,7 @@ function MentionPicker({
   selected,
   setSelected,
   toggleMention,
+  userDirectory,
 }: {
   candidates: MentionCandidate[];
   selected: string[];
@@ -533,6 +558,7 @@ function MentionPicker({
     selected: string[],
     setSelected: (value: string[]) => void,
   ) => void;
+  userDirectory: UserDirectory;
 }) {
   if (!candidates.length) return null;
   return (
@@ -542,12 +568,12 @@ function MentionPicker({
         {candidates.map(({ userId }) => (
           <label key={userId}>
             <input
-              aria-label={`Mention ${userId}`}
+              aria-label={`Mention ${displayNameFor(userId, userDirectory)}`}
               checked={selected.includes(userId)}
               onChange={() => toggleMention(userId, selected, setSelected)}
               type="checkbox"
             />
-            @{userId}
+            @{displayNameFor(userId, userDirectory)}
           </label>
         ))}
       </div>

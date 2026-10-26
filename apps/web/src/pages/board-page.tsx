@@ -5,6 +5,7 @@ import { PageLayout } from "@releasearc/ui";
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
 import { useProject } from "../app/project-context.js";
+import { currentUserDisplayName } from "../app/user-directory.js";
 import { KanbanBoard } from "../features/board/kanban-board.js";
 import { DeveloperPresencePanel } from "../features/presence/active-developers.js";
 import { createDeveloperPresence } from "../features/presence/developer-presence.js";
@@ -12,8 +13,10 @@ import "../features/board/kanban-board.css";
 import "../features/presence/presence.css";
 
 function BoardPresence({
+  displayName,
   scope,
 }: {
+  displayName: string;
   scope: {
     organizationId: string;
     projectId: string;
@@ -31,14 +34,16 @@ function BoardPresence({
   );
 
   useEffect(() => {
-    void presence.join({ activity: "testing" }).catch(() => undefined);
+    void presence
+      .join({ activity: "testing", displayName })
+      .catch(() => undefined);
 
     return () => {
       // Leave rather than permanently disposing so React StrictMode can
       // remount the effect during local development.
       void presence.leave();
     };
-  }, [presence]);
+  }, [displayName, presence]);
 
   return <DeveloperPresencePanel presence={presence} />;
 }
@@ -102,6 +107,7 @@ export function BoardPage() {
         scope={scope}
       />
       <BoardPresence
+        displayName={currentUserDisplayName(session.user)}
         scope={{
           organizationId: scope.organizationId,
           projectId: scope.projectId,

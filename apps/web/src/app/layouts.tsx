@@ -20,6 +20,7 @@ import { ReleaseArcMark } from "./brand.js";
 import { useAuth } from "./auth-context.js";
 import { useOrganization } from "./organization-context.js";
 import { useProject } from "./project-context.js";
+import { currentUserDisplayName } from "./user-directory.js";
 import { useNotifications } from "../features/notifications/use-notifications.js";
 import { NotificationHeaderLink } from "../pages/notifications-page.js";
 
@@ -129,7 +130,9 @@ export function AppLayout() {
   const hasSelectedProject = Boolean(project.id);
   const accountLabel = isDemoMode
     ? "Demo workspace"
-    : (session?.user.email ?? "Signed-in user");
+    : session
+      ? currentUserDisplayName(session.user)
+      : "Signed-in user";
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -262,7 +265,7 @@ export function AppLayout() {
             <span className="account-avatar" aria-hidden="true">
               {isDemoMode
                 ? "D"
-                : (session?.user.email?.slice(0, 1).toUpperCase() ?? "P")}
+                : (accountLabel.slice(0, 1).toUpperCase() ?? "P")}
             </span>
             <span>
               <strong>{accountLabel}</strong>

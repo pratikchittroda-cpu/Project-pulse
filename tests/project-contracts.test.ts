@@ -26,6 +26,10 @@ const webhookUpdatedAt = readFileSync(
   "supabase/migrations/20261027020000_webhook_events_updated_at.sql",
   "utf8",
 );
+const userProfiles = readFileSync(
+  "supabase/migrations/20261028000000_user_profiles.sql",
+  "utf8",
+);
 
 describe("project and repository contract", () => {
   it("keeps project identifiers and repository metadata database-enforced", () => {
@@ -88,5 +92,16 @@ describe("project and repository contract", () => {
       "add column if not exists updated_at timestamptz not null",
     );
     expect(webhookUpdatedAt).toContain("processed_at, received_at");
+  });
+
+  it("provides privacy-scoped names for authenticated users", () => {
+    expect(userProfiles).toContain("create table public.user_profiles");
+    expect(userProfiles).toContain("can_view_user_profile");
+    expect(userProfiles).toContain("organization_memberships");
+    expect(userProfiles).toContain("raw_user_meta_data");
+    expect(userProfiles).toContain("to authenticated");
+    expect(userProfiles).not.toContain(
+      "grant select on public.user_profiles to anon",
+    );
   });
 });

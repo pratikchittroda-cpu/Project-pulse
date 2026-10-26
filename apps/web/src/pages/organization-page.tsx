@@ -15,6 +15,11 @@ import {
 import { supabase } from "../app/auth-client.js";
 import { useAuth } from "../app/auth-context.js";
 import {
+  displayNameFor,
+  loadUserDirectory,
+  type UserDirectory,
+} from "../app/user-directory.js";
+import {
   useOrganization,
   type OrganizationRole,
 } from "../app/organization-context.js";
@@ -124,6 +129,9 @@ export function OrganizationPage() {
   const [teams, setTeams] = useState<TeamSummary[]>([]);
   const [members, setMembers] = useState<MemberSummary[]>([]);
   const [teamMembers, setTeamMembers] = useState<Record<string, string[]>>({});
+  const [userDirectory, setUserDirectory] = useState<UserDirectory>(
+    () => new Map(),
+  );
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [tasks, setTasks] = useState<TaskSummary[]>([]);
   const [organizationForm, setOrganizationForm] = useState(emptyOrganization);
@@ -186,6 +194,18 @@ export function OrganizationPage() {
         {},
       ),
     );
+    try {
+      setUserDirectory(
+        await loadUserDirectory([
+          ...(overview.members ?? []).map((member) => member.user_id),
+          ...(overview.team_memberships ?? []).map(
+            (membership) => membership.user_id,
+          ),
+        ]),
+      );
+    } catch {
+      setUserDirectory(new Map());
+    }
     setProjects(
       (overview.projects ?? []).map((project) => ({
         id: project.id,
@@ -212,6 +232,7 @@ export function OrganizationPage() {
       setTeams([]);
       setMembers([]);
       setTeamMembers({});
+      setUserDirectory(new Map());
       setProjects([]);
       setTasks([]);
     }
@@ -687,7 +708,7 @@ export function OrganizationPage() {
                       <option value="">Choose a member</option>
                       {members.map((member) => (
                         <option key={member.userId} value={member.userId}>
-                          {member.userId}
+                          {displayNameFor(member.userId, userDirectory)}
                         </option>
                       ))}
                     </select>
@@ -713,10 +734,10 @@ export function OrganizationPage() {
                       {(teamMembers[team.id] ?? []).length > 0 ? (
                         (teamMembers[team.id] ?? []).map((userId) => (
                           <span className="team-member-chip" key={userId}>
-                            {userId}
+                            {displayNameFor(userId, userDirectory)}
                             {canAdminister ? (
                               <button
-                                aria-label={`Remove ${userId} from ${team.name}`}
+                                aria-label={`Remove ${displayNameFor(userId, userDirectory)} from ${team.name}`}
                                 className="chip-remove"
                                 onClick={() =>
                                   void removeTeamMember(team.id, userId)
@@ -748,7 +769,7 @@ export function OrganizationPage() {
               <ul className="organization-list">
                 {members.map((member) => (
                   <li key={member.id}>
-                    <span>{member.userId}</span>
+                    <span>{displayNameFor(member.userId, userDirectory)}</span>
                     {canAdminister ? (
                       <span className="member-actions">
                         {member.role === "owner" ? (

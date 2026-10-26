@@ -55,6 +55,7 @@ export interface RedactedPresenceFile {
 export interface DeveloperPresenceInput {
   activity: DeveloperPresenceActivity;
   branch?: string | null;
+  displayName?: string | null;
   file?: PresenceFileInput | RedactedPresenceFile | null;
   taskId?: string | null;
 }
@@ -69,6 +70,7 @@ export type DeveloperPresenceUpdate = Partial<DeveloperPresenceInput>;
 export interface DeveloperPresenceState {
   activity: LiveDeveloperPresenceActivity;
   branch: string | null;
+  displayName?: string;
   file?: RedactedPresenceFile;
   organizationId: string;
   projectId: string;
@@ -260,11 +262,13 @@ function stateFromInput(
   }
 
   const branch = cleanText(input.branch);
+  const displayName = cleanText(input.displayName) ?? "ReleaseArc member";
   const taskId = cleanIdentifier(input.taskId);
   const file = redactPresenceFile(input.file);
   return {
     activity: input.activity as LiveDeveloperPresenceActivity,
     branch,
+    displayName,
     ...(file ? { file } : {}),
     organizationId: scope.organizationId,
     projectId: scope.projectId,
@@ -300,6 +304,7 @@ function stateFromWire(
   return {
     activity: value.activity,
     branch: cleanText(value.branch),
+    displayName: cleanText(value.displayName) ?? "ReleaseArc member",
     ...(file ? { file } : {}),
     organizationId: scope.organizationId,
     projectId: scope.projectId,
@@ -712,6 +717,10 @@ export function createDeveloperPresence(
     const nextState = stateFromInput(scope, {
       activity: input.activity ?? currentState.activity,
       branch: input.branch === undefined ? currentState.branch : input.branch,
+      displayName:
+        input.displayName === undefined
+          ? currentState.displayName
+          : input.displayName,
       file: "file" in input ? input.file : currentState.file,
       taskId: input.taskId === undefined ? currentState.taskId : input.taskId,
     });

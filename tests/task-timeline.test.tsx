@@ -85,7 +85,7 @@ describe("task timeline", () => {
       records[1].occurredAt,
     );
     expect(within(entries[2]).getByText("Provider")).toBeTruthy();
-    expect(within(entries[2]).getByText("reviewer-2")).toBeTruthy();
+    expect(within(entries[2]).getByText("ReleaseArc member")).toBeTruthy();
     expect(within(entries[2]).getByText("pending → success")).toBeTruthy();
   });
 

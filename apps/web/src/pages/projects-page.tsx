@@ -18,6 +18,11 @@ import { supabase, supabaseAuthConfig } from "../app/auth-client.js";
 import { useAuth } from "../app/auth-context.js";
 import { useOrganization } from "../app/organization-context.js";
 import { useProject } from "../app/project-context.js";
+import {
+  displayNameFor,
+  loadUserDirectory,
+  type UserDirectory,
+} from "../app/user-directory.js";
 
 interface TeamSummary {
   id: string;
@@ -142,6 +147,9 @@ export function ProjectsPage() {
   const [organizationMembers, setOrganizationMembers] = useState<
     OrganizationMemberSummary[]
   >([]);
+  const [userDirectory, setUserDirectory] = useState<UserDirectory>(
+    () => new Map(),
+  );
   const [newProjectForm, setNewProjectForm] = useState(emptyProject);
   const [projectForm, setProjectForm] = useState(emptyProject);
   const [repositoryForm, setRepositoryForm] = useState(emptyRepository);
@@ -176,6 +184,7 @@ export function ProjectsPage() {
       setGithubDiagnostics(null);
       setMembers([]);
       setOrganizationMembers([]);
+      setUserDirectory(new Map());
       return;
     }
 
@@ -205,6 +214,7 @@ export function ProjectsPage() {
       setGithubDiagnostics(null);
       setMembers([]);
       setOrganizationMembers([]);
+      setUserDirectory(new Map());
       return;
     }
 
@@ -324,6 +334,18 @@ export function ProjectsPage() {
         userId: member.user_id as string,
       })),
     );
+    try {
+      setUserDirectory(
+        await loadUserDirectory([
+          ...(memberData ?? []).map((member) => member.user_id as string),
+          ...(organizationMemberData ?? []).map(
+            (member) => member.user_id as string,
+          ),
+        ]),
+      );
+    } catch {
+      setUserDirectory(new Map());
+    }
   }
 
   useEffect(() => {
@@ -1164,7 +1186,9 @@ export function ProjectsPage() {
                   <ul className="project-member-list">
                     {members.map((member) => (
                       <li key={member.id}>
-                        <span>{member.userId}</span>
+                        <span>
+                          {displayNameFor(member.userId, userDirectory)}
+                        </span>
                         {canAdministerOrganization ? (
                           <span className="member-actions">
                             <select
@@ -1234,8 +1258,11 @@ export function ProjectsPage() {
                                 key={organizationMember.userId}
                                 value={organizationMember.userId}
                               >
-                                {organizationMember.userId} ·{" "}
-                                {organizationMember.role}
+                                {displayNameFor(
+                                  organizationMember.userId,
+                                  userDirectory,
+                                )}{" "}
+                                · {organizationMember.role}
                               </option>
                             ))}
                         </select>

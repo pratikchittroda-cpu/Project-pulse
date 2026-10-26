@@ -1,6 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { DEFAULT_TASK_PRIORITIES, type TaskPriority } from "@releasearc/domain";
 import { Button, Input } from "@releasearc/ui";
+import {
+  displayNameFor,
+  loadUserDirectory,
+  type UserDirectory,
+} from "../../app/user-directory.js";
 
 import {
   TaskValidationError,
@@ -30,6 +35,16 @@ export function TaskForm({
   const [draft, setDraft] = useState(initialDraft);
   const [fields, setFields] = useState<TaskFieldErrors>({});
   const [error, setError] = useState<string | null>(null);
+  const [userDirectory, setUserDirectory] = useState<UserDirectory>(
+    () => new Map(),
+  );
+
+  useEffect(() => {
+    void loadUserDirectory(options.assignees.map(({ id }) => id)).then(
+      setUserDirectory,
+      () => setUserDirectory(new Map()),
+    );
+  }, [options.assignees]);
 
   function change<K extends keyof TaskDraft>(field: K, value: TaskDraft[K]) {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -132,13 +147,11 @@ export function TaskForm({
             <option value="">Unassigned</option>
             {draft.assigneeId &&
             !options.assignees.some(({ id }) => id === draft.assigneeId) ? (
-              <option value={draft.assigneeId}>
-                Unavailable member · {draft.assigneeId}
-              </option>
+              <option value={draft.assigneeId}>Unavailable member</option>
             ) : null}
             {options.assignees.map(({ id }) => (
               <option key={id} value={id}>
-                {id}
+                {displayNameFor(id, userDirectory)}
               </option>
             ))}
           </select>

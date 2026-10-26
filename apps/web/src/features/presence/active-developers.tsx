@@ -122,7 +122,9 @@ export function ActiveDevelopers({
               <li className="presence-developer" key={developer.userId}>
                 <span aria-hidden="true" className="status-dot" />
                 <div className="presence-developer-copy">
-                  <strong>{developer.userId}</strong>
+                  <strong>
+                    {developer.displayName ?? "ReleaseArc member"}
+                  </strong>
                   <span>
                     {activityLabel(developer.activity)}
                     {developer.taskId ? ` · task ${developer.taskId}` : ""}

@@ -7,6 +7,12 @@ import {
   CardTitle,
 } from "@releasearc/ui";
 import type { JsonValue } from "@releasearc/domain";
+import { useEffect, useState } from "react";
+import {
+  displayNameFor,
+  loadUserDirectory,
+  type UserDirectory,
+} from "../../app/user-directory.js";
 import { useTaskEvents } from "./use-task-events.js";
 import type {
   TaskEventRecord,
@@ -60,9 +66,11 @@ function display(value: JsonValue | undefined): string {
 export function TimelineEntry({
   event,
   currentUserId,
+  userDirectory = new Map(),
 }: {
   event: TaskEventRecord;
   currentUserId: string;
+  userDirectory?: UserDirectory;
 }) {
   const payload = record(event.payload) ? event.payload : {};
   const changes = record(payload.changes) ? payload.changes : {};
@@ -83,7 +91,9 @@ export function TimelineEntry({
   const actor =
     event.actorId === currentUserId
       ? "You"
-      : (event.actorId ?? "System / service");
+      : event.actorId
+        ? displayNameFor(event.actorId, userDirectory)
+        : "System / service";
   return (
     <li className="task-timeline-entry">
       <div className="task-timeline-heading">
@@ -145,6 +155,16 @@ export function TaskTimeline({
   repository?: TaskEventRepository;
 }) {
   const { events, error, isLoading, reload } = useTaskEvents(scope, repository);
+  const [userDirectory, setUserDirectory] = useState<UserDirectory>(
+    () => new Map(),
+  );
+
+  useEffect(() => {
+    void loadUserDirectory(events.map((event) => event.actorId ?? "")).then(
+      setUserDirectory,
+      () => setUserDirectory(new Map()),
+    );
+  }, [events]);
   return (
     <Card className="task-timeline" aria-label="Activity timeline">
       <CardHeader>
@@ -174,6 +194,7 @@ export function TaskTimeline({
                 key={event.eventId}
                 event={event}
                 currentUserId={currentUserId}
+                userDirectory={userDirectory}
               />
             ))}
           </ol>

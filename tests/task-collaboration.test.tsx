@@ -134,8 +134,12 @@ describe("task collaboration panel", () => {
     const comments = await screen.findByRole("region", {
       name: "Task comments",
     });
-    expect(within(comments).getByLabelText("Mention member-2")).toBeTruthy();
-    fireEvent.click(within(comments).getByLabelText("Mention member-2"));
+    expect(
+      within(comments).getAllByLabelText("Mention ReleaseArc member")[1],
+    ).toBeTruthy();
+    fireEvent.click(
+      within(comments).getAllByLabelText("Mention ReleaseArc member")[1]!,
+    );
     fireEvent.change(within(comments).getByLabelText("Comment"), {
       target: { value: "A useful update" },
     });

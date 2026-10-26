@@ -78,6 +78,8 @@ remains the recovery path after reconnects.
 
 ## Delivery and audit model
 
+- `user_profiles` stores display names derived from Supabase Auth metadata;
+  profile reads are limited to users who share an organization.
 - `repositories` stores provider-neutral repository metadata.
 - `delivery_objects` stores normalized GitHub delivery history; disconnecting a
   repository nulls its repository reference without deleting delivery records or

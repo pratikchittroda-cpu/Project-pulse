@@ -30,7 +30,7 @@ describe("active developer presence UI", () => {
     expect(
       screen.getByRole("region", { name: "Active developers" }),
     ).toBeTruthy();
-    expect(screen.getByText("user-1")).toBeTruthy();
+    expect(screen.getByText("ReleaseArc member")).toBeTruthy();
     expect(screen.getByText("editing · task task-1")).toBeTruthy();
     expect(screen.getByText("Branch: feature/presence")).toBeTruthy();
     expect(screen.getByText("File: presence.ts")).toBeTruthy();
