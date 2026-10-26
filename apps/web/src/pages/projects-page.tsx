@@ -514,22 +514,29 @@ export function ProjectsPage() {
   }
 
   async function removeRepository(repositoryId: string) {
-    if (!selectedOrganizationId || !hasRealProject) {
+    if (
+      !selectedOrganizationId ||
+      !hasRealProject ||
+      !canAdministerOrganization
+    ) {
       return;
     }
 
+    setIsBusy(true);
+    setError(null);
     const { error: removeError } = await supabase
       .from("repositories")
       .delete()
       .eq("id", repositoryId)
       .eq("organization_id", selectedOrganizationId)
       .eq("project_id", project.id);
+    setIsBusy(false);
     if (removeError) {
-      setError(errorMessage(removeError, "Could not remove repository."));
+      setError(errorMessage(removeError, "Could not disconnect repository."));
       return;
     }
 
-    setMessage("Repository record removed.");
+    setMessage("Repository disconnected. Delivery history was preserved.");
     await loadProjectDetails(project.id);
   }
 
@@ -1001,13 +1008,18 @@ export function ProjectsPage() {
                               {repository.provider} · {repository.defaultBranch}
                             </small>
                           </div>
-                          <Button
-                            onClick={() => void removeRepository(repository.id)}
-                            size="sm"
-                            variant="danger"
-                          >
-                            Remove
-                          </Button>
+                          {canAdministerOrganization ? (
+                            <Button
+                              disabled={isBusy}
+                              onClick={() =>
+                                void removeRepository(repository.id)
+                              }
+                              size="sm"
+                              variant="danger"
+                            >
+                              Disconnect
+                            </Button>
+                          ) : null}
                         </li>
                       ))}
                     </ul>

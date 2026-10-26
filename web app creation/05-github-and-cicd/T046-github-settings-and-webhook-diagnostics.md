@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+In progress
 
 ## Depends on
 
@@ -37,7 +37,7 @@ Give administrators visibility into integration configuration and failures.
 - [ ] Non-admins cannot access secrets or replay controls.
 - [ ] Replay is idempotent.
 - [ ] Failure messages suggest a next action.
-- [ ] Disconnect preserves historical engineering data.
+- [x] Disconnect preserves historical engineering data.
 
 ## Verification
 

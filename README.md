@@ -359,7 +359,9 @@ If the automatic connection is unavailable, the manual fallback is:
 The endpoint verifies `x-hub-signature-256`, deduplicates `x-github-delivery`,
 stores provider events server-side, links task keys such as `RA-42`, and updates
 delivery health used by the dashboard. Raw payloads are never returned to the
-browser or included in UI diagnostics.
+browser or included in UI diagnostics. Disconnecting a repository preserves its
+delivery history and task links; only the active repository registration is
+removed.
 
 ### Docker
 

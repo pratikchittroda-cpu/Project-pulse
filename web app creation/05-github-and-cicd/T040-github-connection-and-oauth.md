@@ -37,7 +37,7 @@ Connect an organization or project to GitHub with least-privilege access.
 - [x] Users can connect an authorized GitHub account.
 - [x] Tokens are passed to the trusted connection function and are not stored or returned.
 - [x] Repository connection respects GitHub and project permissions.
-- [ ] A project can disconnect the repository without deleting delivery history.
+- [x] A project can disconnect the repository without deleting delivery history.
 - [x] Missing scopes produce a useful remediation message.
 
 ## Verification
@@ -55,5 +55,5 @@ The Projects page uses Supabase Auth's GitHub identity and the `github-connect`
 Edge Function to verify repository access, create or repair the ReleaseArc
 webhook, and upsert repository metadata. Manual webhook setup remains available
 as a fallback for installations whose GitHub OAuth configuration does not grant
-repository-hook permissions. Repository disconnect/history retention remains a
-separate follow-up because the current repository delete path is destructive.
+repository-hook permissions. Disconnecting a repository now preserves delivery
+objects and task links while removing the active repository registration.

@@ -79,6 +79,9 @@ remains the recovery path after reconnects.
 ## Delivery and audit model
 
 - `repositories` stores provider-neutral repository metadata.
+- `delivery_objects` stores normalized GitHub delivery history; disconnecting a
+  repository nulls its repository reference without deleting delivery records or
+  task links.
 - `integrations` stores provider connection state and non-secret configuration.
 - `task_events` stores normalized task activity with lower-case dot-separated
   event names.

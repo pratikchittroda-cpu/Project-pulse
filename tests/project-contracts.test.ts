@@ -10,6 +10,14 @@ const policies = readFileSync(
   "utf8",
 );
 const permissionTests = readFileSync("supabase/rls-tests.sql", "utf8");
+const deliveryPipeline = readFileSync(
+  "supabase/migrations/20261026000000_github_delivery_pipeline.sql",
+  "utf8",
+);
+const disconnectRetention = readFileSync(
+  "supabase/migrations/20261027000000_repository_disconnect_retention.sql",
+  "utf8",
+);
 
 describe("project and repository contract", () => {
   it("keeps project identifiers and repository metadata database-enforced", () => {
@@ -44,6 +52,17 @@ describe("project and repository contract", () => {
     );
     expect(permissionTests).toContain(
       "duplicate project key unexpectedly succeeded",
+    );
+  });
+
+  it("preserves delivery history when a repository is disconnected", () => {
+    expect(deliveryPipeline).toContain("repository_id uuid not null,");
+    expect(disconnectRetention).toContain(
+      "alter column repository_id drop not null",
+    );
+    expect(disconnectRetention).toContain("on delete set null");
+    expect(disconnectRetention).toContain(
+      "delivery_objects_repository_id_organization_id_fkey",
     );
   });
 });
