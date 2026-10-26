@@ -118,6 +118,8 @@ describe("web route groups", () => {
 
     expect(markup).toContain("Loading workspace");
     expect(markup).toContain('role="status"');
+    expect(markup).toContain("loading-signal");
+    expect(markup).toContain("releasearc-mark");
   });
 
   it("renders a useful response for an unknown route", () => {

@@ -1275,8 +1275,10 @@ input:focus-visible {
 }
 
 .state-card {
+  overflow: hidden;
   max-width: 30rem;
   padding: 2rem;
+  position: relative;
   width: 100%;
 }
 
@@ -1289,26 +1291,129 @@ input:focus-visible {
   margin-top: 1rem;
 }
 
-.loading-indicator {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: #2563eb;
-  border-radius: 999px;
-  display: block;
-  height: 0.7rem;
-  margin-bottom: 1.5rem;
-  width: 0.7rem;
+.loading-signal {
+  height: 6.5rem;
+  margin: -0.35rem 0 1.35rem;
+  position: relative;
+  width: 6.5rem;
 }
 
-@keyframes pulse {
+.loading-signal::before {
+  background: radial-gradient(circle, rgb(101 87 245 / 18%), transparent 68%);
+  border-radius: 50%;
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.loading-signal-ring,
+.loading-signal-sweep {
+  border: 1px solid rgb(101 87 245 / 24%);
+  border-radius: 50%;
+  inset: 0.55rem;
+  position: absolute;
+}
+
+.loading-signal-ring-outer {
+  animation: signal-ring-breathe 2.8s ease-in-out infinite;
+  border-color: rgb(101 87 245 / 20%);
+}
+
+.loading-signal-ring-middle {
+  animation: signal-ring-breathe 2.8s 0.35s ease-in-out infinite;
+  inset: 1.15rem;
+}
+
+.loading-signal-ring-inner {
+  animation: signal-ring-breathe 2.8s 0.7s ease-in-out infinite;
+  border-color: rgb(98 210 181 / 40%);
+  inset: 1.72rem;
+}
+
+.loading-signal-sweep {
+  animation: signal-sweep 2.4s linear infinite;
+  border: 0;
+  border-top: 1px solid rgb(98 210 181 / 75%);
+  inset: 0.25rem;
+  transform: rotate(-35deg);
+}
+
+.loading-signal-mark {
+  align-items: center;
+  display: flex;
+  inset: 50% auto auto 50%;
+  justify-content: center;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.loading-signal-node {
+  animation: signal-node-pulse 1.8s ease-in-out infinite;
+  background: var(--violet);
+  border: 2px solid var(--paper-strong);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgb(101 87 245 / 12%);
+  height: 0.45rem;
+  position: absolute;
+  width: 0.45rem;
+}
+
+.loading-signal-node-one {
+  animation-delay: -0.2s;
+  left: 0.85rem;
+  top: 1.75rem;
+}
+
+.loading-signal-node-two {
+  animation-delay: -0.8s;
+  background: #62d2b5;
+  right: 0.72rem;
+  top: 2.35rem;
+}
+
+.loading-signal-node-three {
+  animation-delay: -1.2s;
+  bottom: 0.85rem;
+  left: 2.15rem;
+}
+
+@keyframes signal-ring-breathe {
   0%,
   100% {
     opacity: 0.35;
-    transform: scale(0.85);
+    transform: scale(0.88);
   }
 
   50% {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1.04);
+  }
+}
+
+@keyframes signal-sweep {
+  to {
+    transform: rotate(325deg);
+  }
+}
+
+@keyframes signal-node-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-signal-ring,
+  .loading-signal-sweep,
+  .loading-signal-node {
+    animation: none;
   }
 }
 
