@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+Implemented with asynchronous processing still pending
 
 ## Depends on
 
@@ -34,11 +34,11 @@ Receive GitHub events safely and guarantee that retries do not duplicate state c
 
 ## Acceptance criteria
 
-- [ ] Invalid signatures are rejected.
-- [ ] Duplicate delivery IDs are ignored safely.
+- [x] Invalid signatures are rejected.
+- [x] Duplicate delivery IDs are ignored safely.
 - [ ] Webhook responses do not wait on long processing.
-- [ ] Failed events remain diagnosable.
-- [ ] Secrets are never logged.
+- [x] Failed events remain diagnosable.
+- [x] Secrets are never logged.
 
 ## Verification
 
@@ -48,7 +48,11 @@ Receive GitHub events safely and guarantee that retries do not duplicate state c
 
 ## Handoff
 
-Record endpoint route, signature algorithm, delivery schema, retry policy, and secret configuration.
+The hosted endpoint is `/functions/v1/github-webhook`. It verifies GitHub
+`x-hub-signature-256` HMAC signatures, stores unique delivery IDs, records
+processing failures, and keeps secrets server-side. Processing is currently
+synchronous within the Edge Function; queue-backed acknowledgment remains a
+future scaling improvement.
 
 ## Commit
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+In progress
 
 ## Depends on
 
@@ -18,18 +18,18 @@ Confirm the repository and product are ready for the selected release scope.
 
 ## Checklist
 
-- [ ] `make test` passes offline.
-- [ ] Production web build passes.
+- [x] `make test` passes offline.
+- [x] Production web build passes.
 - [ ] Docker build passes.
 - [ ] Database migrations apply from empty state.
 - [ ] RLS tests pass.
-- [ ] GitHub webhook signatures are verified.
-- [ ] Duplicate webhook delivery is safe.
+- [x] GitHub webhook signatures are verified.
+- [x] Duplicate webhook delivery is safe.
 - [ ] IDE extension packages successfully.
 - [ ] End-to-end lifecycle passes.
 - [ ] Accessibility review is complete.
-- [ ] README setup, run, test, and deploy instructions are accurate.
-- [ ] `.env.example` has no real secrets.
+- [x] README setup, run, test, and deploy instructions are accurate.
+- [x] `.env.example` has no real secrets.
 - [ ] Git status is clean after the release commit.
 
 ## Verification
