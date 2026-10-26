@@ -22,6 +22,10 @@ const diagnostics = readFileSync(
   "supabase/migrations/20261027010000_github_delivery_diagnostics.sql",
   "utf8",
 );
+const webhookUpdatedAt = readFileSync(
+  "supabase/migrations/20261027020000_webhook_events_updated_at.sql",
+  "utf8",
+);
 
 describe("project and repository contract", () => {
   it("keeps project identifiers and repository metadata database-enforced", () => {
@@ -77,5 +81,12 @@ describe("project and repository contract", () => {
     expect(diagnostics).toContain("processing_error");
     expect(diagnostics).not.toContain("'payload'");
     expect(diagnostics).toContain("to authenticated, service_role");
+  });
+
+  it("keeps webhook processing compatible with the shared update trigger", () => {
+    expect(webhookUpdatedAt).toContain(
+      "add column if not exists updated_at timestamptz not null",
+    );
+    expect(webhookUpdatedAt).toContain("processed_at, received_at");
   });
 });
