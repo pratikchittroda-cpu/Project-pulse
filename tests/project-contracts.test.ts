@@ -18,6 +18,10 @@ const disconnectRetention = readFileSync(
   "supabase/migrations/20261027000000_repository_disconnect_retention.sql",
   "utf8",
 );
+const diagnostics = readFileSync(
+  "supabase/migrations/20261027010000_github_delivery_diagnostics.sql",
+  "utf8",
+);
 
 describe("project and repository contract", () => {
   it("keeps project identifiers and repository metadata database-enforced", () => {
@@ -64,5 +68,14 @@ describe("project and repository contract", () => {
     expect(disconnectRetention).toContain(
       "delivery_objects_repository_id_organization_id_fkey",
     );
+  });
+
+  it("keeps GitHub diagnostics project-scoped and payload-free", () => {
+    expect(diagnostics).toContain("get_project_github_diagnostics");
+    expect(diagnostics).toContain("can_access_project");
+    expect(diagnostics).toContain("failed_webhook_count");
+    expect(diagnostics).toContain("processing_error");
+    expect(diagnostics).not.toContain("'payload'");
+    expect(diagnostics).toContain("to authenticated, service_role");
   });
 });

@@ -52,6 +52,12 @@ interface DeliverySummary {
   openPullRequestCount: number;
 }
 
+interface GithubDiagnostics {
+  failedWebhookCount: number;
+  githubRepositoryCount: number;
+  lastWebhookReceivedAt: string | null;
+}
+
 const emptyProject = {
   description: "",
   key: "",
@@ -130,6 +136,8 @@ export function ProjectsPage() {
   const [repositories, setRepositories] = useState<RepositorySummary[]>([]);
   const [deliverySummary, setDeliverySummary] =
     useState<DeliverySummary | null>(null);
+  const [githubDiagnostics, setGithubDiagnostics] =
+    useState<GithubDiagnostics | null>(null);
   const [members, setMembers] = useState<ProjectMemberSummary[]>([]);
   const [organizationMembers, setOrganizationMembers] = useState<
     OrganizationMemberSummary[]
@@ -165,6 +173,7 @@ export function ProjectsPage() {
       setTeams([]);
       setRepositories([]);
       setDeliverySummary(null);
+      setGithubDiagnostics(null);
       setMembers([]);
       setOrganizationMembers([]);
       return;
@@ -193,6 +202,7 @@ export function ProjectsPage() {
     if (!hasRealProject) {
       setRepositories([]);
       setDeliverySummary(null);
+      setGithubDiagnostics(null);
       setMembers([]);
       setOrganizationMembers([]);
       return;
@@ -203,6 +213,7 @@ export function ProjectsPage() {
       { data: memberData, error: memberError },
       { data: organizationMemberData, error: organizationMemberError },
       { data: deliverySummaryData },
+      { data: githubDiagnosticsData },
     ] = await Promise.all([
       supabase
         .from("repositories")
@@ -222,6 +233,10 @@ export function ProjectsPage() {
         .eq("organization_id", selectedOrganizationId)
         .order("created_at"),
       supabase.rpc("get_project_delivery_summary", {
+        target_organization_id: selectedOrganizationId,
+        target_project_id: projectId,
+      }),
+      supabase.rpc("get_project_github_diagnostics", {
         target_organization_id: selectedOrganizationId,
         target_project_id: projectId,
       }),
@@ -270,6 +285,29 @@ export function ProjectsPage() {
             openPullRequestCount: Number(
               deliveryRow.open_pull_request_count ?? 0,
             ),
+          }
+        : null,
+    );
+    const diagnosticsRow = (
+      Array.isArray(githubDiagnosticsData)
+        ? githubDiagnosticsData[0]
+        : githubDiagnosticsData
+    ) as {
+      failed_webhook_count?: number;
+      github_repository_count?: number;
+      last_webhook_received_at?: string | null;
+    } | null;
+    setGithubDiagnostics(
+      diagnosticsRow
+        ? {
+            failedWebhookCount: Number(
+              diagnosticsRow.failed_webhook_count ?? 0,
+            ),
+            githubRepositoryCount: Number(
+              diagnosticsRow.github_repository_count ?? 0,
+            ),
+            lastWebhookReceivedAt:
+              diagnosticsRow.last_webhook_received_at ?? null,
           }
         : null,
     );
@@ -966,11 +1004,20 @@ export function ProjectsPage() {
                             {deliverySummary?.failedDeploymentCount ?? 0}
                           </strong>
                         </div>
+                        <div>
+                          <span>Webhook failures</span>
+                          <strong>
+                            {githubDiagnostics?.failedWebhookCount ?? 0}
+                          </strong>
+                        </div>
                       </div>
                       <p className="muted github-last-delivery">
                         {formatDeliveryTime(
                           deliverySummary?.lastGithubDeliveryAt ?? null,
                         )}
+                        {githubDiagnostics?.lastWebhookReceivedAt
+                          ? ` · Webhook received ${formatDeliveryTime(githubDiagnostics.lastWebhookReceivedAt).replace("Last delivery ", "")}`
+                          : " · No webhook receipt recorded yet"}
                       </p>
                     </div>
                   ) : (
